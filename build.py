@@ -481,7 +481,8 @@ def sync_all():
                 "category": "commercials",
                 "year": "",
                 "tags": [],
-                "orientation": "horizontal"
+                "orientation": "horizontal",
+                "link": ""
             }
             proj_info_file = os.path.join(p_folder_path, "projectInfo.json")
             if not os.path.exists(proj_info_file):
@@ -501,6 +502,9 @@ def sync_all():
             p_orientation = proj_info.get("orientation", "horizontal").lower()
             if p_orientation not in ("horizontal", "vertical", "square"):
                 p_orientation = "horizontal"
+
+            p_link = (proj_info.get("link") or "").strip()
+            more_link_html = f'<a href="{p_link}" target="_blank" rel="noopener noreferrer" class="tile-more-link" title="Open project details in new tab">more...</a>' if p_link else ''
 
             # Tags processing
             raw_tags = proj_info.get("tags") or proj_info.get("tools") or []
@@ -528,6 +532,7 @@ def sync_all():
               <div class="tile-inner">
                 <img src="{proj_img_path}" alt="{p_title}" class="tile-img" loading="lazy">
                 <button class="tile-category-pill" data-filter-category="{p_category}" title="Filter by {cat_label}">{cat_label}</button>
+                {more_link_html}
                 <div class="tile-hover-overlay">
                   <div class="tile-hover-content">
                     <h3 class="tile-title">
