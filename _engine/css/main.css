@@ -29,8 +29,8 @@
   --transition-fast: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   --transition-smooth: 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  --font-sans: 'Ubuntu', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'Ubuntu Mono', 'JetBrains Mono', 'Fira Code', monospace;
 }
 
 /* Reset & Base */
@@ -102,15 +102,18 @@ button {
   margin-inline: auto;
 }
 
-/* Header & Navigation */
+/* Header & Navigation (Transparent, Seamless, No Lines) */
 .site-header {
-  position: sticky;
+  position: absolute;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 100;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  background: var(--bg-glass);
-  border-bottom: 1px solid var(--border-subtle);
+  background: transparent;
+  border-bottom: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   transition: all var(--transition-smooth);
 }
 
@@ -118,7 +121,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 72px;
+  height: 80px;
 }
 
 .brand-logo {

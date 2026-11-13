@@ -3,125 +3,163 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Prasannakumar T Bhat | Portfolio</title>
-  <meta name="description" content="Prasannakumar T Bhat - Senior Visual Effects Compositor @ DNEG">
+  <title>Prasannakumar T Bhat</title>
+  <meta name="description" content="Prasannakumar T Bhat - CG is not just faking, its adding beautiful layers of lie on the ugly truth.">
   <link rel="icon" type="image/png" href="assets/images/branding/logo.png">
   
+  <!-- Ubuntu Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,700&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
   
   <link rel="stylesheet" href="_engine/css/main.css">
   <link rel="stylesheet" href="_engine/css/components.css">
   <link rel="stylesheet" href="_engine/css/responsive.css">
   
   <style>
-    /* Full-screen Minimalist Home Viewport */
-    .home-hero-fullscreen {
-      position: relative;
-      min-height: calc(100vh - 72px);
+    /* Fixed Full-Screen Non-Scrollable Viewport */
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      position: fixed;
+      inset: 0;
+      font-family: 'Ubuntu', sans-serif;
+    }
+
+    /* Transparent Navigation - Seamless, No Border or Background */
+    .site-header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+
+    .home-fullscreen-container {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: clamp(24px, 5vw, 60px) 20px;
-      overflow: hidden;
       background-size: cover;
       background-position: center;
-      background-image: linear-gradient(to bottom, rgba(9, 12, 19, 0.82), rgba(9, 12, 19, 0.96)), url('pages/01_home/background.jpg');
+      background-repeat: no-repeat;
+      padding-inline: 24px;
+      background-image: linear-gradient(to bottom, rgba(9, 12, 19, 0.75), rgba(9, 12, 19, 0.9)), url('pages/01_home/background.jpg');
     }
 
     #bg-canvas {
-      position: absolute;
+      position: fixed;
       inset: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: auto;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
       z-index: 1;
     }
 
-    .home-content-box {
+    .home-center-stage {
       position: relative;
       z-index: 10;
-      max-width: 860px;
-      margin-inline: auto;
-      pointer-events: none; /* Allows mouse to seamlessly interact with canvas below */
+      max-width: 95vw;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
 
-    .home-content-box * {
-      pointer-events: auto; /* Re-enable buttons and links */
+    /* Name and Tagline in a Single Horizontal Line */
+    .name-tagline-row {
+      display: inline-flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: clamp(10px, 1.8vw, 22px);
+      white-space: nowrap;
+      flex-wrap: nowrap;
+      max-width: 95vw;
     }
 
-    .hero-name {
-      font-size: clamp(2.8rem, 7vw, 5.5rem);
-      font-weight: 800;
-      letter-spacing: -0.035em;
-      line-height: 1.05;
-      margin-bottom: 18px;
-      background: linear-gradient(135deg, #ffffff 40%, rgba(255, 255, 255, 0.65) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-shadow: 0 0 50px rgba(56, 189, 248, 0.25);
+    .hero-name-inline {
+      font-family: 'Ubuntu', sans-serif;
+      font-size: clamp(1.4rem, 2.6vw, 2.5rem);
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+      margin: 0;
+      line-height: 1.2;
+      text-shadow: 0 0 40px rgba(56, 189, 248, 0.45);
     }
 
-    .hero-designation {
-      font-family: var(--font-mono);
-      font-size: clamp(0.9rem, 2vw, 1.25rem);
+    .row-separator {
       color: var(--accent-cyan);
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      font-weight: 600;
-      margin-bottom: 24px;
+      font-weight: 300;
+      font-size: clamp(1.2rem, 2.2vw, 2.1rem);
+      opacity: 0.85;
+    }
+
+    .hero-tagline-inline {
+      font-family: 'Ubuntu', sans-serif;
+      font-size: clamp(0.95rem, 1.6vw, 1.4rem);
+      font-weight: 400;
+      font-style: italic;
+      color: rgba(241, 245, 249, 0.88);
+      margin: 0;
+      line-height: 1.2;
+    }
+
+    .about-action-wrap {
+      margin-top: 36px;
+    }
+
+    .btn-about {
       display: inline-flex;
       align-items: center;
-      gap: 10px;
-      background: rgba(56, 189, 248, 0.08);
-      padding: 6px 18px;
-      border-radius: var(--radius-full);
-      border: 1px solid rgba(56, 189, 248, 0.25);
-      backdrop-filter: blur(8px);
-    }
-
-    .hero-tagline-clean {
-      font-size: clamp(1.15rem, 2.5vw, 1.55rem);
-      color: var(--text-muted);
-      font-weight: 300;
-      line-height: 1.5;
-      max-width: 720px;
-      margin-inline: auto;
-      margin-bottom: 36px;
-      font-style: italic;
-    }
-
-    .home-quick-actions {
-      display: flex;
       justify-content: center;
-      gap: 16px;
-      flex-wrap: wrap;
+      padding: 11px 36px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      font-family: 'Ubuntu', sans-serif;
+      border-radius: var(--radius-full);
+      background: linear-gradient(135deg, #0284c7, #2563eb);
+      color: #ffffff;
+      box-shadow: 0 4px 18px rgba(37, 99, 235, 0.4);
+      transition: all var(--transition-fast);
+      letter-spacing: 0.02em;
     }
 
-    .mouse-hint {
-      position: absolute;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      color: var(--text-subtle);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      z-index: 10;
-      pointer-events: none;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      opacity: 0.75;
+    .btn-about:hover {
+      background: linear-gradient(135deg, #38bdf8, #3b82f6);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(56, 189, 248, 0.55);
+    }
+
+    @media (max-width: 768px) {
+      .name-tagline-row {
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        white-space: normal;
+      }
+      .row-separator {
+        display: none;
+      }
     }
   </style>
 </head>
-<body style="overflow-x: hidden;">
+<body>
 
-  <!-- Site Navigation -->
+  <!-- Navigation Bar (Seamless & Transparent) -->
   <header class="site-header">
     <div class="container-wide nav-wrapper">
       <a href="index.html" class="brand-logo">
@@ -131,9 +169,7 @@
       </a>
 
       <button class="mobile-nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
-        <span></span>
-        <span></span>
-        <span></span>
+        <span></span><span></span><span></span>
       </button>
 
       <ul class="nav-links">
@@ -143,50 +179,35 @@
         <li><a href="photography.html">Photography</a></li>
         <li><a href="about-me.html">About Me</a></li>
         <li><a href="blog.html">Blog</a></li>
-        <li><a href="about-me.html#contact" class="btn btn-primary" style="padding: 6px 16px; font-size: 0.82rem;">Contact</a></li>
+        <li><a href="about-me.html#contact" class="btn btn-primary" style="padding: 6px 16px; font-size: 0.82rem; font-weight: 500;">Contact</a></li>
       </ul>
     </div>
   </header>
 
-  <main>
-    <section class="home-hero-fullscreen">
-      <!-- Interactive Mouse Pointer Background Canvas -->
-      <canvas id="bg-canvas"></canvas>
+  <!-- Full-Screen Interactive Viewport -->
+  <main class="home-fullscreen-container">
+    <!-- 60fps Interactive Mouse Pointer Canvas Background -->
+    <canvas id="bg-canvas"></canvas>
 
-      <!-- Center Minimalist Content: Name, Designation & Tagline -->
-      <div class="home-content-box">
-        <div class="hero-designation">
-          <span>Senior Visual Effects Compositor @ DNEG</span>
-        </div>
-        <h1 class="hero-name">Prasannakumar T Bhat</h1>
-        <p class="hero-tagline-clean">
-          "CG is not just faking, its adding beautiful layers of lie on the ugly truth."
-        </p>
-        <div class="home-quick-actions">
-          <a href="vfx-works.html" class="btn btn-primary" style="padding: 12px 28px; font-size: 1rem;">
-            <span>Explore Works</span>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </a>
-          <a href="about-me.html" class="btn btn-secondary" style="padding: 12px 24px; font-size: 1rem;">
-            <span>About Me</span>
-          </a>
-        </div>
+    <!-- Center Stage: Name and Tagline in a Single Line + About Button -->
+    <div class="home-center-stage">
+      <div class="name-tagline-row">
+        <h1 class="hero-name-inline">Prasannakumar T Bhat</h1>
+        <span class="row-separator">—</span>
+        <p class="hero-tagline-inline">"CG is not just faking, its adding beautiful layers of lie on the ugly truth."</p>
       </div>
 
-      <!-- Mouse interaction guide indicator -->
-      <div class="mouse-hint">
-        <span>&#10022;</span> Move cursor to interact with fluid particle field
+      <div class="about-action-wrap">
+        <a href="about-me.html" class="btn-about">About</a>
       </div>
-    </section>
+    </div>
   </main>
 
-  <!-- Interactive Background Script -->
+  <!-- Interactive Background Engine -->
   <script type="module">
     import { initInteractiveBackground } from './_engine/js/interactive-bg.js';
     import './_engine/js/main.js';
-    document.addEventListener('DOMContentLoaded', () => {
-      initInteractiveBackground('bg-canvas');
-    });
+    initInteractiveBackground('bg-canvas');
   </script>
 </body>
 </html>

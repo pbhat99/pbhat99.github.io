@@ -63,3 +63,4 @@ with open('pages/05_about-me/bio.json', 'w', encoding='utf-8') as f:
 shutil.copy('data/blog.json', 'pages/06_blog/blog.json')
 
 print("pages/ structure successfully initialized with content!")
+

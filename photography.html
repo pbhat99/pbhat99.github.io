@@ -5,10 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Photography & 360 Panoramas | Pra - Motions</title>
   <link rel="icon" type="image/png" href="assets/images/branding/logo.png">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,700&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="_engine/css/main.css">
   <link rel="stylesheet" href="_engine/css/components.css">
   <link rel="stylesheet" href="_engine/css/responsive.css">
+  <style>
+    .site-header {
+      position: relative;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+  </style>
 </head>
 <body>
   <header class="site-header">
@@ -28,12 +36,12 @@
         <li><a href="photography.html" class="active">Photography</a></li>
         <li><a href="about-me.html">About Me</a></li>
         <li><a href="blog.html">Blog</a></li>
-        <li><a href="about-me.html#contact" class="btn btn-primary" style="padding: 6px 16px; font-size: 0.82rem;">Contact</a></li>
+        <li><a href="about-me.html#contact" class="btn btn-primary" style="padding: 6px 16px; font-size: 0.82rem; font-weight: 500;">Contact</a></li>
       </ul>
     </div>
   </header>
 
-  <main style="padding-block: clamp(36px, 6vw, 72px);">
+  <main style="padding-block: clamp(24px, 4vw, 56px);">
     <div class="container-wide">
       <div class="section-header">
         <div class="section-label">Visual Exploration</div>
@@ -43,7 +51,6 @@
         </p>
       </div>
 
-      <!-- Interactive 360° Panorama Viewer -->
       <div class="panorama-card">
         <div style="padding: 20px 24px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
           <div>
@@ -54,14 +61,9 @@
             Drag to Look Around &bull; Pinch to Zoom
           </span>
         </div>
-        <div id="panorama-viewer" class="panorama-viewport">
-          <div class="panorama-overlay-hint">
-            <span>&#10022;</span> Interactive 360° Space: Click & Drag to explore
-          </div>
-        </div>
+        <div id="panorama-viewer" class="panorama-viewport"></div>
       </div>
 
-      <!-- Photo Gallery Grid -->
       <h2 style="font-size: 1.5rem; font-weight: 700; margin-top: 48px; margin-bottom: 24px;">Still Photography Gallery (8 Stills)</h2>
       <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 24px;">
         

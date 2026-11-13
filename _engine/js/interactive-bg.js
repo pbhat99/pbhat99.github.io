@@ -1,121 +1,126 @@
 /**
  * Interactive Mouse Pointer Canvas Background
- * High-performance, 60fps particle mesh with cursor gravity, glow, and organic physics.
- * Designed for Prasannakumar T Bhat (pbhat99) portfolio.
+ * High-performance 60fps particle constellation with reactive cursor physics
  */
 export function initInteractiveBackground(canvasId = 'bg-canvas') {
   const canvas = document.getElementById(canvasId);
-  if (!canvas) return;
+  if (!canvas) {
+    console.warn(`[InteractiveBG] Canvas with id '${canvasId}' not found.`);
+    return;
+  }
 
   const ctx = canvas.getContext('2d');
-  let width, height;
+  let width = window.innerWidth;
+  let height = window.innerHeight;
   let dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-  // Mouse / Pointer State
+  // Mouse State (Active by default at center)
   const mouse = {
-    x: -1000,
-    y: -1000,
-    targetX: -1000,
-    targetY: -1000,
-    radius: 180,
-    isHovered: false
+    x: width / 2,
+    y: height / 2,
+    targetX: width / 2,
+    targetY: height / 2,
+    radius: 220,
+    active: true
   };
 
-  // Particle configuration
-  const particles = [];
-  const baseCount = window.innerWidth < 768 ? 45 : 85;
-  const colors = [
-    { r: 56, g: 189, b: 248 },   // Cyan
-    { r: 129, g: 140, b: 248 },  // Indigo
-    { r: 168, g: 85, b: 247 },   // Violet
-    { r: 255, g: 255, b: 255 }    // Crisp White
-  ];
-
   function resize() {
-    width = canvas.parentElement ? canvas.parentElement.offsetWidth : window.innerWidth;
-    height = canvas.parentElement ? canvas.parentElement.offsetHeight : window.innerHeight;
+    width = window.innerWidth;
+    height = window.innerHeight;
     canvas.width = width * dpr;
     canvas.height = height * dpr;
     canvas.style.width = width + 'px';
     canvas.style.height = height + 'px';
-    ctx.scale(dpr, dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
+
+  // Particle Settings
+  const count = window.innerWidth < 768 ? 45 : 85;
+  const particles = [];
+  const palette = [
+    { r: 56, g: 189, b: 248 },  // Electric Cyan
+    { r: 99, g: 102, b: 241 },  // Indigo
+    { r: 168, g: 85, b: 247 },  // Violet
+    { r: 255, g: 255, b: 255 }   // Crisp White
+  ];
 
   class Particle {
     constructor() {
       this.reset(true);
     }
 
-    reset(initial = false) {
-      this.x = initial ? Math.random() * width : (Math.random() > 0.5 ? 0 : width);
-      this.y = initial ? Math.random() * height : Math.random() * height;
-      this.vx = (Math.random() - 0.5) * 0.7;
-      this.vy = (Math.random() - 0.5) * 0.7;
-      this.radius = Math.random() * 2 + 1;
-      this.baseAlpha = Math.random() * 0.5 + 0.2;
-      this.color = colors[Math.floor(Math.random() * colors.length)];
+    reset(randomPosition = false) {
+      this.x = randomPosition ? Math.random() * width : (Math.random() > 0.5 ? 0 : width);
+      this.y = randomPosition ? Math.random() * height : Math.random() * height;
+      this.vx = (Math.random() - 0.5) * 0.8;
+      this.vy = (Math.random() - 0.5) * 0.8;
+      this.baseRadius = Math.random() * 2 + 1.2;
+      this.radius = this.baseRadius;
+      this.baseAlpha = Math.random() * 0.45 + 0.35;
+      this.alpha = this.baseAlpha;
+      this.color = palette[Math.floor(Math.random() * palette.length)];
       this.pulseSpeed = Math.random() * 0.02 + 0.01;
       this.pulseAngle = Math.random() * Math.PI * 2;
     }
 
     update() {
-      // Natural floating drift
       this.x += this.vx;
       this.y += this.vy;
 
-      // Pulse alpha
+      // Organic subtle pulsation
       this.pulseAngle += this.pulseSpeed;
-      this.currentAlpha = this.baseAlpha + Math.sin(this.pulseAngle) * 0.15;
+      this.alpha = this.baseAlpha + Math.sin(this.pulseAngle) * 0.15;
 
-      // Mouse interactive physics (gravity & subtle orbit)
-      if (mouse.x > 0 && mouse.y > 0) {
+      // Mouse Proximity Gravity & Swirl
+      if (mouse.active) {
         const dx = mouse.x - this.x;
         const dy = mouse.y - this.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
 
-        if (dist < mouse.radius) {
+        if (dist < mouse.radius && dist > 1) {
           const force = (1 - dist / mouse.radius);
-          // Gently attract towards cursor
-          this.vx += (dx / dist) * force * 0.15;
-          this.vy += (dy / dist) * force * 0.15;
-          // Add extra brightness near mouse
-          this.currentAlpha = Math.min(1, this.currentAlpha + force * 0.5);
+          // Gentle attraction toward cursor
+          this.vx += (dx / dist) * force * 0.22;
+          this.vy += (dy / dist) * force * 0.22;
+          this.alpha = Math.min(1, this.alpha + force * 0.5);
+          this.radius = this.baseRadius + force * 1.5;
+        } else {
+          this.radius = this.baseRadius;
         }
       }
 
-      // Air friction / damping
-      this.vx *= 0.985;
-      this.vy *= 0.985;
+      // Air resistance
+      this.vx *= 0.98;
+      this.vy *= 0.98;
 
-      // Wrap boundaries
-      if (this.x < -20) this.x = width + 20;
-      if (this.x > width + 20) this.x = -20;
-      if (this.y < -20) this.y = height + 20;
-      if (this.y > height + 20) this.y = -20;
+      // Edge wrap
+      if (this.x < -10) this.x = width + 10;
+      if (this.x > width + 10) this.x = -10;
+      if (this.y < -10) this.y = height + 10;
+      if (this.y > height + 10) this.y = -10;
     }
 
     draw() {
       ctx.beginPath();
       ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${this.currentAlpha})`;
-      ctx.shadowBlur = 10;
-      ctx.shadowColor = `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, 0.6)`;
+      ctx.fillStyle = `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${this.alpha})`;
+      ctx.shadowBlur = 12;
+      ctx.shadowColor = `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, 0.8)`;
       ctx.fill();
       ctx.shadowBlur = 0;
     }
   }
 
-  // Populate particles
   function initParticles() {
     particles.length = 0;
-    for (let i = 0; i < baseCount; i++) {
+    for (let i = 0; i < count; i++) {
       particles.push(new Particle());
     }
   }
 
-  // Draw connecting constellation lines
+  // Draw constellation connecting lines
   function drawConnections() {
-    const maxDist = 130;
+    const maxDist = 125;
     for (let i = 0; i < particles.length; i++) {
       for (let j = i + 1; j < particles.length; j++) {
         const p1 = particles[i];
@@ -125,62 +130,62 @@ export function initInteractiveBackground(canvasId = 'bg-canvas') {
         const dist = Math.sqrt(dx * dx + dy * dy);
 
         if (dist < maxDist) {
-          const alpha = (1 - dist / maxDist) * 0.22;
+          const alpha = (1 - dist / maxDist) * 0.25;
           ctx.beginPath();
           ctx.moveTo(p1.x, p1.y);
           ctx.lineTo(p2.x, p2.y);
           ctx.strokeStyle = `rgba(56, 189, 248, ${alpha})`;
-          ctx.lineWidth = 0.8;
+          ctx.lineWidth = 0.85;
           ctx.stroke();
         }
       }
 
       // Connect to mouse cursor
-      if (mouse.x > 0 && mouse.y > 0) {
+      if (mouse.active) {
         const dx = particles[i].x - mouse.x;
         const dy = particles[i].y - mouse.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist < mouse.radius) {
-          const alpha = (1 - dist / mouse.radius) * 0.45;
+          const alpha = (1 - dist / mouse.radius) * 0.4;
           ctx.beginPath();
           ctx.moveTo(particles[i].x, particles[i].y);
           ctx.lineTo(mouse.x, mouse.y);
           ctx.strokeStyle = `rgba(168, 85, 247, ${alpha})`;
-          ctx.lineWidth = 1;
+          ctx.lineWidth = 1.1;
           ctx.stroke();
         }
       }
     }
   }
 
-  // Draw glowing cursor aura
-  function drawMouseGlow() {
-    if (mouse.x < 0 || mouse.y < 0) return;
+  // Draw smooth cursor ambient glow
+  function drawCursorGlow() {
+    if (!mouse.active) return;
     
-    // Smooth mouse position interpolation
-    mouse.x += (mouse.targetX - mouse.x) * 0.18;
-    mouse.y += (mouse.targetY - mouse.y) * 0.18;
+    // Smooth lerp
+    mouse.x += (mouse.targetX - mouse.x) * 0.2;
+    mouse.y += (mouse.targetY - mouse.y) * 0.2;
 
-    const radial = ctx.createRadialGradient(
+    const glow = ctx.createRadialGradient(
       mouse.x, mouse.y, 0,
       mouse.x, mouse.y, mouse.radius
     );
-    radial.addColorStop(0, 'rgba(56, 189, 248, 0.18)');
-    radial.addColorStop(0.4, 'rgba(129, 140, 248, 0.08)');
-    radial.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    glow.addColorStop(0, 'rgba(56, 189, 248, 0.22)');
+    glow.addColorStop(0.35, 'rgba(129, 140, 248, 0.08)');
+    glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
-    ctx.fillStyle = radial;
+    ctx.fillStyle = glow;
     ctx.beginPath();
     ctx.arc(mouse.x, mouse.y, mouse.radius, 0, Math.PI * 2);
     ctx.fill();
   }
 
   // Animation Loop
-  let animId;
-  function animate() {
+  let reqId;
+  function render() {
     ctx.clearRect(0, 0, width, height);
 
-    drawMouseGlow();
+    drawCursorGlow();
 
     for (let i = 0; i < particles.length; i++) {
       particles[i].update();
@@ -189,59 +194,57 @@ export function initInteractiveBackground(canvasId = 'bg-canvas') {
 
     drawConnections();
 
-    animId = requestAnimationFrame(animate);
+    reqId = requestAnimationFrame(render);
   }
 
-  // Pointer Listeners
-  window.addEventListener('mousemove', (e) => {
-    const rect = canvas.getBoundingClientRect();
-    mouse.targetX = e.clientX - rect.left;
-    mouse.targetY = e.clientY - rect.top;
-    if (!mouse.isHovered) {
-      mouse.x = mouse.targetX;
-      mouse.y = mouse.targetY;
-      mouse.isHovered = true;
+  // Global Pointer Events
+  function handlePointer(x, y) {
+    mouse.targetX = x;
+    mouse.targetY = y;
+    if (!mouse.active) {
+      mouse.x = x;
+      mouse.y = y;
+      mouse.active = true;
     }
+  }
+
+  window.addEventListener('pointermove', (e) => {
+    handlePointer(e.clientX, e.clientY);
   });
 
-  window.addEventListener('mouseleave', () => {
-    mouse.targetX = -1000;
-    mouse.targetY = -1000;
-    mouse.isHovered = false;
+  window.addEventListener('mousemove', (e) => {
+    handlePointer(e.clientX, e.clientY);
   });
 
-  // Touch listener for mobile devices
   window.addEventListener('touchmove', (e) => {
     if (e.touches && e.touches[0]) {
-      const rect = canvas.getBoundingClientRect();
-      mouse.targetX = e.touches[0].clientX - rect.left;
-      mouse.targetY = e.touches[0].clientY - rect.top;
-      mouse.x = mouse.targetX;
-      mouse.y = mouse.targetY;
+      handlePointer(e.touches[0].clientX, e.touches[0].clientY);
     }
   }, { passive: true });
 
-  window.addEventListener('touchend', () => {
-    mouse.targetX = -1000;
-    mouse.targetY = -1000;
+  window.addEventListener('mouseleave', () => {
+    mouse.active = false;
   });
 
-  // Window Resize
+  window.addEventListener('touchend', () => {
+    mouse.active = false;
+  });
+
   window.addEventListener('resize', () => {
     resize();
     initParticles();
   });
 
-  // Pause when tab hidden to save battery
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
-      cancelAnimationFrame(animId);
+      cancelAnimationFrame(reqId);
     } else {
-      animate();
+      render();
     }
   });
 
   resize();
   initParticles();
-  animate();
+  render();
+  console.log('[InteractiveBG] Canvas background running.');
 }
