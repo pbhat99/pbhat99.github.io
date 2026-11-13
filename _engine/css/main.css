@@ -635,31 +635,18 @@ button {
   box-shadow: 0 14px 40px rgba(0, 0, 0, 0.65), 0 0 25px rgba(249, 134, 3, 0.3);
 }
 
-/* Animated Circling Outline on Hover (Strictly on Top of Image and Gradient, Slim & Subtle Glow) */
+/* Animated Circling Outline on Hover (Rock-solid, beautiful glowing tracing border) */
 .tile-circling-border {
   position: absolute;
-  inset: 0;
-  border-radius: var(--radius-md);
-  z-index: 10;
-  pointer-events: none;
+  inset: -2px;
+  border-radius: calc(var(--radius-md) + 2px);
+  z-index: 0;
+  overflow: hidden;
   opacity: 0;
   transition: opacity 0.3s ease;
-  filter: drop-shadow(0 0 2.5px rgba(249, 134, 3, 0.75));
+  pointer-events: none;
 }
 
-.tile-circling-line {
-  position: absolute;
-  inset: 0;
-  border-radius: var(--radius-md);
-  padding: 1.5px;
-  overflow: hidden;
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-}
-
-.tile-circling-line::before,
 .tile-circling-border::before {
   content: '';
   position: absolute;
@@ -667,13 +654,14 @@ button {
   background: conic-gradient(
     from 0deg,
     transparent 0deg,
-    rgba(249, 134, 3, 0.2) 22deg,
-    var(--accent-primary) 36deg,
-    #ffffff 44deg,
-    rgba(255, 155, 38, 0.8) 48deg,
-    transparent 60deg
+    rgba(249, 134, 3, 0.2) 20deg,
+    var(--accent-primary) 50deg,
+    #ffffff 65deg,
+    var(--accent-primary) 80deg,
+    transparent 105deg
   );
-  animation: circleTrace 6.5s linear infinite;
+  animation: circleTrace 5s linear infinite;
+  filter: drop-shadow(0 0 6px var(--accent-primary));
 }
 
 @keyframes circleTrace {
@@ -681,8 +669,7 @@ button {
   100% { transform: rotate(360deg); }
 }
 
-.project-tile:hover .tile-circling-border,
-.known-tool-card:hover .tile-circling-border {
+.project-tile:hover .tile-circling-border {
   opacity: 1;
 }
 
@@ -927,7 +914,7 @@ button {
    ========================================================================== */
 .about-grid {
   display: grid;
-  grid-template-columns: minmax(260px, 340px) 1fr;
+  grid-template-columns: 4fr 6fr;
   gap: clamp(28px, 4vw, 56px);
   align-items: start;
   margin-bottom: 56px;
@@ -1000,61 +987,48 @@ button {
 .known-tool-card {
   position: relative;
   aspect-ratio: 1 / 1;
+  background: transparent !important;
+  border: none !important;
   border-radius: var(--radius-md);
-  padding: 0;
-  overflow: hidden;
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease, border-color 0.3s ease;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  box-shadow: none !important;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   user-select: none;
 }
 
 .known-tool-card:hover {
-  transform: scale(1.05);
-  border-color: var(--accent-primary);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.65), 0 0 16px rgba(249, 134, 3, 0.3);
-  z-index: 5;
-}
-
-.known-tool-card .tile-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  z-index: 1;
+  transform: scale(1.15);
 }
 
 .known-tool-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: center;
-  display: block;
-  transition: transform 0.35s ease;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
+  transition: transform 0.25s ease;
 }
 
-.known-tool-card:hover .known-tool-img {
-  transform: scale(1.06);
-}
-
-/* Centered Name Overlay on Tool Hover */
+/* Centered Name Overlay on Tool Hover (No Box or Outline in Normal State) */
 .known-tool-hover {
   position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(14, 23, 51, 0.88);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(14, 23, 51, 0.92);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--accent-primary);
   opacity: 0;
-  transition: opacity 0.25s ease;
+  transition: opacity 0.2s ease;
   z-index: 3;
-  padding: 8px;
+  padding: 4px 6px;
   text-align: center;
   pointer-events: none;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
 }
 
 .known-tool-card:hover .known-tool-hover {
@@ -1063,13 +1037,13 @@ button {
 
 .known-tool-name {
   font-family: 'Ubuntu', sans-serif;
-  font-size: clamp(0.72rem, 1.1vw, 0.86rem);
+  font-size: clamp(0.72rem, 1vw, 0.86rem);
   font-weight: 700;
   color: #ffffff;
-  line-height: 1.25;
+  line-height: 1.2;
   letter-spacing: 0.02em;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
-  word-break: break-word;
+  text-align: center;
+  white-space: nowrap;
 }
 
 /* Vimeo Video Embed */

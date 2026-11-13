@@ -528,6 +528,7 @@ def sync_all():
 
             tiles_html.append(f'''
             <article class="project-tile aspect-{p_orientation}" data-category="{p_category}" data-tags="{tags_csv}">
+              <div class="tile-circling-border" aria-hidden="true"></div>
               <div class="tile-inner">
                 <img src="{proj_img_path}" alt="{p_title}" class="tile-img" loading="lazy">
                 <button class="tile-category-pill" data-filter-category="{p_category}" title="Filter by {cat_label}">{cat_label}</button>
@@ -543,7 +544,6 @@ def sync_all():
                   </div>
                 </div>
               </div>
-              <div class="tile-circling-border" aria-hidden="true"><div class="tile-circling-line"></div></div>
             </article>''')
             total_projects_count += 1
 
@@ -816,13 +816,10 @@ def sync_all():
             tool_name = re.sub(r'^\d+[\s_-]*', '', raw_name).replace('_', ' ').replace('-', ' ').title()
             tools_cards_html.append(f'''
           <div class="known-tool-card" title="{tool_name}">
-            <div class="tile-inner">
-              <img src="{tf_path}" alt="{tool_name}" class="known-tool-img" loading="lazy">
-              <div class="known-tool-hover">
-                <span class="known-tool-name">{tool_name}</span>
-              </div>
+            <img src="{tf_path}" alt="{tool_name}" class="known-tool-img" loading="lazy">
+            <div class="known-tool-hover">
+              <span class="known-tool-name">{tool_name}</span>
             </div>
-            <div class="tile-circling-border" aria-hidden="true"><div class="tile-circling-line"></div></div>
           </div>''')
 
     tools_section_html = ""
@@ -886,14 +883,14 @@ def sync_all():
         <p class="section-desc">{desc_inner}</p>
       </div>
 
-      <!-- Profile & Bio Grid (Vertical Project-Tile Photo, Paragraphs with Line Breaks) -->
+      <!-- Profile & Bio Grid (40:60 Ratio, Vertical Project-Tile Photo, Paragraphs with Line Breaks) -->
       <div class="about-grid">
         <div class="about-profile-col">
           <div class="project-tile aspect-vertical about-profile-tile">
+            <div class="tile-circling-border" aria-hidden="true"></div>
             <div class="tile-inner">
               <img src="{profile_img}" alt="{name}" class="tile-img">
             </div>
-            <div class="tile-circling-border" aria-hidden="true"><div class="tile-circling-line"></div></div>
           </div>
         </div>
 
