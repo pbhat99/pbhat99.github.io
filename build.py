@@ -21,7 +21,8 @@ def sync_all():
     # Defaults
     home_data = {
         "designation": "Senior Visual Effects Compositor @ DNEG",
-        "tagline": "CG is not just faking, its adding beautiful layers of lie on the ugly truth."
+        "tagline": "CG is not just faking, its adding beautiful layers of lie on the ugly truth.",
+        "overlayOpacity": 65
     }
     if os.path.exists(content_file):
         try:
@@ -35,12 +36,31 @@ def sync_all():
     designation = home_data.get("designation", "").strip()
     tagline = home_data.get("tagline", "").strip()
 
+    # Read overlay opacity from JSON (0 = full image display, 100 = no image display / solid background)
+    raw_opacity = home_data.get("overlayOpacity")
+    if raw_opacity is None:
+        raw_opacity = home_data.get("bgOverlayOpacity")
+    if raw_opacity is None:
+        raw_opacity = home_data.get("opacity")
+
+    try:
+        opacity_num = float(raw_opacity) if raw_opacity is not None else 65.0
+        # If entered as decimal 0.0 - 1.0 (and not exactly 0 or 1), convert to 0-100
+        if 0.0 < opacity_num < 1.0:
+            opacity_num = opacity_num * 100.0
+        opacity_num = max(0.0, min(100.0, opacity_num))
+    except (ValueError, TypeError):
+        opacity_num = 65.0
+
+    overlay_alpha = round(opacity_num / 100.0, 3)
+
     # Build conditional lines
     designation_html = f'<p class="hero-designation-plain">{designation}</p>' if designation else ""
     tagline_html = f'<p class="hero-tagline-plain">"{tagline}"</p>' if tagline else ""
 
     has_bg_image = os.path.exists(os.path.join(home_dir, "background.jpg"))
-    bg_style = f"background-image: linear-gradient(to bottom, rgba(14, 23, 51, 0.78), rgba(14, 23, 51, 0.92)), url('{home_dir}/background.jpg');" if has_bg_image else ""
+    bg_image_html = f'<div class="home-bg-image" style="background-image: url(\'{home_dir}/background.jpg\');"></div>' if has_bg_image else ''
+    bg_overlay_html = f'<div class="home-bg-overlay" style="opacity: {overlay_alpha};"></div>' if has_bg_image else ''
 
     index_html = f'''<!DOCTYPE html>
 <html lang="en">
@@ -96,12 +116,29 @@ def sync_all():
       align-items: center;
       justify-content: center;
       text-align: center;
+      padding-inline: 24px;
+      background-color: var(--bg-primary);
+      overflow: hidden;
+    }}
+
+    .home-bg-image {{
+      position: absolute;
+      inset: 0;
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
-      padding-inline: 24px;
+      z-index: 0;
+      pointer-events: none;
+    }}
+
+    /* Controlled Overlay Layer: opacity 0 = full image, 100 = no image */
+    .home-bg-overlay {{
+      position: absolute;
+      inset: 0;
       background-color: var(--bg-primary);
-      {bg_style}
+      z-index: 1;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
     }}
 
     #bg-canvas {{
@@ -110,7 +147,7 @@ def sync_all():
       width: 100vw;
       height: 100vh;
       pointer-events: none;
-      z-index: 1;
+      z-index: 2;
     }}
 
     /* Center Stage: Stacked 3 Lines, Perfectly Centered */
@@ -216,6 +253,9 @@ def sync_all():
 
   <!-- Full-Screen Interactive Viewport -->
   <main class="home-fullscreen-container">
+    {bg_image_html}
+    {bg_overlay_html}
+
     <!-- Interactive Canvas Background -->
     <canvas id="bg-canvas"></canvas>
 
@@ -235,6 +275,19 @@ def sync_all():
     import {{ initInteractiveBackground }} from './_engine/js/interactive-bg.js';
     import './_engine/js/main.js';
     initInteractiveBackground('bg-canvas');
+
+    // Live sync overlay opacity if content.json is edited
+    fetch('pages/01_home/content.json')
+      .then(r => r.json())
+      .then(d => {{
+        const raw = d.overlayOpacity ?? d.bgOverlayOpacity ?? d.opacity;
+        if (raw !== undefined) {{
+          let num = parseFloat(raw);
+          if (num > 1) num = num / 100;
+          const overlay = document.querySelector('.home-bg-overlay');
+          if (overlay) overlay.style.opacity = Math.max(0, Math.min(1, num));
+        }}
+      }}).catch(() => {{}});
   </script>
 </body>
 </html>
