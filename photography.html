@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Photography & 360 Panoramas | Pra - Motions</title>
+  <meta name="description" content="Landscape, Street Photography, and Interactive 360 Photosphere Panoramas by Prasannakumar T Bhat.">
+  <link rel="icon" type="image/png" href="assets/images/branding/logo.png">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/components.css">
+  <link rel="stylesheet" href="assets/css/responsive.css">
+</head>
+<body>
+
+  <!-- Site Navigation -->
+  <header class="site-header">
+    <div class="container-wide nav-wrapper">
+      <a href="index.html" class="brand-logo">
+        <img src="assets/images/branding/logo.png" alt="Pra Motions Logo" width="34" height="34" style="border-radius: 6px;">
+        <span>Pra - <span class="brand-badge">Motions</span></span>
+        <span class="brand-tag">VFX Artist</span>
+      </a>
+
+      <button class="mobile-nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="vfx-works.html">VFX Works</a></li>
+        <li><a href="ai-comfy.html">AI / Comfy</a></li>
+        <li><a href="photography.html" class="active">Photography</a></li>
+        <li><a href="about-me.html">About Me</a></li>
+        <li><a href="blog.html">Blog</a></li>
+        <li><a href="about-me.html#contact" class="btn btn-primary" style="padding: 6px 16px; font-size: 0.82rem;">Contact</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main style="padding-block: clamp(36px, 6vw, 72px);">
+    <div class="container-wide">
+      
+      <!-- Page Header -->
+      <div class="section-header">
+        <div class="section-label">Visual Exploration</div>
+        <h1 class="section-title">Photography & 360° Panoramas</h1>
+        <p class="section-desc">
+          Capturing natural vistas, environmental textures, and spherical photospheres used for on-set HDRI lighting references. Click any photograph to open the high-res Lightbox viewer.
+        </p>
+      </div>
+
+      <!-- Suggested Feature Preview: Interactive 360° Photosphere Viewer -->
+      <div class="panorama-card">
+        <div style="padding: 20px 24px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-cyan); text-transform: uppercase;">
+              Enhanced Replacement for Slow Google Map Iframes
+            </div>
+            <h2 style="font-size: 1.3rem; font-weight: 700; margin-top: 4px;">Interactive 360° Photosphere Panorama Viewer</h2>
+          </div>
+          <span style="font-size: 0.8rem; color: var(--text-muted); background: var(--bg-secondary); padding: 4px 10px; border-radius: 4px;">
+            Drag to Look Around &bull; Pinch to Zoom
+          </span>
+        </div>
+
+        <div id="panorama-viewer" class="panorama-viewport">
+          <div class="panorama-overlay-hint">
+            <span>&#10022;</span> Interactive 360° Space: Click & Drag to explore
+          </div>
+        </div>
+
+        <div style="padding: 16px 24px; font-size: 0.88rem; color: var(--text-muted); background: var(--bg-secondary);">
+          <strong>Spherical Photosphere:</strong> Pure client-side WebGL (via Pannellum). Unlike heavy Weebly Google Map iframes, this loads in milliseconds, supports mobile device gyro rotation, and displays spherical HDRI environment plates.
+        </div>
+      </div>
+
+      <!-- Photo Gallery with Lightbox -->
+      <h2 style="font-size: 1.5rem; font-weight: 700; margin-top: 48px; margin-bottom: 24px;">Still Photography Gallery (Lightbox Enabled)</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 24px;">
+
+        <!-- Photo 1 -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); overflow: hidden;">
+          <img src="assets/images/portfolio/buschlight.jpg" alt="Misty Western Ghats Ridge" style="width: 100%; aspect-ratio: 4/3; object-fit: cover;" data-lightbox data-caption="Misty Western Ghats Ridge - Atmospheric depth capture, Karnataka.">
+          <div style="padding: 14px;">
+            <h3 style="font-size: 1rem; font-weight: 700;">Misty Western Ghats Ridge</h3>
+            <span style="font-size: 0.8rem; color: var(--text-subtle);">Landscape &bull; Karnataka</span>
+          </div>
+        </div>
+
+        <!-- Photo 2 -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); overflow: hidden;">
+          <img src="assets/images/portfolio/pepsi-superbowl.jpg" alt="Coastal Twilight Horizon" style="width: 100%; aspect-ratio: 4/3; object-fit: cover;" data-lightbox data-caption="Coastal Twilight Horizon - High dynamic range sky exposure.">
+          <div style="padding: 14px;">
+            <h3 style="font-size: 1rem; font-weight: 700;">Coastal Twilight Horizon</h3>
+            <span style="font-size: 0.8rem; color: var(--text-subtle);">Street / Travel &bull; Gokarna</span>
+          </div>
+        </div>
+
+        <!-- Photo 3 -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); overflow: hidden;">
+          <img src="assets/images/portfolio/adidas.jpg" alt="Urban Architectural Perspectives" style="width: 100%; aspect-ratio: 4/3; object-fit: cover;" data-lightbox data-caption="Urban Architectural Perspectives - Texture and lighting reference.">
+          <div style="padding: 14px;">
+            <h3 style="font-size: 1rem; font-weight: 700;">Urban Perspectives</h3>
+            <span style="font-size: 0.8rem; color: var(--text-subtle);">Architecture &bull; Bangalore</span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <div class="container-wide">
+      <div class="footer-bottom">
+        <div>&copy; 2026 Prasannakumar T Bhat (pbhat99). All rights reserved.</div>
+        <div style="font-family: var(--font-mono); font-size: 0.78rem;">Hosted on GitHub Pages &bull; pbhat99.github.io</div>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { initPanoramaViewer } from './assets/js/panorama-360.js';
+    import './assets/js/main.js';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Initialize 360 viewer with sample photosphere
+      initPanoramaViewer('panorama-viewer', 'https://pannellum.org/images/alma.jpg');
+    });
+  </script>
+</body>
+</html>

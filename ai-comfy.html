@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI & ComfyUI Pipelines | Pra - Motions</title>
+  <meta name="description" content="AI Generative Pipelines, Custom ComfyUI Nodes, and VFX Inpainting Toolsets by Prasannakumar T Bhat.">
+  <link rel="icon" type="image/png" href="assets/images/branding/logo.png">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/components.css">
+  <link rel="stylesheet" href="assets/css/responsive.css">
+</head>
+<body>
+
+  <!-- Site Navigation -->
+  <header class="site-header">
+    <div class="container-wide nav-wrapper">
+      <a href="index.html" class="brand-logo">
+        <img src="assets/images/branding/logo.png" alt="Pra Motions Logo" width="34" height="34" style="border-radius: 6px;">
+        <span>Pra - <span class="brand-badge">Motions</span></span>
+        <span class="brand-tag">VFX Artist</span>
+      </a>
+
+      <button class="mobile-nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="vfx-works.html">VFX Works</a></li>
+        <li><a href="ai-comfy.html" class="active">AI / Comfy</a></li>
+        <li><a href="photography.html">Photography</a></li>
+        <li><a href="about-me.html">About Me</a></li>
+        <li><a href="blog.html">Blog</a></li>
+        <li><a href="about-me.html#contact" class="btn btn-primary" style="padding: 6px 16px; font-size: 0.82rem;">Contact</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main style="padding-block: clamp(36px, 6vw, 72px);">
+    <div class="container-wide">
+      
+      <!-- Page Header -->
+      <div class="section-header">
+        <div class="section-label">Generative AI & VFX Automation</div>
+        <h1 class="section-title">ComfyUI Pipelines & AI Toolsets</h1>
+        <p class="section-desc">
+          Bridging the gap between cutting-edge Diffusion models and film-grade visual effects pipelines. Custom ComfyUI node workflows, automated plate inpainting, and depth-guided dynamic relighting.
+        </p>
+      </div>
+
+      <!-- Before & After Wipe Slider: AI Inpainting Demo -->
+      <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: clamp(20px, 4vw, 36px); margin-bottom: 48px;">
+        <div style="margin-bottom: 20px;">
+          <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent-cyan); text-transform: uppercase;">Interactive Demo</span>
+          <h2 style="font-size: 1.4rem; font-weight: 700;">Plate Inpainting: Rig Removal with ControlNet + LaMa</h2>
+          <p style="font-size: 0.9rem; color: var(--text-muted);">
+            Slide to compare the raw live-action plate with tracking markers against the AI generative inpaint with preserved film grain.
+          </p>
+        </div>
+
+        <div style="max-width: 900px; margin-inline: auto;">
+          <div class="before-after-container">
+            <div class="ba-image-layer ba-before-layer">
+              <img src="assets/images/portfolio/goatbusters.jpg" alt="Raw Live Plate with Markers">
+              <span class="ba-badge ba-badge-before">Raw Plate + Tracking Markers</span>
+            </div>
+            <div class="ba-image-layer ba-after-layer">
+              <img src="assets/images/portfolio/hummer-ev.jpg" alt="AI Inpainted Clean Plate">
+              <span class="ba-badge ba-badge-after">AI Inpainted Clean Plate</span>
+            </div>
+            <div class="ba-handle">
+              <div class="ba-handle-circle">
+                <div class="ba-handle-arrows"><span>&#9664;</span><span>&#9654;</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Workflow Cards Grid -->
+      <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 24px;">Production ComfyUI Workflows</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: 28px;">
+
+        <!-- Workflow 1 -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 24px; display: flex; flex-direction: column;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-cyan); background: rgba(56,189,248,0.1); padding: 3px 8px; border-radius: 4px;">PLATE INPAINTING</span>
+            <span style="font-size: 0.78rem; color: var(--text-subtle);">ComfyUI + LaMa</span>
+          </div>
+          <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 10px;">Automated 4K Clean-Plate Generator</h3>
+          <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 16px; flex-grow: 1;">
+            Converts roto tracking markers and harness wires into seamless 4K background textures without seam artifacts or optical degradation.
+          </p>
+          <div style="background: var(--bg-secondary); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 16px; font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted);">
+            <div><strong>Inputs:</strong> Live Plate + Roto Matte</div>
+            <div><strong>Outputs:</strong> 16-bit Float EXR Clean Plate</div>
+          </div>
+          <a href="blog.html#comfyui-portable-custom-nodes" class="btn btn-secondary" style="font-size: 0.82rem; padding: 8px 16px;">
+            <span>Read Setup Tutorial</span>
+          </a>
+        </div>
+
+        <!-- Workflow 2 -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 24px; display: flex; flex-direction: column;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-violet); background: rgba(168,85,247,0.1); padding: 3px 8px; border-radius: 4px;">RELIGHTING / COMP</span>
+            <span style="font-size: 0.78rem; color: var(--text-subtle);">Marigold + IC-Light</span>
+          </div>
+          <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 10px;">Depth-Guided Shot Relighting</h3>
+          <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 16px; flex-grow: 1;">
+            Derives photoreal metric depth maps and surface normals directly from 2D footage to cast directional rim lights, specular glints, and volume fog.
+          </p>
+          <div style="background: var(--bg-secondary); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 16px; font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted);">
+            <div><strong>Nodes:</strong> Marigold Depth, IC-Light, VHS</div>
+            <div><strong>Outputs:</strong> Normal Pass + Rim Key Light</div>
+          </div>
+          <a href="blog.html#facefusion-windows-portable" class="btn btn-secondary" style="font-size: 0.82rem; padding: 8px 16px;">
+            <span>View Implementation</span>
+          </a>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <div class="container-wide">
+      <div class="footer-bottom">
+        <div>&copy; 2026 Prasannakumar T Bhat (pbhat99). All rights reserved.</div>
+        <div style="font-family: var(--font-mono); font-size: 0.78rem;">Hosted on GitHub Pages &bull; pbhat99.github.io</div>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="assets/js/main.js"></script>
+</body>
+</html>

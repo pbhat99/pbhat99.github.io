@@ -1,0 +1,27 @@
+[
+  {
+    "id": "photo-1",
+    "title": "Misty Western Ghats",
+    "location": "Karnataka, India",
+    "image": "assets/images/portfolio/buschlight.jpg",
+    "category": "Landscape",
+    "is360": false
+  },
+  {
+    "id": "photo-2",
+    "title": "Coastal Horizon Twilight",
+    "location": "Gokarna, India",
+    "image": "assets/images/portfolio/pepsi-superbowl.jpg",
+    "category": "Street",
+    "is360": false
+  },
+  {
+    "id": "pano-360-1",
+    "title": "360° Photosphere - Hilltop Overlook",
+    "location": "Yellapur, Karnataka",
+    "image": "https://pannellum.org/images/alma.jpg",
+    "category": "360 Photosphere",
+    "is360": true,
+    "description": "Interactive spherical 360-degree panorama. Click and drag or touch on mobile to look around in full 360x180 spherical space."
+  }
+]

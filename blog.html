@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Technical Blog & Guides | Pra - Motions</title>
+  <meta name="description" content="Technical Guides on ComfyUI portable setup, custom nodes, FaceFusion, and VFX scripting by Prasannakumar T Bhat.">
+  <link rel="icon" type="image/png" href="assets/images/branding/logo.png">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/components.css">
+  <link rel="stylesheet" href="assets/css/responsive.css">
+  <style>
+    pre {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: #38bdf8;
+      margin-block: 12px;
+    }
+    code {
+      font-family: var(--font-mono);
+      color: var(--accent-cyan);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Site Navigation -->
+  <header class="site-header">
+    <div class="container-wide nav-wrapper">
+      <a href="index.html" class="brand-logo">
+        <img src="assets/images/branding/logo.png" alt="Pra Motions Logo" width="34" height="34" style="border-radius: 6px;">
+        <span>Pra - <span class="brand-badge">Motions</span></span>
+        <span class="brand-tag">VFX Artist</span>
+      </a>
+
+      <button class="mobile-nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="vfx-works.html">VFX Works</a></li>
+        <li><a href="ai-comfy.html">AI / Comfy</a></li>
+        <li><a href="photography.html">Photography</a></li>
+        <li><a href="about-me.html">About Me</a></li>
+        <li><a href="blog.html" class="active">Blog</a></li>
+        <li><a href="about-me.html#contact" class="btn btn-primary" style="padding: 6px 16px; font-size: 0.82rem;">Contact</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main style="padding-block: clamp(36px, 6vw, 72px);">
+    <div class="container" style="max-width: 860px;">
+      
+      <!-- Page Header -->
+      <div class="section-header">
+        <div class="section-label">Engineering & AI Notes</div>
+        <h1 class="section-title">Technical Blog</h1>
+        <p class="section-desc">
+          Practical setups, automation scripts, and workflow optimization for visual effects and generative AI pipelines.
+        </p>
+      </div>
+
+      <!-- Article 1: ComfyUI Portable -->
+      <article id="comfyui-portable-custom-nodes" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: clamp(24px, 4vw, 36px); margin-bottom: 40px;">
+        <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px;">
+          <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent-cyan);">28 NOV 2025</span>
+          <span style="color: var(--text-subtle);">&bull;</span>
+          <span style="font-size: 0.8rem; color: var(--text-muted);">ComfyUI / Pipeline</span>
+        </div>
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 16px;">ComfyUI Portable with Production Custom Nodes</h2>
+        
+        <div style="font-size: 0.95rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 14px; line-height: 1.7;">
+          <p>
+            Download and extract the latest standalone portable release from GitHub:
+            <br>
+            <a href="https://github.com/comfyanonymous/ComfyUI/releases" target="_blank" rel="noopener" style="color: var(--accent-cyan); text-decoration: underline;">
+              https://github.com/comfyanonymous/ComfyUI/releases
+            </a>
+          </p>
+
+          <h3 style="font-size: 1.15rem; color: #fff; margin-top: 10px;">Essential Production Custom Nodes:</h3>
+          
+          <p>Navigate to <code>ComfyUI/custom_nodes/</code> and clone the essential toolsets:</p>
+
+          <div>
+            <strong>1. ComfyUI Manager:</strong>
+            <pre>git clone https://github.com/ltdrdata/ComfyUI-Manager comfyui-manager</pre>
+          </div>
+
+          <div>
+            <strong>2. RGThree (Workflow Routing & Mute Bypasses):</strong>
+            <pre>git clone https://github.com/rgthree/rgthree-comfy.git</pre>
+          </div>
+
+          <div>
+            <strong>3. Video Helper Suite (VHS):</strong>
+            <pre>git clone https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git</pre>
+          </div>
+
+          <div>
+            <strong>4. CrysTools (Resource Monitor HUD):</strong>
+            <pre>git clone https://github.com/crystian/comfyui-crystools.git</pre>
+          </div>
+
+          <div>
+            <strong>5. Procedural & Advanced Math Nodes:</strong>
+            <pre>git clone https://github.com/melMass/comfy_mtb.git
+git clone https://github.com/kijai/ComfyUI-KJNodes.git</pre>
+          </div>
+
+          <div>
+            <strong>6. Use Everywhere (Wireless Node Execution):</strong>
+            <pre>git clone https://github.com/chrisgoringe/cg-use-everywhere</pre>
+          </div>
+        </div>
+      </article>
+
+      <!-- Article 2: FaceFusion -->
+      <article id="facefusion-windows-portable" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: clamp(24px, 4vw, 36px);">
+        <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px;">
+          <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent-cyan);">18 JUN 2025</span>
+          <span style="color: var(--text-subtle);">&bull;</span>
+          <span style="font-size: 0.8rem; color: var(--text-muted);">Deep Learning / Tools</span>
+        </div>
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 16px;">Steps to Install FaceFusion 3 on Windows (Portable)</h2>
+        
+        <div style="font-size: 0.95rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 14px; line-height: 1.7;">
+          <p>
+            Clean portable setup using isolated Python virtual environments:
+          </p>
+          <pre>git clone https://github.com/FaceFusion/FaceFusion.git
+cd FaceFusion
+python -m venv myenv
+myenv\Scripts\activate
+python install.py --onnxruntime cuda</pre>
+          <p>
+            Launch the interactive GUI:
+          </p>
+          <pre>python facefusion.py run</pre>
+        </div>
+      </article>
+
+    </div>
+  </main>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <div class="container-wide">
+      <div class="footer-bottom">
+        <div>&copy; 2026 Prasannakumar T Bhat (pbhat99). All rights reserved.</div>
+        <div style="font-family: var(--font-mono); font-size: 0.78rem;">Hosted on GitHub Pages &bull; pbhat99.github.io</div>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="assets/js/main.js"></script>
+</body>
+</html>
