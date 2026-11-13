@@ -928,18 +928,17 @@ def sync_all():
         if location:
             contact_lines_html.append(f'<div class="contact-line-item"><span class="contact-line-label">Location:</span><span class="contact-line-val">{location}</span></div>')
 
-    # 2. Right-Aligned Contact Image (Optional: rendered only if explicitly configured in JSON and file exists)
-    contact_img_prop = (
-        about_data.get("contactImage")
-        or about_data.get("contact image")
-        or ""
-    ).strip()
+    # 2. Right-Aligned Contact Image (Auto-detected from folder: contact.jpg, contact.png, etc.; no JSON key needed)
     contact_img_html = ""
-    if contact_img_prop:
-        cand_p = contact_img_prop if os.path.exists(contact_img_prop) else os.path.join(about_dir, contact_img_prop)
-        if os.path.exists(cand_p):
-            contact_img_path = cand_p.replace("\\", "/")
-            contact_img_html = f'''
+    contact_img_path = None
+    for cand in ["contact.jpg", "contact.png", "contact.webp", "contact.jpeg"]:
+        p = os.path.join(about_dir, cand)
+        if os.path.exists(p):
+            contact_img_path = p.replace("\\", "/")
+            break
+
+    if contact_img_path:
+        contact_img_html = f'''
           <div class="contact-image-wrap">
             <img src="{contact_img_path}" alt="Contact Visual" class="contact-img" loading="lazy">
           </div>'''
