@@ -57,16 +57,39 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  position: relative;
 }
 
-/* Clean background canvas backdrop */
-body::before {
-  content: '';
+/* Global Fixed Site Background (Non-stretching, automatic cover without distortion) */
+.site-bg-image {
   position: fixed;
   inset: 0;
-  background-color: var(--bg-primary);
+  width: 100vw;
+  height: 100vh;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  z-index: 0;
   pointer-events: none;
-  z-index: -1;
+}
+
+/* Controlled Overlay Layer: opacity 0 = full image, 100 = solid background color */
+.site-bg-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--bg-primary);
+  z-index: 1;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.site-header,
+main,
+.site-footer {
+  position: relative;
+  z-index: 10;
 }
 
 img, video {

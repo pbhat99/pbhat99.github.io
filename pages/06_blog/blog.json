@@ -5,7 +5,7 @@
     "date": "2025-11-28",
     "category": "AI / Generative",
     "readTime": "6 min read",
-    "image": "assets/images/blog/blog_img_2.png",
+    "image": "pages/06_blog/posts/blog_img_2.png",
     "excerpt": "A battle-tested production guide to setting up a zero-bloat portable ComfyUI installation with essential custom nodes for VFX artists.",
     "content": "### ComfyUI Portable with Custom Nodes\n\nDownload and extract latest release:\n[https://github.com/comfyanonymous/ComfyUI/releases](https://github.com/comfyanonymous/ComfyUI/releases)\n\n#### Essential Production Nodes:\n1. **Comfy Manager**\n```bash\ngit clone https://github.com/ltdrdata/ComfyUI-Manager comfyui-manager\n```\n2. **RGThree Tools** (Quality-of-life UI and node routing)\n```bash\ngit clone https://github.com/rgthree/rgthree-comfy.git\n```\n3. **Video Helper Suite (VHS)** (Essential for video generation & frame sequences)\n```bash\ngit clone https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git\n```\n4. **CrysTools** (GPU & RAM monitoring HUD inside ComfyUI)\n```bash\ngit clone https://github.com/crystian/comfyui-crystools.git\n```\n5. **MTB & KJNodes** (Procedural math and advanced masking)\n```bash\ngit clone https://github.com/melMass/comfy_mtb.git\ngit clone https://github.com/kijai/ComfyUI-KJNodes.git\n```\n6. **Anything Everywhere** (Clean wireless node execution)\n```bash\ngit clone https://github.com/chrisgoringe/cg-use-everywhere\n```"
   },
@@ -15,7 +15,7 @@
     "date": "2025-06-18",
     "category": "AI / Deep Learning",
     "readTime": "4 min read",
-    "image": "assets/images/blog/blog_img_5.png",
+    "image": "pages/06_blog/posts/blog_img_5.png",
     "excerpt": "Complete installation walkthrough for FaceFusion next-generation face enhancement and swapping tool using isolated virtual environments.",
     "content": "### Installing Portable FaceFusion on Windows\n\nFollow these clean isolated steps:\n```bash\ngit clone https://github.com/FaceFusion/FaceFusion.git\ncd FaceFusion\npython -m venv myenv\nmyenv\\Scripts\\activate\npython install.py --onnxruntime cuda\n```\n\nRun the UI:\n```bash\npython facefusion.py run\n```"
   }

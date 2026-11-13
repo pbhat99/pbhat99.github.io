@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI & ComfyUI Pipelines | Pra - Motions</title>
   <meta name="description" content="AI Generative Pipelines, Custom ComfyUI Nodes, and VFX Inpainting Toolsets by Prasannakumar T Bhat.">
-  <link rel="icon" type="image/png" href="assets/images/branding/logo.png">
+  <link rel="icon" type="image/png" href="_engine/images/logo.png">
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,35 +14,24 @@
   <link rel="stylesheet" href="_engine/css/main.css">
   <link rel="stylesheet" href="_engine/css/components.css">
   <link rel="stylesheet" href="_engine/css/responsive.css">
-  <style>
-    .site-header { position: relative; background: transparent !important; border: none !important; box-shadow: none !important; }
-  </style>
 </head>
 <body>
+  <div class="site-bg-image" style="background-image: url('pages/01_home/background.jpg');"></div>
+  <div class="site-bg-overlay" style="opacity: 0.55;"></div>
 
-  <!-- Site Navigation -->
   <header class="site-header">
     <div class="container-wide nav-wrapper">
       <a href="index.html" class="brand-logo">
-        <img src="assets/images/branding/logo.png" alt="Pra Motions Logo" width="34" height="34" style="border-radius: 6px;">
+        <img src="_engine/images/logo.png" alt="Pra Motions Logo" width="34" height="34" style="border-radius: 6px;">
         <span>Pra - <span class="brand-badge">Motions</span></span>
-        
       </a>
 
       <button class="mobile-nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
-        <span></span>
-        <span></span>
-        <span></span>
+        <span></span><span></span><span></span>
       </button>
 
       <ul class="nav-links">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="vfx-works.html">VFX Works</a></li>
-        <li><a href="ai-comfy.html" class="active">AI / Comfy</a></li>
-        <li><a href="photography.html">Photography</a></li>
-        <li><a href="about-me.html">About Me</a></li>
-        <li><a href="blog.html">Blog</a></li>
-        <li><a href="about-me.html#contact" class="btn btn-primary" style="padding: 6px 16px; font-size: 0.82rem;">Contact</a></li>
+        <li><a href="index.html">Home</a></li><li><a href="vfx-works.html">VFX Works</a></li><li><a href="ai-comfy.html" class="active">AI / Comfy</a></li><li><a href="photography.html">Photography</a></li><li><a href="about-me.html">About Me</a></li><li><a href="blog.html">Blog</a></li>
       </ul>
     </div>
   </header>
@@ -62,21 +51,21 @@
       <!-- Production ComfyUI Workflow Architecture -->
       <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: clamp(20px, 4vw, 36px); margin-bottom: 48px;">
         <div style="margin-bottom: 20px;">
-          <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent-cyan); text-transform: uppercase;">Production Workflow Graph</span>
+          <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent-primary); text-transform: uppercase;">Production Workflow Graph</span>
           <h2 style="font-size: 1.4rem; font-weight: 700;">ComfyUI VFX Production Pipeline Graph</h2>
           <p style="font-size: 0.9rem; color: var(--text-muted);">
             Full interactive visual graph. Click image to open high-resolution zoom in Lightbox.
           </p>
         </div>
         <div style="border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border-subtle); background: #000;">
-          <img src="assets/images/blog/blog_img_2.png" alt="ComfyUI Production Pipeline Architecture" style="width: 100%; object-fit: contain; cursor: zoom-in;" data-lightbox data-caption="ComfyUI Master VFX Production Workflow Architecture">
+          <img src="pages/03_ai-comfy/workflows/comfyui-production-pipeline.png" alt="ComfyUI Production Pipeline Architecture" style="width: 100%; object-fit: contain; cursor: zoom-in;" data-lightbox data-caption="ComfyUI Master VFX Production Workflow Architecture">
         </div>
       </div>
 
       <!-- Before & After Wipe Slider: AI Inpainting Demo -->
       <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: clamp(20px, 4vw, 36px); margin-bottom: 48px;">
         <div style="margin-bottom: 20px;">
-          <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent-cyan); text-transform: uppercase;">Interactive Demo</span>
+          <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent-primary); text-transform: uppercase;">Interactive Demo</span>
           <h2 style="font-size: 1.4rem; font-weight: 700;">Plate Inpainting: Rig Removal with ControlNet + LaMa</h2>
           <p style="font-size: 0.9rem; color: var(--text-muted);">
             Slide to compare the raw live-action plate with tracking markers against the AI generative inpaint with preserved film grain.
@@ -86,11 +75,11 @@
         <div style="max-width: 900px; margin-inline: auto;">
           <div class="before-after-container">
             <div class="ba-image-layer ba-before-layer">
-              <img src="assets/images/portfolio/goatbusters.jpg" alt="Raw Live Plate with Markers">
+              <img src="pages/02_vfx-works/projects/goatbusters.jpg" alt="Raw Live Plate with Markers">
               <span class="ba-badge ba-badge-before">Raw Plate + Tracking Markers</span>
             </div>
             <div class="ba-image-layer ba-after-layer">
-              <img src="assets/images/portfolio/hummer-ev.jpg" alt="AI Inpainted Clean Plate">
+              <img src="pages/02_vfx-works/projects/hummer-ev.jpg" alt="AI Inpainted Clean Plate">
               <span class="ba-badge ba-badge-after">AI Inpainted Clean Plate</span>
             </div>
             <div class="ba-handle">
@@ -109,7 +98,7 @@
         <!-- Workflow 1 -->
         <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 24px; display: flex; flex-direction: column;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-cyan); background: rgba(56,189,248,0.1); padding: 3px 8px; border-radius: 4px;">PLATE INPAINTING</span>
+            <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-primary); background: rgba(249,134,3,0.1); padding: 3px 8px; border-radius: 4px;">PLATE INPAINTING</span>
             <span style="font-size: 0.78rem; color: var(--text-subtle);">ComfyUI + LaMa</span>
           </div>
           <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 10px;">Automated 4K Clean-Plate Generator</h3>
@@ -128,7 +117,7 @@
         <!-- Workflow 2 -->
         <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 24px; display: flex; flex-direction: column;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-violet); background: rgba(168,85,247,0.1); padding: 3px 8px; border-radius: 4px;">RELIGHTING / COMP</span>
+            <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-hover); background: rgba(255,155,38,0.1); padding: 3px 8px; border-radius: 4px;">RELIGHTING / COMP</span>
             <span style="font-size: 0.78rem; color: var(--text-subtle);">Marigold + IC-Light</span>
           </div>
           <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 10px;">Depth-Guided Shot Relighting</h3>
@@ -149,7 +138,6 @@
     </div>
   </main>
 
-  <!-- Site Footer -->
   <footer class="site-footer">
     <div class="container-wide">
       <div class="footer-bottom">

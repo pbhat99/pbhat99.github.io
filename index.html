@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Prasannakumar T Bhat</title>
-  <meta name="description" content="Prasannakumar T Bhat - Senior Visual Effects Compositor @ DNEG">
-  <link rel="icon" type="image/png" href="assets/images/branding/logo.png">
+  <meta name="description" content="Prasannakumar T Bhat - Visual Effects Compositor">
+  <link rel="icon" type="image/png" href="_engine/images/logo.png">
   
   <!-- Ubuntu Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -57,20 +57,25 @@
       overflow: hidden;
     }
 
+    /* Non-stretching, automatic proportional fit */
     .home-bg-image {
       position: absolute;
       inset: 0;
+      width: 100%;
+      height: 100%;
       background-size: cover;
-      background-position: center;
+      background-position: center center;
       background-repeat: no-repeat;
       z-index: 0;
       pointer-events: none;
     }
 
-    /* Controlled Overlay Layer: opacity 0 = full image, 100 = no image */
+    /* Controlled Overlay Layer: opacity 0 = full image, 100 = solid background */
     .home-bg-overlay {
       position: absolute;
       inset: 0;
+      width: 100%;
+      height: 100%;
       background-color: var(--bg-primary);
       z-index: 1;
       pointer-events: none;
@@ -163,11 +168,10 @@
 </head>
 <body>
 
-  <!-- Navigation (Transparent, No VFX Pill) -->
   <header class="site-header">
     <div class="container-wide nav-wrapper">
       <a href="index.html" class="brand-logo">
-        <img src="assets/images/branding/logo.png" alt="Pra Motions Logo" width="34" height="34" style="border-radius: 6px;">
+        <img src="_engine/images/logo.png" alt="Pra Motions Logo" width="34" height="34" style="border-radius: 6px;">
         <span>Pra - <span class="brand-badge">Motions</span></span>
       </a>
 
@@ -176,13 +180,7 @@
       </button>
 
       <ul class="nav-links">
-        <li><a href="index.html" class="active">Home</a></li>
-        <li><a href="vfx-works.html">VFX Works</a></li>
-        <li><a href="ai-comfy.html">AI / Comfy</a></li>
-        <li><a href="photography.html">Photography</a></li>
-        <li><a href="about-me.html">About Me</a></li>
-        <li><a href="blog.html">Blog</a></li>
-        <li><a href="about-me.html#contact" class="btn btn-primary" style="padding: 6px 16px; font-size: 0.82rem; font-weight: 500;">Contact</a></li>
+        <li><a href="index.html" class="active">Home</a></li><li><a href="vfx-works.html">VFX Works</a></li><li><a href="ai-comfy.html">AI / Comfy</a></li><li><a href="photography.html">Photography</a></li><li><a href="about-me.html">About Me</a></li><li><a href="blog.html">Blog</a></li>
       </ul>
     </div>
   </header>
@@ -190,7 +188,7 @@
   <!-- Full-Screen Interactive Viewport -->
   <main class="home-fullscreen-container">
     <div class="home-bg-image" style="background-image: url('pages/01_home/background.jpg');"></div>
-    <div class="home-bg-overlay" style="opacity: 0.6;"></div>
+    <div class="home-bg-overlay" style="opacity: 0.55;"></div>
 
     <!-- Interactive Canvas Background -->
     <canvas id="bg-canvas"></canvas>
@@ -198,7 +196,7 @@
     <!-- Center Stage: 3 Lines Centered + About Button -->
     <div class="home-center-stage">
       <h1 class="hero-name-main">Prasannakumar T Bhat</h1>
-      <p class="hero-designation-plain">Senior Visual Effects Compositor @ DNEG</p>
+      <p class="hero-designation-plain">Visual Effects Compositor</p>
       <p class="hero-tagline-plain">"CG is not just faking, its adding beautiful layers of lie on the ugly truth."</p>
 
       <div class="hero-about-wrap">

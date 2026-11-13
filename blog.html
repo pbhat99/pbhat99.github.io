@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Technical Blog & Guides | Pra - Motions</title>
   <meta name="description" content="Technical Guides on ComfyUI portable setup, custom nodes, FaceFusion, and VFX scripting by Prasannakumar T Bhat.">
-  <link rel="icon" type="image/png" href="assets/images/branding/logo.png">
+  <link rel="icon" type="image/png" href="_engine/images/logo.png">
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,50 +16,39 @@
   <link rel="stylesheet" href="_engine/css/responsive.css">
   <style>
     pre {
-      background: var(--bg-primary);
+      background: var(--bg-secondary);
       border: 1px solid var(--border-subtle);
       border-radius: var(--radius-sm);
       padding: 16px;
       overflow-x: auto;
       font-family: var(--font-mono);
       font-size: 0.85rem;
-      color: #38bdf8;
+      color: var(--accent-primary);
       margin-block: 12px;
     }
     code {
       font-family: var(--font-mono);
-      color: var(--accent-cyan);
+      color: var(--accent-hover);
     }
-  </style>
-  <style>
-    .site-header { position: relative; background: transparent !important; border: none !important; box-shadow: none !important; }
   </style>
 </head>
 <body>
+  <div class="site-bg-image" style="background-image: url('pages/01_home/background.jpg');"></div>
+  <div class="site-bg-overlay" style="opacity: 0.55;"></div>
 
-  <!-- Site Navigation -->
   <header class="site-header">
     <div class="container-wide nav-wrapper">
       <a href="index.html" class="brand-logo">
-        <img src="assets/images/branding/logo.png" alt="Pra Motions Logo" width="34" height="34" style="border-radius: 6px;">
+        <img src="_engine/images/logo.png" alt="Pra Motions Logo" width="34" height="34" style="border-radius: 6px;">
         <span>Pra - <span class="brand-badge">Motions</span></span>
-        
       </a>
 
       <button class="mobile-nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
-        <span></span>
-        <span></span>
-        <span></span>
+        <span></span><span></span><span></span>
       </button>
 
       <ul class="nav-links">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="vfx-works.html">VFX Works</a></li>
-        <li><a href="ai-comfy.html">AI / Comfy</a></li>
-        <li><a href="photography.html">Photography</a></li>
-        <li><a href="about-me.html">About Me</a></li>
-        <li><a href="blog.html" class="active">Blog</a></li>
-        <li><a href="about-me.html#contact" class="btn btn-primary" style="padding: 6px 16px; font-size: 0.82rem;">Contact</a></li>
+        <li><a href="index.html">Home</a></li><li><a href="vfx-works.html">VFX Works</a></li><li><a href="ai-comfy.html">AI / Comfy</a></li><li><a href="photography.html">Photography</a></li><li><a href="about-me.html">About Me</a></li><li><a href="blog.html" class="active">Blog</a></li>
       </ul>
     </div>
   </header>
@@ -79,21 +68,21 @@
       <!-- Article 1: ComfyUI Portable -->
       <article id="comfyui-portable-custom-nodes" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: clamp(24px, 4vw, 36px); margin-bottom: 40px;">
         <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px;">
-          <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent-cyan);">28 NOV 2025</span>
+          <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent-primary);">28 NOV 2025</span>
           <span style="color: var(--text-subtle);">&bull;</span>
           <span style="font-size: 0.8rem; color: var(--text-muted);">ComfyUI / Pipeline</span>
         </div>
         <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 16px;">ComfyUI Portable with Production Custom Nodes</h2>
         
         <div style="margin-bottom: 20px; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border-subtle);">
-          <img src="assets/images/blog/blog_img_2.png" alt="ComfyUI Node Graph Screenshot" style="width: 100%; object-fit: contain; background: #000;" data-lightbox data-caption="ComfyUI Production Node Graph Pipeline">
+          <img src="pages/06_blog/posts/blog_img_2.png" alt="ComfyUI Node Graph Screenshot" style="width: 100%; object-fit: contain; background: #000;" data-lightbox data-caption="ComfyUI Production Node Graph Pipeline">
         </div>
 
         <div style="font-size: 0.95rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 14px; line-height: 1.7;">
           <p>
             Download and extract the latest standalone portable release from GitHub:
             <br>
-            <a href="https://github.com/comfyanonymous/ComfyUI/releases" target="_blank" rel="noopener" style="color: var(--accent-cyan); text-decoration: underline;">
+            <a href="https://github.com/comfyanonymous/ComfyUI/releases" target="_blank" rel="noopener" style="color: var(--accent-primary); text-decoration: underline;">
               https://github.com/comfyanonymous/ComfyUI/releases
             </a>
           </p>
@@ -138,14 +127,14 @@ git clone https://github.com/kijai/ComfyUI-KJNodes.git</pre>
       <!-- Article 2: FaceFusion -->
       <article id="facefusion-windows-portable" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: clamp(24px, 4vw, 36px);">
         <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px;">
-          <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent-cyan);">18 JUN 2025</span>
+          <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent-primary);">18 JUN 2025</span>
           <span style="color: var(--text-subtle);">&bull;</span>
           <span style="font-size: 0.8rem; color: var(--text-muted);">Deep Learning / Tools</span>
         </div>
         <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 16px;">Steps to Install FaceFusion 3 on Windows (Portable)</h2>
         
         <div style="margin-bottom: 20px; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border-subtle);">
-          <img src="assets/images/blog/blog_img_5.png" alt="FaceFusion Installation UI" style="width: 100%; object-fit: contain; background: #000;" data-lightbox data-caption="FaceFusion Portable Interface">
+          <img src="pages/06_blog/posts/blog_img_5.png" alt="FaceFusion Installation UI" style="width: 100%; object-fit: contain; background: #000;" data-lightbox data-caption="FaceFusion Portable Interface">
         </div>
 
         <div style="font-size: 0.95rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 14px; line-height: 1.7;">
@@ -167,7 +156,6 @@ python install.py --onnxruntime cuda</pre>
     </div>
   </main>
 
-  <!-- Site Footer -->
   <footer class="site-footer">
     <div class="container-wide">
       <div class="footer-bottom">

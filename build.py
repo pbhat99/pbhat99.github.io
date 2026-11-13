@@ -9,43 +9,53 @@ def format_title_from_filename(filename):
     name = re.sub(r'\s+', ' ', name).strip()
     return name.title()
 
-def sync_all():
-    print("=== Syncing site with #0e1733 BG, #f98603 elements & 3-line centered Home ===")
-
-    # --------------------------------------------------------------------------
-    # 1. SYNC HOME PAGE (pages/01_home)
-    # --------------------------------------------------------------------------
-    home_dir = "pages/01_home"
-    content_file = os.path.join(home_dir, "content.json")
+def get_page_background_and_overlay(page_dir):
+    """
+    Finds the background image for a page folder, falling back to pages/01_home/background.jpg.
+    Also resolves overlayOpacity (0 = full image display, 100 = solid dark #0e1733), falling back to home's setting.
+    """
+    bg_candidates = ["background.jpg", "background.jpeg", "background.png", "background.webp"]
+    resolved_bg = None
     
-    # Defaults
-    home_data = {
-        "designation": "Senior Visual Effects Compositor @ DNEG",
-        "tagline": "CG is not just faking, its adding beautiful layers of lie on the ugly truth.",
-        "overlayOpacity": 65
-    }
-    if os.path.exists(content_file):
+    # 1. Look in page_dir first
+    for cand in bg_candidates:
+        path = os.path.join(page_dir, cand)
+        if os.path.exists(path):
+            resolved_bg = path.replace("\\", "/")
+            break
+            
+    # 2. Fall back to pages/01_home
+    if not resolved_bg:
+        home_dir = "pages/01_home"
+        for cand in bg_candidates:
+            path = os.path.join(home_dir, cand)
+            if os.path.exists(path):
+                resolved_bg = path.replace("\\", "/")
+                break
+
+    # 3. Resolve overlayOpacity
+    raw_opacity = None
+    page_content = os.path.join(page_dir, "content.json")
+    if os.path.exists(page_content):
         try:
-            with open(content_file, "r", encoding="utf-8") as f:
-                home_data.update(json.load(f))
-        except Exception as e:
-            print(f"Notice reading {content_file}: {e}")
+            with open(page_content, "r", encoding="utf-8") as f:
+                d = json.load(f)
+                raw_opacity = d.get("overlayOpacity") or d.get("bgOverlayOpacity") or d.get("opacity")
+        except Exception:
+            pass
 
-    # Fixed Name (1st line)
-    fixed_name = "Prasannakumar T Bhat"
-    designation = home_data.get("designation", "").strip()
-    tagline = home_data.get("tagline", "").strip()
-
-    # Read overlay opacity from JSON (0 = full image display, 100 = no image display / solid background)
-    raw_opacity = home_data.get("overlayOpacity")
     if raw_opacity is None:
-        raw_opacity = home_data.get("bgOverlayOpacity")
-    if raw_opacity is None:
-        raw_opacity = home_data.get("opacity")
+        home_content = "pages/01_home/content.json"
+        if os.path.exists(home_content):
+            try:
+                with open(home_content, "r", encoding="utf-8") as f:
+                    d = json.load(f)
+                    raw_opacity = d.get("overlayOpacity") or d.get("bgOverlayOpacity") or d.get("opacity")
+            except Exception:
+                pass
 
     try:
         opacity_num = float(raw_opacity) if raw_opacity is not None else 65.0
-        # If entered as decimal 0.0 - 1.0 (and not exactly 0 or 1), convert to 0-100
         if 0.0 < opacity_num < 1.0:
             opacity_num = opacity_num * 100.0
         opacity_num = max(0.0, min(100.0, opacity_num))
@@ -54,13 +64,78 @@ def sync_all():
 
     overlay_alpha = round(opacity_num / 100.0, 3)
 
-    # Build conditional lines
+    bg_img_html = f'<div class="site-bg-image" style="background-image: url(\'{resolved_bg}\');"></div>' if resolved_bg else ''
+    bg_overlay_html = f'<div class="site-bg-overlay" style="opacity: {overlay_alpha};"></div>' if resolved_bg else ''
+
+    return bg_img_html, bg_overlay_html, resolved_bg, overlay_alpha
+
+def generate_nav_html(active_page="home"):
+    """
+    Renders the unified transparent header with NO contact button.
+    """
+    nav_items = [
+        ("index.html", "home", "Home"),
+        ("vfx-works.html", "vfx-works", "VFX Works"),
+        ("ai-comfy.html", "ai-comfy", "AI / Comfy"),
+        ("photography.html", "photography", "Photography"),
+        ("about-me.html", "about-me", "About Me"),
+        ("blog.html", "blog", "Blog"),
+    ]
+
+    links_html = []
+    for href, key, label in nav_items:
+        active_cls = ' class="active"' if key == active_page else ''
+        links_html.append(f'<li><a href="{href}"{active_cls}>{label}</a></li>')
+
+    return f'''  <header class="site-header">
+    <div class="container-wide nav-wrapper">
+      <a href="index.html" class="brand-logo">
+        <img src="_engine/images/logo.png" alt="Pra Motions Logo" width="34" height="34" style="border-radius: 6px;">
+        <span>Pra - <span class="brand-badge">Motions</span></span>
+      </a>
+
+      <button class="mobile-nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+
+      <ul class="nav-links">
+        {"".join(links_html)}
+      </ul>
+    </div>
+  </header>'''
+
+def sync_all():
+    print("=== Syncing site (seamless background fallback, no stretch/squeeze, no contact in nav) ===")
+
+    # --------------------------------------------------------------------------
+    # 1. SYNC HOME PAGE (pages/01_home)
+    # --------------------------------------------------------------------------
+    home_dir = "pages/01_home"
+    content_file = os.path.join(home_dir, "content.json")
+    
+    home_data = {
+        "designation": "Senior Visual Effects Compositor @ DNEG",
+        "tagline": "CG is not just faking, its adding beautiful layers of lie on the ugly truth.",
+        "overlayOpacity": 60
+    }
+    if os.path.exists(content_file):
+        try:
+            with open(content_file, "r", encoding="utf-8") as f:
+                home_data.update(json.load(f))
+        except Exception as e:
+            print(f"Notice reading {content_file}: {e}")
+
+    fixed_name = "Prasannakumar T Bhat"
+    designation = home_data.get("designation", "").strip()
+    tagline = home_data.get("tagline", "").strip()
+
+    _, _, home_bg_path, home_alpha = get_page_background_and_overlay(home_dir)
+
     designation_html = f'<p class="hero-designation-plain">{designation}</p>' if designation else ""
     tagline_html = f'<p class="hero-tagline-plain">"{tagline}"</p>' if tagline else ""
 
-    has_bg_image = os.path.exists(os.path.join(home_dir, "background.jpg"))
-    bg_image_html = f'<div class="home-bg-image" style="background-image: url(\'{home_dir}/background.jpg\');"></div>' if has_bg_image else ''
-    bg_overlay_html = f'<div class="home-bg-overlay" style="opacity: {overlay_alpha};"></div>' if has_bg_image else ''
+    home_bg_img_html = f'<div class="home-bg-image" style="background-image: url(\'{home_bg_path}\');"></div>' if home_bg_path else ''
+    home_bg_overlay_html = f'<div class="home-bg-overlay" style="opacity: {home_alpha};"></div>' if home_bg_path else ''
 
     index_html = f'''<!DOCTYPE html>
 <html lang="en">
@@ -69,7 +144,7 @@ def sync_all():
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{fixed_name}</title>
   <meta name="description" content="{fixed_name} - {designation}">
-  <link rel="icon" type="image/png" href="assets/images/branding/logo.png">
+  <link rel="icon" type="image/png" href="_engine/images/logo.png">
   
   <!-- Ubuntu Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -121,20 +196,25 @@ def sync_all():
       overflow: hidden;
     }}
 
+    /* Non-stretching, automatic proportional fit */
     .home-bg-image {{
       position: absolute;
       inset: 0;
+      width: 100%;
+      height: 100%;
       background-size: cover;
-      background-position: center;
+      background-position: center center;
       background-repeat: no-repeat;
       z-index: 0;
       pointer-events: none;
     }}
 
-    /* Controlled Overlay Layer: opacity 0 = full image, 100 = no image */
+    /* Controlled Overlay Layer: opacity 0 = full image, 100 = solid background */
     .home-bg-overlay {{
       position: absolute;
       inset: 0;
+      width: 100%;
+      height: 100%;
       background-color: var(--bg-primary);
       z-index: 1;
       pointer-events: none;
@@ -227,34 +307,12 @@ def sync_all():
 </head>
 <body>
 
-  <!-- Navigation (Transparent, No VFX Pill) -->
-  <header class="site-header">
-    <div class="container-wide nav-wrapper">
-      <a href="index.html" class="brand-logo">
-        <img src="assets/images/branding/logo.png" alt="Pra Motions Logo" width="34" height="34" style="border-radius: 6px;">
-        <span>Pra - <span class="brand-badge">Motions</span></span>
-      </a>
-
-      <button class="mobile-nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
-        <span></span><span></span><span></span>
-      </button>
-
-      <ul class="nav-links">
-        <li><a href="index.html" class="active">Home</a></li>
-        <li><a href="vfx-works.html">VFX Works</a></li>
-        <li><a href="ai-comfy.html">AI / Comfy</a></li>
-        <li><a href="photography.html">Photography</a></li>
-        <li><a href="about-me.html">About Me</a></li>
-        <li><a href="blog.html">Blog</a></li>
-        <li><a href="about-me.html#contact" class="btn btn-primary" style="padding: 6px 16px; font-size: 0.82rem; font-weight: 500;">Contact</a></li>
-      </ul>
-    </div>
-  </header>
+{generate_nav_html("home")}
 
   <!-- Full-Screen Interactive Viewport -->
   <main class="home-fullscreen-container">
-    {bg_image_html}
-    {bg_overlay_html}
+    {home_bg_img_html}
+    {home_bg_overlay_html}
 
     <!-- Interactive Canvas Background -->
     <canvas id="bg-canvas"></canvas>
@@ -294,13 +352,16 @@ def sync_all():
 '''
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(index_html)
-    print("  -> Updated index.html (Line 1 Name, Line 2 Designation, Line 3 Tagline, only About button, transparent navbar, no VFX pill)")
+    print("  -> Updated index.html (Clean Nav, No Contact Button, Proportional Background)")
 
     # --------------------------------------------------------------------------
-    # 2. SYNC VFX WORKS (pages/02_vfx-works/projects)
+    # 2. SYNC VFX WORKS (pages/02_vfx-works)
     # --------------------------------------------------------------------------
-    projects_dir = "pages/02_vfx-works/projects"
-    projects_json_path = "pages/02_vfx-works/projects.json"
+    vfx_dir = "pages/02_vfx-works"
+    projects_dir = os.path.join(vfx_dir, "projects")
+    projects_json_path = os.path.join(vfx_dir, "projects.json")
+
+    vfx_bg_img_html, vfx_bg_overlay_html, _, _ = get_page_background_and_overlay(vfx_dir)
 
     existing_meta = {}
     if os.path.exists(projects_json_path):
@@ -313,7 +374,7 @@ def sync_all():
             pass
 
     valid_exts = {'.jpg', '.jpeg', '.png', '.webp', '.avif', '.gif'}
-    project_files = sorted([f for f in os.listdir(projects_dir) if os.path.splitext(f)[1].lower() in valid_exts])
+    project_files = sorted([f for f in os.listdir(projects_dir) if os.path.splitext(f)[1].lower() in valid_exts]) if os.path.exists(projects_dir) else []
     
     updated_projects = []
     film_keywords = ['film', 'sandalwood', 'movie', 'anjani', 'kataka', 'samhara', 'ricky', 'badmaash', 'sihir', 'bengaluru', 'maruti', 'eradu', 'ajaramara', 'java', 'uddishya', 'mantram', 'double engine', 'patibeku', 'samyuktha', 'kamarottu', 'shankanaada', 'abhisaarike']
@@ -321,7 +382,7 @@ def sync_all():
 
     for p_file in project_files:
         clean_name = format_title_from_filename(p_file)
-        file_path = f"{projects_dir}/{p_file}"
+        file_path = f"{projects_dir}/{p_file}".replace("\\", "/")
         meta = existing_meta.get(p_file) or existing_meta.get(clean_name.lower().replace(' ', '-'))
         
         category = "commercials"
@@ -421,41 +482,17 @@ def sync_all():
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>VFX Works | Pra - Motions</title>
-  <link rel="icon" type="image/png" href="assets/images/branding/logo.png">
+  <link rel="icon" type="image/png" href="_engine/images/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,700&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="_engine/css/main.css">
   <link rel="stylesheet" href="_engine/css/components.css">
   <link rel="stylesheet" href="_engine/css/responsive.css">
-  <style>
-    .site-header {{
-      position: relative;
-      background: transparent !important;
-      border: none !important;
-      box-shadow: none !important;
-    }}
-  </style>
 </head>
 <body>
-  <header class="site-header">
-    <div class="container-wide nav-wrapper">
-      <a href="index.html" class="brand-logo">
-        <img src="assets/images/branding/logo.png" alt="Pra Motions Logo" width="34" height="34" style="border-radius: 6px;">
-        <span>Pra - <span class="brand-badge">Motions</span></span>
-      </a>
-      <button class="mobile-nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
-        <span></span><span></span><span></span>
-      </button>
-      <ul class="nav-links">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="vfx-works.html" class="active">VFX Works</a></li>
-        <li><a href="ai-comfy.html">AI / Comfy</a></li>
-        <li><a href="photography.html">Photography</a></li>
-        <li><a href="about-me.html">About Me</a></li>
-        <li><a href="blog.html">Blog</a></li>
-        <li><a href="about-me.html#contact" class="btn btn-primary" style="padding: 6px 16px; font-size: 0.82rem; font-weight: 500;">Contact</a></li>
-      </ul>
-    </div>
-  </header>
+  {vfx_bg_img_html}
+  {vfx_bg_overlay_html}
+
+{generate_nav_html("vfx-works")}
 
   <main style="padding-block: clamp(24px, 4vw, 56px);">
     <div class="container-wide">
@@ -495,19 +532,22 @@ def sync_all():
 '''
     with open("vfx-works.html", "w", encoding="utf-8") as f:
         f.write(vfx_html)
-    print(f"  -> Updated vfx-works.html with {len(updated_projects)} project cards")
+    print(f"  -> Updated vfx-works.html ({len(updated_projects)} projects, seamless fallback background)")
 
     # --------------------------------------------------------------------------
-    # 3. SYNC PHOTOGRAPHY, ABOUT ME, AI/COMFY & BLOG
+    # 3. SYNC PHOTOGRAPHY (pages/04_photography)
     # --------------------------------------------------------------------------
-    photo_dir = "pages/04_photography/gallery"
-    photo_files = sorted([f for f in os.listdir(photo_dir) if os.path.splitext(f)[1].lower() in valid_exts]) if os.path.exists(photo_dir) else []
+    photo_dir = "pages/04_photography"
+    gallery_dir = os.path.join(photo_dir, "gallery")
+    photo_bg_img_html, photo_bg_overlay_html, _, _ = get_page_background_and_overlay(photo_dir)
+
+    photo_files = sorted([f for f in os.listdir(gallery_dir) if os.path.splitext(f)[1].lower() in valid_exts]) if os.path.exists(gallery_dir) else []
     photo_cards_html = []
     for pf in photo_files:
         title = format_title_from_filename(pf)
         photo_cards_html.append(f'''
         <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); overflow: hidden;">
-          <img src="{photo_dir}/{pf}" alt="{title}" style="width: 100%; aspect-ratio: 4/3; object-fit: cover;" data-lightbox data-caption="{title}">
+          <img src="{gallery_dir}/{pf}" alt="{title}" style="width: 100%; aspect-ratio: 4/3; object-fit: cover;" data-lightbox data-caption="{title}">
           <div style="padding: 14px;">
             <h3 style="font-size: 1rem; font-weight: 700;">{title}</h3>
             <span style="font-size: 0.8rem; color: var(--text-subtle);">Photography Still</span>
@@ -520,41 +560,17 @@ def sync_all():
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Photography & 360 Panoramas | Pra - Motions</title>
-  <link rel="icon" type="image/png" href="assets/images/branding/logo.png">
+  <link rel="icon" type="image/png" href="_engine/images/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,700&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="_engine/css/main.css">
   <link rel="stylesheet" href="_engine/css/components.css">
   <link rel="stylesheet" href="_engine/css/responsive.css">
-  <style>
-    .site-header {{
-      position: relative;
-      background: transparent !important;
-      border: none !important;
-      box-shadow: none !important;
-    }}
-  </style>
 </head>
 <body>
-  <header class="site-header">
-    <div class="container-wide nav-wrapper">
-      <a href="index.html" class="brand-logo">
-        <img src="assets/images/branding/logo.png" alt="Pra Motions Logo" width="34" height="34" style="border-radius: 6px;">
-        <span>Pra - <span class="brand-badge">Motions</span></span>
-      </a>
-      <button class="mobile-nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
-        <span></span><span></span><span></span>
-      </button>
-      <ul class="nav-links">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="vfx-works.html">VFX Works</a></li>
-        <li><a href="ai-comfy.html">AI / Comfy</a></li>
-        <li><a href="photography.html" class="active">Photography</a></li>
-        <li><a href="about-me.html">About Me</a></li>
-        <li><a href="blog.html">Blog</a></li>
-        <li><a href="about-me.html#contact" class="btn btn-primary" style="padding: 6px 16px; font-size: 0.82rem; font-weight: 500;">Contact</a></li>
-      </ul>
-    </div>
-  </header>
+  {photo_bg_img_html}
+  {photo_bg_overlay_html}
+
+{generate_nav_html("photography")}
 
   <main style="padding-block: clamp(24px, 4vw, 56px);">
     <div class="container-wide">
@@ -607,11 +623,16 @@ def sync_all():
 '''
     with open("photography.html", "w", encoding="utf-8") as f:
         f.write(photography_html)
+    print("  -> Updated photography.html (360 Viewer, Stills Gallery, fallback background)")
 
-    # About Me
+    # --------------------------------------------------------------------------
+    # 4. SYNC ABOUT ME (pages/05_about-me)
+    # --------------------------------------------------------------------------
     about_dir = "pages/05_about-me"
-    profile_img = f"{about_dir}/profile.jpg" if os.path.exists(f"{about_dir}/profile.jpg") else "assets/images/branding/about_me_2.jpg"
-    banner_img = f"{about_dir}/banner.png" if os.path.exists(f"{about_dir}/banner.png") else "assets/images/branding/dneg-banner.png"
+    about_bg_img_html, about_bg_overlay_html, _, _ = get_page_background_and_overlay(about_dir)
+
+    profile_img = f"{about_dir}/profile.jpg" if os.path.exists(f"{about_dir}/profile.jpg") else "_engine/images/logo.png"
+    banner_img = f"{about_dir}/banner.png" if os.path.exists(f"{about_dir}/banner.png") else ""
 
     about_html = f'''<!DOCTYPE html>
 <html lang="en">
@@ -619,48 +640,24 @@ def sync_all():
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>About Me | Prasannakumar T Bhat</title>
-  <link rel="icon" type="image/png" href="assets/images/branding/logo.png">
+  <link rel="icon" type="image/png" href="_engine/images/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,700&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="_engine/css/main.css">
   <link rel="stylesheet" href="_engine/css/components.css">
   <link rel="stylesheet" href="_engine/css/responsive.css">
-  <style>
-    .site-header {{
-      position: relative;
-      background: transparent !important;
-      border: none !important;
-      box-shadow: none !important;
-    }}
-  </style>
 </head>
 <body>
-  <header class="site-header">
-    <div class="container-wide nav-wrapper">
-      <a href="index.html" class="brand-logo">
-        <img src="assets/images/branding/logo.png" alt="Pra Motions Logo" width="34" height="34" style="border-radius: 6px;">
-        <span>Pra - <span class="brand-badge">Motions</span></span>
-      </a>
-      <button class="mobile-nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
-        <span></span><span></span><span></span>
-      </button>
-      <ul class="nav-links">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="vfx-works.html">VFX Works</a></li>
-        <li><a href="ai-comfy.html">AI / Comfy</a></li>
-        <li><a href="photography.html">Photography</a></li>
-        <li><a href="about-me.html" class="active">About Me</a></li>
-        <li><a href="blog.html">Blog</a></li>
-        <li><a href="#contact" class="btn btn-primary" style="padding: 6px 16px; font-size: 0.82rem; font-weight: 500;">Contact</a></li>
-      </ul>
-    </div>
-  </header>
+  {about_bg_img_html}
+  {about_bg_overlay_html}
+
+{generate_nav_html("about-me")}
 
   <main style="padding-block: clamp(24px, 4vw, 56px);">
     <div class="container">
       <div style="display: grid; grid-template-columns: 1fr 2fr; gap: clamp(24px, 5vw, 48px); align-items: start; margin-bottom: 56px;">
         <div>
           <div style="border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--border-subtle); background: var(--bg-card); box-shadow: var(--shadow-subtle);">
-            <img src="{banner_img}" alt="DNEG banner" style="width: 100%; object-fit: cover;">
+            {'<img src="' + banner_img + '" alt="DNEG banner" style="width: 100%; object-fit: cover;">' if banner_img else ''}
             <div style="padding: 20px; text-align: center;">
               <img src="{profile_img}" alt="Prasannakumar T Bhat" style="width: 130px; height: 130px; border-radius: 50%; object-fit: cover; margin-inline: auto; margin-top: -65px; border: 4px solid var(--bg-card); box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
               <h2 style="font-size: 1.25rem; font-weight: 700; margin-top: 12px; color: var(--text-main);">Prasannakumar T Bhat</h2>
@@ -748,16 +745,323 @@ def sync_all():
 '''
     with open("about-me.html", "w", encoding="utf-8") as f:
         f.write(about_html)
+    print("  -> Updated about-me.html (Bio, Toolset, Contact Section, fallback background)")
 
-    # AI / Comfy & Blog
-    for f_name in ["ai-comfy.html", "blog.html"]:
-        if os.path.exists(f_name):
-            content = open(f_name, "r", encoding="utf-8").read()
-            # Remove brand tag pill if present
-            content = re.sub(r'<span class="brand-tag">.*?</span>', '', content)
-            open(f_name, "w", encoding="utf-8").write(content)
+    # --------------------------------------------------------------------------
+    # 5. SYNC AI / COMFY (pages/03_ai-comfy)
+    # --------------------------------------------------------------------------
+    ai_dir = "pages/03_ai-comfy"
+    ai_bg_img_html, ai_bg_overlay_html, _, _ = get_page_background_and_overlay(ai_dir)
 
-    print("\nSUCCESS: All pages updated with #0e1733 BG, #f98603 elements, off-white text, and 3-line centered home!")
+    ai_html = f'''<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI & ComfyUI Pipelines | Pra - Motions</title>
+  <meta name="description" content="AI Generative Pipelines, Custom ComfyUI Nodes, and VFX Inpainting Toolsets by Prasannakumar T Bhat.">
+  <link rel="icon" type="image/png" href="_engine/images/logo.png">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,700&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="_engine/css/main.css">
+  <link rel="stylesheet" href="_engine/css/components.css">
+  <link rel="stylesheet" href="_engine/css/responsive.css">
+</head>
+<body>
+  {ai_bg_img_html}
+  {ai_bg_overlay_html}
+
+{generate_nav_html("ai-comfy")}
+
+  <main style="padding-block: clamp(36px, 6vw, 72px);">
+    <div class="container-wide">
+      
+      <!-- Page Header -->
+      <div class="section-header">
+        <div class="section-label">Generative AI & VFX Automation</div>
+        <h1 class="section-title">ComfyUI Pipelines & AI Toolsets</h1>
+        <p class="section-desc">
+          Bridging the gap between cutting-edge Diffusion models and film-grade visual effects pipelines. Custom ComfyUI node workflows, automated plate inpainting, and depth-guided dynamic relighting.
+        </p>
+      </div>
+
+      <!-- Production ComfyUI Workflow Architecture -->
+      <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: clamp(20px, 4vw, 36px); margin-bottom: 48px;">
+        <div style="margin-bottom: 20px;">
+          <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent-primary); text-transform: uppercase;">Production Workflow Graph</span>
+          <h2 style="font-size: 1.4rem; font-weight: 700;">ComfyUI VFX Production Pipeline Graph</h2>
+          <p style="font-size: 0.9rem; color: var(--text-muted);">
+            Full interactive visual graph. Click image to open high-resolution zoom in Lightbox.
+          </p>
+        </div>
+        <div style="border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border-subtle); background: #000;">
+          <img src="pages/03_ai-comfy/workflows/comfyui-production-pipeline.png" alt="ComfyUI Production Pipeline Architecture" style="width: 100%; object-fit: contain; cursor: zoom-in;" data-lightbox data-caption="ComfyUI Master VFX Production Workflow Architecture">
+        </div>
+      </div>
+
+      <!-- Before & After Wipe Slider: AI Inpainting Demo -->
+      <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: clamp(20px, 4vw, 36px); margin-bottom: 48px;">
+        <div style="margin-bottom: 20px;">
+          <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent-primary); text-transform: uppercase;">Interactive Demo</span>
+          <h2 style="font-size: 1.4rem; font-weight: 700;">Plate Inpainting: Rig Removal with ControlNet + LaMa</h2>
+          <p style="font-size: 0.9rem; color: var(--text-muted);">
+            Slide to compare the raw live-action plate with tracking markers against the AI generative inpaint with preserved film grain.
+          </p>
+        </div>
+
+        <div style="max-width: 900px; margin-inline: auto;">
+          <div class="before-after-container">
+            <div class="ba-image-layer ba-before-layer">
+              <img src="pages/02_vfx-works/projects/goatbusters.jpg" alt="Raw Live Plate with Markers">
+              <span class="ba-badge ba-badge-before">Raw Plate + Tracking Markers</span>
+            </div>
+            <div class="ba-image-layer ba-after-layer">
+              <img src="pages/02_vfx-works/projects/hummer-ev.jpg" alt="AI Inpainted Clean Plate">
+              <span class="ba-badge ba-badge-after">AI Inpainted Clean Plate</span>
+            </div>
+            <div class="ba-handle">
+              <div class="ba-handle-circle">
+                <div class="ba-handle-arrows"><span>&#9664;</span><span>&#9654;</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Workflow Cards Grid -->
+      <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 24px;">Production ComfyUI Workflows</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: 28px;">
+
+        <!-- Workflow 1 -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 24px; display: flex; flex-direction: column;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-primary); background: rgba(249,134,3,0.1); padding: 3px 8px; border-radius: 4px;">PLATE INPAINTING</span>
+            <span style="font-size: 0.78rem; color: var(--text-subtle);">ComfyUI + LaMa</span>
+          </div>
+          <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 10px;">Automated 4K Clean-Plate Generator</h3>
+          <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 16px; flex-grow: 1;">
+            Converts roto tracking markers and harness wires into seamless 4K background textures without seam artifacts or optical degradation.
+          </p>
+          <div style="background: var(--bg-secondary); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 16px; font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted);">
+            <div><strong>Inputs:</strong> Live Plate + Roto Matte</div>
+            <div><strong>Outputs:</strong> 16-bit Float EXR Clean Plate</div>
+          </div>
+          <a href="blog.html#comfyui-portable-custom-nodes" class="btn btn-secondary" style="font-size: 0.82rem; padding: 8px 16px;">
+            <span>Read Setup Tutorial</span>
+          </a>
+        </div>
+
+        <!-- Workflow 2 -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 24px; display: flex; flex-direction: column;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-hover); background: rgba(255,155,38,0.1); padding: 3px 8px; border-radius: 4px;">RELIGHTING / COMP</span>
+            <span style="font-size: 0.78rem; color: var(--text-subtle);">Marigold + IC-Light</span>
+          </div>
+          <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 10px;">Depth-Guided Shot Relighting</h3>
+          <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 16px; flex-grow: 1;">
+            Derives photoreal metric depth maps and surface normals directly from 2D footage to cast directional rim lights, specular glints, and volume fog.
+          </p>
+          <div style="background: var(--bg-secondary); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 16px; font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted);">
+            <div><strong>Nodes:</strong> Marigold Depth, IC-Light, VHS</div>
+            <div><strong>Outputs:</strong> Normal Pass + Rim Key Light</div>
+          </div>
+          <a href="blog.html#facefusion-windows-portable" class="btn btn-secondary" style="font-size: 0.82rem; padding: 8px 16px;">
+            <span>View Implementation</span>
+          </a>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container-wide">
+      <div class="footer-bottom">
+        <div>&copy; 2026 Prasannakumar T Bhat (pbhat99). All rights reserved.</div>
+        <div style="font-family: var(--font-mono); font-size: 0.78rem;">Hosted on GitHub Pages &bull; pbhat99.github.io</div>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="_engine/js/main.js"></script>
+</body>
+</html>
+'''
+    with open("ai-comfy.html", "w", encoding="utf-8") as f:
+        f.write(ai_html)
+    print("  -> Updated ai-comfy.html (ComfyUI Workflows, Inpaint Wipe Demo, fallback background)")
+
+    # --------------------------------------------------------------------------
+    # 6. SYNC BLOG (pages/06_blog)
+    # --------------------------------------------------------------------------
+    blog_dir = "pages/06_blog"
+    blog_bg_img_html, blog_bg_overlay_html, _, _ = get_page_background_and_overlay(blog_dir)
+
+    blog_html = f'''<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Technical Blog & Guides | Pra - Motions</title>
+  <meta name="description" content="Technical Guides on ComfyUI portable setup, custom nodes, FaceFusion, and VFX scripting by Prasannakumar T Bhat.">
+  <link rel="icon" type="image/png" href="_engine/images/logo.png">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,700&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="_engine/css/main.css">
+  <link rel="stylesheet" href="_engine/css/components.css">
+  <link rel="stylesheet" href="_engine/css/responsive.css">
+  <style>
+    pre {{
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--accent-primary);
+      margin-block: 12px;
+    }}
+    code {{
+      font-family: var(--font-mono);
+      color: var(--accent-hover);
+    }}
+  </style>
+</head>
+<body>
+  {blog_bg_img_html}
+  {blog_bg_overlay_html}
+
+{generate_nav_html("blog")}
+
+  <main style="padding-block: clamp(36px, 6vw, 72px);">
+    <div class="container" style="max-width: 860px;">
+      
+      <!-- Page Header -->
+      <div class="section-header">
+        <div class="section-label">Engineering & AI Notes</div>
+        <h1 class="section-title">Technical Blog</h1>
+        <p class="section-desc">
+          Practical setups, automation scripts, and workflow optimization for visual effects and generative AI pipelines.
+        </p>
+      </div>
+
+      <!-- Article 1: ComfyUI Portable -->
+      <article id="comfyui-portable-custom-nodes" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: clamp(24px, 4vw, 36px); margin-bottom: 40px;">
+        <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px;">
+          <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent-primary);">28 NOV 2025</span>
+          <span style="color: var(--text-subtle);">&bull;</span>
+          <span style="font-size: 0.8rem; color: var(--text-muted);">ComfyUI / Pipeline</span>
+        </div>
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 16px;">ComfyUI Portable with Production Custom Nodes</h2>
+        
+        <div style="margin-bottom: 20px; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border-subtle);">
+          <img src="pages/06_blog/posts/blog_img_2.png" alt="ComfyUI Node Graph Screenshot" style="width: 100%; object-fit: contain; background: #000;" data-lightbox data-caption="ComfyUI Production Node Graph Pipeline">
+        </div>
+
+        <div style="font-size: 0.95rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 14px; line-height: 1.7;">
+          <p>
+            Download and extract the latest standalone portable release from GitHub:
+            <br>
+            <a href="https://github.com/comfyanonymous/ComfyUI/releases" target="_blank" rel="noopener" style="color: var(--accent-primary); text-decoration: underline;">
+              https://github.com/comfyanonymous/ComfyUI/releases
+            </a>
+          </p>
+
+          <h3 style="font-size: 1.15rem; color: #fff; margin-top: 10px;">Essential Production Custom Nodes:</h3>
+          
+          <p>Navigate to <code>ComfyUI/custom_nodes/</code> and clone the essential toolsets:</p>
+
+          <div>
+            <strong>1. ComfyUI Manager:</strong>
+            <pre>git clone https://github.com/ltdrdata/ComfyUI-Manager comfyui-manager</pre>
+          </div>
+
+          <div>
+            <strong>2. RGThree (Workflow Routing & Mute Bypasses):</strong>
+            <pre>git clone https://github.com/rgthree/rgthree-comfy.git</pre>
+          </div>
+
+          <div>
+            <strong>3. Video Helper Suite (VHS):</strong>
+            <pre>git clone https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git</pre>
+          </div>
+
+          <div>
+            <strong>4. CrysTools (Resource Monitor HUD):</strong>
+            <pre>git clone https://github.com/crystian/comfyui-crystools.git</pre>
+          </div>
+
+          <div>
+            <strong>5. Procedural & Advanced Math Nodes:</strong>
+            <pre>git clone https://github.com/melMass/comfy_mtb.git
+git clone https://github.com/kijai/ComfyUI-KJNodes.git</pre>
+          </div>
+
+          <div>
+            <strong>6. Use Everywhere (Wireless Node Execution):</strong>
+            <pre>git clone https://github.com/chrisgoringe/cg-use-everywhere</pre>
+          </div>
+        </div>
+      </article>
+
+      <!-- Article 2: FaceFusion -->
+      <article id="facefusion-windows-portable" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: clamp(24px, 4vw, 36px);">
+        <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px;">
+          <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent-primary);">18 JUN 2025</span>
+          <span style="color: var(--text-subtle);">&bull;</span>
+          <span style="font-size: 0.8rem; color: var(--text-muted);">Deep Learning / Tools</span>
+        </div>
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 16px;">Steps to Install FaceFusion 3 on Windows (Portable)</h2>
+        
+        <div style="margin-bottom: 20px; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border-subtle);">
+          <img src="pages/06_blog/posts/blog_img_5.png" alt="FaceFusion Installation UI" style="width: 100%; object-fit: contain; background: #000;" data-lightbox data-caption="FaceFusion Portable Interface">
+        </div>
+
+        <div style="font-size: 0.95rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 14px; line-height: 1.7;">
+          <p>
+            Clean portable setup using isolated Python virtual environments:
+          </p>
+          <pre>git clone https://github.com/FaceFusion/FaceFusion.git
+cd FaceFusion
+python -m venv myenv
+myenv\\Scripts\\activate
+python install.py --onnxruntime cuda</pre>
+          <p>
+            Launch the interactive GUI:
+          </p>
+          <pre>python facefusion.py run</pre>
+        </div>
+      </article>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container-wide">
+      <div class="footer-bottom">
+        <div>&copy; 2026 Prasannakumar T Bhat (pbhat99). All rights reserved.</div>
+        <div style="font-family: var(--font-mono); font-size: 0.78rem;">Hosted on GitHub Pages &bull; pbhat99.github.io</div>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="_engine/js/main.js"></script>
+</body>
+</html>
+'''
+    with open("blog.html", "w", encoding="utf-8") as f:
+        f.write(blog_html)
+    print("  -> Updated blog.html (Technical Guides, fallback background)")
+
+    print("\nSUCCESS: All 6 pages synchronized cleanly!")
 
 if __name__ == "__main__":
     sync_all()
