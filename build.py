@@ -10,15 +10,17 @@ def format_title_from_filename(filename):
     return name.title()
 
 def sync_all():
-    print("=== Syncing site with pages/ folder structure & Ubuntu typography ===")
+    print("=== Syncing site with #0e1733 BG, #f98603 elements & 3-line centered Home ===")
 
     # --------------------------------------------------------------------------
     # 1. SYNC HOME PAGE (pages/01_home)
     # --------------------------------------------------------------------------
     home_dir = "pages/01_home"
     content_file = os.path.join(home_dir, "content.json")
+    
+    # Defaults
     home_data = {
-        "name": "Prasannakumar T Bhat",
+        "designation": "Senior Visual Effects Compositor @ DNEG",
         "tagline": "CG is not just faking, its adding beautiful layers of lie on the ugly truth."
     }
     if os.path.exists(content_file):
@@ -28,16 +30,25 @@ def sync_all():
         except Exception as e:
             print(f"Notice reading {content_file}: {e}")
 
+    # Fixed Name (1st line)
+    fixed_name = "Prasannakumar T Bhat"
+    designation = home_data.get("designation", "").strip()
+    tagline = home_data.get("tagline", "").strip()
+
+    # Build conditional lines
+    designation_html = f'<p class="hero-designation-plain">{designation}</p>' if designation else ""
+    tagline_html = f'<p class="hero-tagline-plain">"{tagline}"</p>' if tagline else ""
+
     has_bg_image = os.path.exists(os.path.join(home_dir, "background.jpg"))
-    bg_style = f"background-image: linear-gradient(to bottom, rgba(9, 12, 19, 0.75), rgba(9, 12, 19, 0.9)), url('{home_dir}/background.jpg');" if has_bg_image else ""
+    bg_style = f"background-image: linear-gradient(to bottom, rgba(14, 23, 51, 0.78), rgba(14, 23, 51, 0.92)), url('{home_dir}/background.jpg');" if has_bg_image else ""
 
     index_html = f'''<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{home_data['name']}</title>
-  <meta name="description" content="{home_data['name']} - {home_data['tagline']}">
+  <title>{fixed_name}</title>
+  <meta name="description" content="{fixed_name} - {designation}">
   <link rel="icon" type="image/png" href="assets/images/branding/logo.png">
   
   <!-- Ubuntu Typography -->
@@ -50,7 +61,7 @@ def sync_all():
   <link rel="stylesheet" href="_engine/css/responsive.css">
   
   <style>
-    /* Fixed Full-Screen Non-Scrollable Viewport */
+    /* Full-Page Fixed Non-Scrollable Viewport */
     html, body {{
       margin: 0;
       padding: 0;
@@ -59,10 +70,11 @@ def sync_all():
       overflow: hidden;
       position: fixed;
       inset: 0;
+      background-color: var(--bg-primary);
       font-family: 'Ubuntu', sans-serif;
     }}
 
-    /* Transparent Navigation - Seamless, No Border or Background */
+    /* Seamless Navigation: No borders, no lines, no background */
     .site-header {{
       position: absolute;
       top: 0;
@@ -72,8 +84,6 @@ def sync_all():
       background: transparent !important;
       border: none !important;
       box-shadow: none !important;
-      backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
     }}
 
     .home-fullscreen-container {{
@@ -90,6 +100,7 @@ def sync_all():
       background-position: center;
       background-repeat: no-repeat;
       padding-inline: 24px;
+      background-color: var(--bg-primary);
       {bg_style}
     }}
 
@@ -102,103 +113,89 @@ def sync_all():
       z-index: 1;
     }}
 
+    /* Center Stage: Stacked 3 Lines, Perfectly Centered */
     .home-center-stage {{
       position: relative;
       z-index: 10;
-      max-width: 95vw;
+      max-width: 900px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      text-align: center;
+      gap: 16px;
     }}
 
-    /* Name and Tagline in a Single Horizontal Line */
-    .name-tagline-row {{
-      display: inline-flex;
-      align-items: baseline;
-      justify-content: center;
-      gap: clamp(10px, 1.8vw, 22px);
-      white-space: nowrap;
-      flex-wrap: nowrap;
-      max-width: 95vw;
-    }}
-
-    .hero-name-inline {{
+    /* 1st Line: Fixed Name */
+    .hero-name-main {{
       font-family: 'Ubuntu', sans-serif;
-      font-size: clamp(1.4rem, 2.6vw, 2.5rem);
+      font-size: clamp(2.4rem, 5.5vw, 4.4rem);
       font-weight: 700;
-      color: #ffffff;
+      color: var(--text-main);
       letter-spacing: -0.02em;
+      line-height: 1.1;
       margin: 0;
-      line-height: 1.2;
-      text-shadow: 0 0 40px rgba(56, 189, 248, 0.45);
+      text-shadow: 0 0 45px rgba(249, 134, 3, 0.25);
     }}
 
-    .row-separator {{
-      color: var(--accent-cyan);
-      font-weight: 300;
-      font-size: clamp(1.2rem, 2.2vw, 2.1rem);
-      opacity: 0.85;
-    }}
-
-    .hero-tagline-inline {{
+    /* 2nd Line: Designation (Pure text, no box or outline) */
+    .hero-designation-plain {{
       font-family: 'Ubuntu', sans-serif;
-      font-size: clamp(0.95rem, 1.6vw, 1.4rem);
+      font-size: clamp(1.05rem, 2vw, 1.45rem);
+      font-weight: 500;
+      color: var(--accent-primary);
+      letter-spacing: 0.05em;
+      margin: 0;
+      line-height: 1.3;
+    }}
+
+    /* 3rd Line: Tagline (Pure text, off-white italic) */
+    .hero-tagline-plain {{
+      font-family: 'Ubuntu', sans-serif;
+      font-size: clamp(0.95rem, 1.6vw, 1.25rem);
       font-weight: 400;
       font-style: italic;
-      color: rgba(241, 245, 249, 0.88);
+      color: var(--text-muted);
+      max-width: 740px;
       margin: 0;
-      line-height: 1.2;
+      line-height: 1.5;
     }}
 
-    .about-action-wrap {{
-      margin-top: 36px;
+    .hero-about-wrap {{
+      margin-top: 24px;
     }}
 
     .btn-about {{
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 11px 36px;
+      padding: 11px 40px;
       font-size: 0.95rem;
       font-weight: 500;
       font-family: 'Ubuntu', sans-serif;
       border-radius: var(--radius-full);
-      background: linear-gradient(135deg, #0284c7, #2563eb);
+      background: var(--accent-primary);
       color: #ffffff;
-      box-shadow: 0 4px 18px rgba(37, 99, 235, 0.4);
+      box-shadow: 0 4px 18px rgba(249, 134, 3, 0.4);
       transition: all var(--transition-fast);
       letter-spacing: 0.02em;
     }}
 
     .btn-about:hover {{
-      background: linear-gradient(135deg, #38bdf8, #3b82f6);
+      background: var(--accent-hover);
       transform: translateY(-2px);
-      box-shadow: 0 6px 25px rgba(56, 189, 248, 0.55);
-    }}
-
-    @media (max-width: 768px) {{
-      .name-tagline-row {{
-        flex-direction: column;
-        align-items: center;
-        gap: 8px;
-        white-space: normal;
-      }}
-      .row-separator {{
-        display: none;
-      }}
+      box-shadow: 0 6px 25px rgba(249, 134, 3, 0.55);
     }}
   </style>
 </head>
 <body>
 
-  <!-- Navigation Bar (Seamless & Transparent) -->
+  <!-- Navigation (Transparent, No VFX Pill) -->
   <header class="site-header">
     <div class="container-wide nav-wrapper">
       <a href="index.html" class="brand-logo">
         <img src="assets/images/branding/logo.png" alt="Pra Motions Logo" width="34" height="34" style="border-radius: 6px;">
         <span>Pra - <span class="brand-badge">Motions</span></span>
-        <span class="brand-tag">VFX</span>
       </a>
 
       <button class="mobile-nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
@@ -219,24 +216,21 @@ def sync_all():
 
   <!-- Full-Screen Interactive Viewport -->
   <main class="home-fullscreen-container">
-    <!-- 60fps Interactive Mouse Pointer Canvas Background -->
+    <!-- Interactive Canvas Background -->
     <canvas id="bg-canvas"></canvas>
 
-    <!-- Center Stage: Name and Tagline in a Single Line + About Button -->
+    <!-- Center Stage: 3 Lines Centered + About Button -->
     <div class="home-center-stage">
-      <div class="name-tagline-row">
-        <h1 class="hero-name-inline">{home_data['name']}</h1>
-        <span class="row-separator">—</span>
-        <p class="hero-tagline-inline">"{home_data['tagline']}"</p>
-      </div>
+      <h1 class="hero-name-main">{fixed_name}</h1>
+      {designation_html}
+      {tagline_html}
 
-      <div class="about-action-wrap">
+      <div class="hero-about-wrap">
         <a href="about-me.html" class="btn-about">About</a>
       </div>
     </div>
   </main>
 
-  <!-- Interactive Background Engine -->
   <script type="module">
     import {{ initInteractiveBackground }} from './_engine/js/interactive-bg.js';
     import './_engine/js/main.js';
@@ -247,7 +241,7 @@ def sync_all():
 '''
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(index_html)
-    print("  -> Updated index.html (Single-line Name & Tagline, only About button, full-page fixed, interactive canvas)")
+    print("  -> Updated index.html (Line 1 Name, Line 2 Designation, Line 3 Tagline, only About button, transparent navbar, no VFX pill)")
 
     # --------------------------------------------------------------------------
     # 2. SYNC VFX WORKS (pages/02_vfx-works/projects)
@@ -394,7 +388,6 @@ def sync_all():
       <a href="index.html" class="brand-logo">
         <img src="assets/images/branding/logo.png" alt="Pra Motions Logo" width="34" height="34" style="border-radius: 6px;">
         <span>Pra - <span class="brand-badge">Motions</span></span>
-        <span class="brand-tag">VFX</span>
       </a>
       <button class="mobile-nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
         <span></span><span></span><span></span>
@@ -449,14 +442,13 @@ def sync_all():
 '''
     with open("vfx-works.html", "w", encoding="utf-8") as f:
         f.write(vfx_html)
-    print(f"  -> Updated vfx-works.html with {len(updated_projects)} project cards and Ubuntu font")
+    print(f"  -> Updated vfx-works.html with {len(updated_projects)} project cards")
 
     # --------------------------------------------------------------------------
-    # 3. SYNC PHOTOGRAPHY (pages/04_photography/gallery)
+    # 3. SYNC PHOTOGRAPHY, ABOUT ME, AI/COMFY & BLOG
     # --------------------------------------------------------------------------
     photo_dir = "pages/04_photography/gallery"
     photo_files = sorted([f for f in os.listdir(photo_dir) if os.path.splitext(f)[1].lower() in valid_exts]) if os.path.exists(photo_dir) else []
-    
     photo_cards_html = []
     for pf in photo_files:
         title = format_title_from_filename(pf)
@@ -495,7 +487,6 @@ def sync_all():
       <a href="index.html" class="brand-logo">
         <img src="assets/images/branding/logo.png" alt="Pra Motions Logo" width="34" height="34" style="border-radius: 6px;">
         <span>Pra - <span class="brand-badge">Motions</span></span>
-        <span class="brand-tag">VFX</span>
       </a>
       <button class="mobile-nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
         <span></span><span></span><span></span>
@@ -525,7 +516,7 @@ def sync_all():
       <div class="panorama-card">
         <div style="padding: 20px 24px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
           <div>
-            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-cyan); text-transform: uppercase;">Interactive WebGL Sphere</div>
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-primary); text-transform: uppercase;">Interactive WebGL Sphere</div>
             <h2 style="font-size: 1.3rem; font-weight: 700; margin-top: 4px;">360° Photosphere Panorama Viewer</h2>
           </div>
           <span style="font-size: 0.8rem; color: var(--text-muted); background: var(--bg-secondary); padding: 4px 10px; border-radius: 4px;">
@@ -563,11 +554,8 @@ def sync_all():
 '''
     with open("photography.html", "w", encoding="utf-8") as f:
         f.write(photography_html)
-    print(f"  -> Updated photography.html with {len(photo_files)} photos and Ubuntu font")
 
-    # --------------------------------------------------------------------------
-    # 4. SYNC ABOUT ME (pages/05_about-me)
-    # --------------------------------------------------------------------------
+    # About Me
     about_dir = "pages/05_about-me"
     profile_img = f"{about_dir}/profile.jpg" if os.path.exists(f"{about_dir}/profile.jpg") else "assets/images/branding/about_me_2.jpg"
     banner_img = f"{about_dir}/banner.png" if os.path.exists(f"{about_dir}/banner.png") else "assets/images/branding/dneg-banner.png"
@@ -598,7 +586,6 @@ def sync_all():
       <a href="index.html" class="brand-logo">
         <img src="assets/images/branding/logo.png" alt="Pra Motions Logo" width="34" height="34" style="border-radius: 6px;">
         <span>Pra - <span class="brand-badge">Motions</span></span>
-        <span class="brand-tag">VFX</span>
       </a>
       <button class="mobile-nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
         <span></span><span></span><span></span>
@@ -623,8 +610,8 @@ def sync_all():
             <img src="{banner_img}" alt="DNEG banner" style="width: 100%; object-fit: cover;">
             <div style="padding: 20px; text-align: center;">
               <img src="{profile_img}" alt="Prasannakumar T Bhat" style="width: 130px; height: 130px; border-radius: 50%; object-fit: cover; margin-inline: auto; margin-top: -65px; border: 4px solid var(--bg-card); box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
-              <h2 style="font-size: 1.25rem; font-weight: 700; margin-top: 12px;">Prasannakumar T Bhat</h2>
-              <p style="font-size: 0.85rem; color: var(--accent-cyan); font-weight: 500; margin-top: 4px;">Compositing Artist @ DNEG</p>
+              <h2 style="font-size: 1.25rem; font-weight: 700; margin-top: 12px; color: var(--text-main);">Prasannakumar T Bhat</h2>
+              <p style="font-size: 0.85rem; color: var(--accent-primary); font-weight: 500; margin-top: 4px;">Compositing Artist @ DNEG</p>
               <div style="margin-top: 14px; font-size: 0.82rem; color: var(--text-subtle);">
                 10+ Years Visual Effects Experience
               </div>
@@ -653,7 +640,7 @@ def sync_all():
         <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 24px;">Production Software & Toolset</h2>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;">
           <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 20px;">
-            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--accent-cyan); margin-bottom: 12px;">Compositing</h3>
+            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--accent-primary); margin-bottom: 12px;">Compositing</h3>
             <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 0.9rem; color: var(--text-muted);">
               <li>&bull; <strong>Foundry Nuke & Nuke Studio</strong></li>
               <li>&bull; Autodesk Flame</li>
@@ -661,7 +648,7 @@ def sync_all():
             </ul>
           </div>
           <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 20px;">
-            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--accent-violet); margin-bottom: 12px;">3D & Tracking</h3>
+            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--accent-hover); margin-bottom: 12px;">3D & Tracking</h3>
             <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 0.9rem; color: var(--text-muted);">
               <li>&bull; <strong>Autodesk Maya</strong></li>
               <li>&bull; SynthEyes Matchmove</li>
@@ -669,7 +656,7 @@ def sync_all():
             </ul>
           </div>
           <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 20px;">
-            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--accent-emerald); margin-bottom: 12px;">AI & Pipelines</h3>
+            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--accent-primary); margin-bottom: 12px;">AI & Pipelines</h3>
             <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 0.9rem; color: var(--text-muted);">
               <li>&bull; <strong>ComfyUI Custom Node Dev</strong></li>
               <li>&bull; Python Automation Scripting</li>
@@ -685,7 +672,7 @@ def sync_all():
           <h2 style="font-size: 1.6rem; font-weight: 700; margin-bottom: 16px;">Contact Information</h2>
           <div style="display: flex; flex-direction: column; gap: 14px; font-size: 0.92rem;">
             <div><span style="color: var(--text-subtle); width: 80px; display: inline-block;">Phone:</span> <strong style="color: #fff;">+91 9449267068</strong></div>
-            <div><span style="color: var(--text-subtle); width: 80px; display: inline-block;">GitHub:</span> <a href="https://github.com/pbhat99" target="_blank" rel="noopener" style="color: var(--accent-cyan); text-decoration: underline;">github.com/pbhat99</a></div>
+            <div><span style="color: var(--text-subtle); width: 80px; display: inline-block;">GitHub:</span> <a href="https://github.com/pbhat99" target="_blank" rel="noopener" style="color: var(--accent-primary); text-decoration: underline;">github.com/pbhat99</a></div>
             <div><span style="color: var(--text-subtle); width: 80px; display: inline-block;">Location:</span> <span style="color: var(--text-muted);">Karnataka, India - 581337</span></div>
           </div>
         </div>
@@ -708,25 +695,16 @@ def sync_all():
 '''
     with open("about-me.html", "w", encoding="utf-8") as f:
         f.write(about_html)
-    print("  -> Updated about-me.html (synced with profile.jpg, banner.png, and Ubuntu font)")
 
-    # --------------------------------------------------------------------------
-    # 5. SYNC AI / COMFY & BLOG
-    # --------------------------------------------------------------------------
+    # AI / Comfy & Blog
     for f_name in ["ai-comfy.html", "blog.html"]:
         if os.path.exists(f_name):
             content = open(f_name, "r", encoding="utf-8").read()
-            # Replace Inter with Ubuntu font link
-            content = re.sub(r'<link href="https://fonts\.googleapis\.com/css2\?family=Inter[^"]+" rel="stylesheet">',
-                             '<link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,700&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">',
-                             content)
-            # Seamless header
-            if ".site-header {" not in content:
-                content = content.replace("</head>", "  <style>\n    .site-header { position: relative; background: transparent !important; border: none !important; box-shadow: none !important; }\n  </style>\n</head>")
+            # Remove brand tag pill if present
+            content = re.sub(r'<span class="brand-tag">.*?</span>', '', content)
             open(f_name, "w", encoding="utf-8").write(content)
-    print("  -> Updated ai-comfy.html and blog.html with Ubuntu font and seamless header")
 
-    print("\nSUCCESS: All pages updated with single-line home, seamless header, and Ubuntu font!")
+    print("\nSUCCESS: All pages updated with #0e1733 BG, #f98603 elements, off-white text, and 3-line centered home!")
 
 if __name__ == "__main__":
     sync_all()

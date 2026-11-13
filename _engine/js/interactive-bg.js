@@ -1,20 +1,17 @@
 /**
  * Interactive Mouse Pointer Canvas Background
- * High-performance 60fps particle constellation with reactive cursor physics
+ * Synchronized with #0e1733 background and #f98603 accent palette.
  */
 export function initInteractiveBackground(canvasId = 'bg-canvas') {
   const canvas = document.getElementById(canvasId);
-  if (!canvas) {
-    console.warn(`[InteractiveBG] Canvas with id '${canvasId}' not found.`);
-    return;
-  }
+  if (!canvas) return;
 
   const ctx = canvas.getContext('2d');
   let width = window.innerWidth;
   let height = window.innerHeight;
   let dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-  // Mouse State (Active by default at center)
+  // Mouse State
   const mouse = {
     x: width / 2,
     y: height / 2,
@@ -34,14 +31,15 @@ export function initInteractiveBackground(canvasId = 'bg-canvas') {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
-  // Particle Settings
   const count = window.innerWidth < 768 ? 45 : 85;
   const particles = [];
+  
+  // Custom Color Palette: #f98603 and off-whites
   const palette = [
-    { r: 56, g: 189, b: 248 },  // Electric Cyan
-    { r: 99, g: 102, b: 241 },  // Indigo
-    { r: 168, g: 85, b: 247 },  // Violet
-    { r: 255, g: 255, b: 255 }   // Crisp White
+    { r: 249, g: 134, b: 3 },   // Vibrant Orange (#f98603)
+    { r: 251, g: 175, b: 75 },  // Warm Amber
+    { r: 248, g: 250, b: 252 }, // Off-white
+    { r: 226, g: 232, b: 240 }  // Muted Off-white
   ];
 
   class Particle {
@@ -52,8 +50,8 @@ export function initInteractiveBackground(canvasId = 'bg-canvas') {
     reset(randomPosition = false) {
       this.x = randomPosition ? Math.random() * width : (Math.random() > 0.5 ? 0 : width);
       this.y = randomPosition ? Math.random() * height : Math.random() * height;
-      this.vx = (Math.random() - 0.5) * 0.8;
-      this.vy = (Math.random() - 0.5) * 0.8;
+      this.vx = (Math.random() - 0.5) * 0.75;
+      this.vy = (Math.random() - 0.5) * 0.75;
       this.baseRadius = Math.random() * 2 + 1.2;
       this.radius = this.baseRadius;
       this.baseAlpha = Math.random() * 0.45 + 0.35;
@@ -67,7 +65,6 @@ export function initInteractiveBackground(canvasId = 'bg-canvas') {
       this.x += this.vx;
       this.y += this.vy;
 
-      // Organic subtle pulsation
       this.pulseAngle += this.pulseSpeed;
       this.alpha = this.baseAlpha + Math.sin(this.pulseAngle) * 0.15;
 
@@ -79,7 +76,6 @@ export function initInteractiveBackground(canvasId = 'bg-canvas') {
 
         if (dist < mouse.radius && dist > 1) {
           const force = (1 - dist / mouse.radius);
-          // Gentle attraction toward cursor
           this.vx += (dx / dist) * force * 0.22;
           this.vy += (dy / dist) * force * 0.22;
           this.alpha = Math.min(1, this.alpha + force * 0.5);
@@ -89,11 +85,9 @@ export function initInteractiveBackground(canvasId = 'bg-canvas') {
         }
       }
 
-      // Air resistance
       this.vx *= 0.98;
       this.vy *= 0.98;
 
-      // Edge wrap
       if (this.x < -10) this.x = width + 10;
       if (this.x > width + 10) this.x = -10;
       if (this.y < -10) this.y = height + 10;
@@ -118,7 +112,6 @@ export function initInteractiveBackground(canvasId = 'bg-canvas') {
     }
   }
 
-  // Draw constellation connecting lines
   function drawConnections() {
     const maxDist = 125;
     for (let i = 0; i < particles.length; i++) {
@@ -134,23 +127,23 @@ export function initInteractiveBackground(canvasId = 'bg-canvas') {
           ctx.beginPath();
           ctx.moveTo(p1.x, p1.y);
           ctx.lineTo(p2.x, p2.y);
-          ctx.strokeStyle = `rgba(56, 189, 248, ${alpha})`;
+          ctx.strokeStyle = `rgba(249, 134, 3, ${alpha})`;
           ctx.lineWidth = 0.85;
           ctx.stroke();
         }
       }
 
-      // Connect to mouse cursor
+      // Connect to cursor
       if (mouse.active) {
         const dx = particles[i].x - mouse.x;
         const dy = particles[i].y - mouse.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist < mouse.radius) {
-          const alpha = (1 - dist / mouse.radius) * 0.4;
+          const alpha = (1 - dist / mouse.radius) * 0.45;
           ctx.beginPath();
           ctx.moveTo(particles[i].x, particles[i].y);
           ctx.lineTo(mouse.x, mouse.y);
-          ctx.strokeStyle = `rgba(168, 85, 247, ${alpha})`;
+          ctx.strokeStyle = `rgba(251, 175, 75, ${alpha})`;
           ctx.lineWidth = 1.1;
           ctx.stroke();
         }
@@ -158,11 +151,8 @@ export function initInteractiveBackground(canvasId = 'bg-canvas') {
     }
   }
 
-  // Draw smooth cursor ambient glow
   function drawCursorGlow() {
     if (!mouse.active) return;
-    
-    // Smooth lerp
     mouse.x += (mouse.targetX - mouse.x) * 0.2;
     mouse.y += (mouse.targetY - mouse.y) * 0.2;
 
@@ -170,8 +160,8 @@ export function initInteractiveBackground(canvasId = 'bg-canvas') {
       mouse.x, mouse.y, 0,
       mouse.x, mouse.y, mouse.radius
     );
-    glow.addColorStop(0, 'rgba(56, 189, 248, 0.22)');
-    glow.addColorStop(0.35, 'rgba(129, 140, 248, 0.08)');
+    glow.addColorStop(0, 'rgba(249, 134, 3, 0.25)');
+    glow.addColorStop(0.35, 'rgba(249, 134, 3, 0.08)');
     glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
     ctx.fillStyle = glow;
@@ -180,24 +170,18 @@ export function initInteractiveBackground(canvasId = 'bg-canvas') {
     ctx.fill();
   }
 
-  // Animation Loop
   let reqId;
   function render() {
     ctx.clearRect(0, 0, width, height);
-
     drawCursorGlow();
-
     for (let i = 0; i < particles.length; i++) {
       particles[i].update();
       particles[i].draw();
     }
-
     drawConnections();
-
     reqId = requestAnimationFrame(render);
   }
 
-  // Global Pointer Events
   function handlePointer(x, y) {
     mouse.targetX = x;
     mouse.targetY = y;
@@ -208,27 +192,13 @@ export function initInteractiveBackground(canvasId = 'bg-canvas') {
     }
   }
 
-  window.addEventListener('pointermove', (e) => {
-    handlePointer(e.clientX, e.clientY);
-  });
-
-  window.addEventListener('mousemove', (e) => {
-    handlePointer(e.clientX, e.clientY);
-  });
-
+  window.addEventListener('pointermove', (e) => handlePointer(e.clientX, e.clientY));
+  window.addEventListener('mousemove', (e) => handlePointer(e.clientX, e.clientY));
   window.addEventListener('touchmove', (e) => {
-    if (e.touches && e.touches[0]) {
-      handlePointer(e.touches[0].clientX, e.touches[0].clientY);
-    }
+    if (e.touches && e.touches[0]) handlePointer(e.touches[0].clientX, e.touches[0].clientY);
   }, { passive: true });
-
-  window.addEventListener('mouseleave', () => {
-    mouse.active = false;
-  });
-
-  window.addEventListener('touchend', () => {
-    mouse.active = false;
-  });
+  window.addEventListener('mouseleave', () => { mouse.active = false; });
+  window.addEventListener('touchend', () => { mouse.active = false; });
 
   window.addEventListener('resize', () => {
     resize();
@@ -236,15 +206,11 @@ export function initInteractiveBackground(canvasId = 'bg-canvas') {
   });
 
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-      cancelAnimationFrame(reqId);
-    } else {
-      render();
-    }
+    if (document.hidden) cancelAnimationFrame(reqId);
+    else render();
   });
 
   resize();
   initParticles();
   render();
-  console.log('[InteractiveBG] Canvas background running.');
 }

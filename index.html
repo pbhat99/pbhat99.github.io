@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Prasannakumar T Bhat</title>
-  <meta name="description" content="Prasannakumar T Bhat - CG is not just faking, its adding beautiful layers of lie on the ugly truth.">
+  <meta name="description" content="Prasannakumar T Bhat - Senior Visual Effects Compositor @ DNEG">
   <link rel="icon" type="image/png" href="assets/images/branding/logo.png">
   
   <!-- Ubuntu Typography -->
@@ -17,7 +17,7 @@
   <link rel="stylesheet" href="_engine/css/responsive.css">
   
   <style>
-    /* Fixed Full-Screen Non-Scrollable Viewport */
+    /* Full-Page Fixed Non-Scrollable Viewport */
     html, body {
       margin: 0;
       padding: 0;
@@ -26,10 +26,11 @@
       overflow: hidden;
       position: fixed;
       inset: 0;
+      background-color: var(--bg-primary);
       font-family: 'Ubuntu', sans-serif;
     }
 
-    /* Transparent Navigation - Seamless, No Border or Background */
+    /* Seamless Navigation: No borders, no lines, no background */
     .site-header {
       position: absolute;
       top: 0;
@@ -39,8 +40,6 @@
       background: transparent !important;
       border: none !important;
       box-shadow: none !important;
-      backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
     }
 
     .home-fullscreen-container {
@@ -57,7 +56,8 @@
       background-position: center;
       background-repeat: no-repeat;
       padding-inline: 24px;
-      background-image: linear-gradient(to bottom, rgba(9, 12, 19, 0.75), rgba(9, 12, 19, 0.9)), url('pages/01_home/background.jpg');
+      background-color: var(--bg-primary);
+      background-image: linear-gradient(to bottom, rgba(14, 23, 51, 0.78), rgba(14, 23, 51, 0.92)), url('pages/01_home/background.jpg');
     }
 
     #bg-canvas {
@@ -69,103 +69,89 @@
       z-index: 1;
     }
 
+    /* Center Stage: Stacked 3 Lines, Perfectly Centered */
     .home-center-stage {
       position: relative;
       z-index: 10;
-      max-width: 95vw;
+      max-width: 900px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      text-align: center;
+      gap: 16px;
     }
 
-    /* Name and Tagline in a Single Horizontal Line */
-    .name-tagline-row {
-      display: inline-flex;
-      align-items: baseline;
-      justify-content: center;
-      gap: clamp(10px, 1.8vw, 22px);
-      white-space: nowrap;
-      flex-wrap: nowrap;
-      max-width: 95vw;
-    }
-
-    .hero-name-inline {
+    /* 1st Line: Fixed Name */
+    .hero-name-main {
       font-family: 'Ubuntu', sans-serif;
-      font-size: clamp(1.4rem, 2.6vw, 2.5rem);
+      font-size: clamp(2.4rem, 5.5vw, 4.4rem);
       font-weight: 700;
-      color: #ffffff;
+      color: var(--text-main);
       letter-spacing: -0.02em;
+      line-height: 1.1;
       margin: 0;
-      line-height: 1.2;
-      text-shadow: 0 0 40px rgba(56, 189, 248, 0.45);
+      text-shadow: 0 0 45px rgba(249, 134, 3, 0.25);
     }
 
-    .row-separator {
-      color: var(--accent-cyan);
-      font-weight: 300;
-      font-size: clamp(1.2rem, 2.2vw, 2.1rem);
-      opacity: 0.85;
-    }
-
-    .hero-tagline-inline {
+    /* 2nd Line: Designation (Pure text, no box or outline) */
+    .hero-designation-plain {
       font-family: 'Ubuntu', sans-serif;
-      font-size: clamp(0.95rem, 1.6vw, 1.4rem);
+      font-size: clamp(1.05rem, 2vw, 1.45rem);
+      font-weight: 500;
+      color: var(--accent-primary);
+      letter-spacing: 0.05em;
+      margin: 0;
+      line-height: 1.3;
+    }
+
+    /* 3rd Line: Tagline (Pure text, off-white italic) */
+    .hero-tagline-plain {
+      font-family: 'Ubuntu', sans-serif;
+      font-size: clamp(0.95rem, 1.6vw, 1.25rem);
       font-weight: 400;
       font-style: italic;
-      color: rgba(241, 245, 249, 0.88);
+      color: var(--text-muted);
+      max-width: 740px;
       margin: 0;
-      line-height: 1.2;
+      line-height: 1.5;
     }
 
-    .about-action-wrap {
-      margin-top: 36px;
+    .hero-about-wrap {
+      margin-top: 24px;
     }
 
     .btn-about {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 11px 36px;
+      padding: 11px 40px;
       font-size: 0.95rem;
       font-weight: 500;
       font-family: 'Ubuntu', sans-serif;
       border-radius: var(--radius-full);
-      background: linear-gradient(135deg, #0284c7, #2563eb);
+      background: var(--accent-primary);
       color: #ffffff;
-      box-shadow: 0 4px 18px rgba(37, 99, 235, 0.4);
+      box-shadow: 0 4px 18px rgba(249, 134, 3, 0.4);
       transition: all var(--transition-fast);
       letter-spacing: 0.02em;
     }
 
     .btn-about:hover {
-      background: linear-gradient(135deg, #38bdf8, #3b82f6);
+      background: var(--accent-hover);
       transform: translateY(-2px);
-      box-shadow: 0 6px 25px rgba(56, 189, 248, 0.55);
-    }
-
-    @media (max-width: 768px) {
-      .name-tagline-row {
-        flex-direction: column;
-        align-items: center;
-        gap: 8px;
-        white-space: normal;
-      }
-      .row-separator {
-        display: none;
-      }
+      box-shadow: 0 6px 25px rgba(249, 134, 3, 0.55);
     }
   </style>
 </head>
 <body>
 
-  <!-- Navigation Bar (Seamless & Transparent) -->
+  <!-- Navigation (Transparent, No VFX Pill) -->
   <header class="site-header">
     <div class="container-wide nav-wrapper">
       <a href="index.html" class="brand-logo">
         <img src="assets/images/branding/logo.png" alt="Pra Motions Logo" width="34" height="34" style="border-radius: 6px;">
         <span>Pra - <span class="brand-badge">Motions</span></span>
-        <span class="brand-tag">VFX</span>
       </a>
 
       <button class="mobile-nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
@@ -186,24 +172,21 @@
 
   <!-- Full-Screen Interactive Viewport -->
   <main class="home-fullscreen-container">
-    <!-- 60fps Interactive Mouse Pointer Canvas Background -->
+    <!-- Interactive Canvas Background -->
     <canvas id="bg-canvas"></canvas>
 
-    <!-- Center Stage: Name and Tagline in a Single Line + About Button -->
+    <!-- Center Stage: 3 Lines Centered + About Button -->
     <div class="home-center-stage">
-      <div class="name-tagline-row">
-        <h1 class="hero-name-inline">Prasannakumar T Bhat</h1>
-        <span class="row-separator">—</span>
-        <p class="hero-tagline-inline">"CG is not just faking, its adding beautiful layers of lie on the ugly truth."</p>
-      </div>
+      <h1 class="hero-name-main">Prasannakumar T Bhat</h1>
+      <p class="hero-designation-plain">Senior Visual Effects Compositor @ DNEG</p>
+      <p class="hero-tagline-plain">"CG is not just faking, its adding beautiful layers of lie on the ugly truth."</p>
 
-      <div class="about-action-wrap">
+      <div class="hero-about-wrap">
         <a href="about-me.html" class="btn-about">About</a>
       </div>
     </div>
   </main>
 
-  <!-- Interactive Background Engine -->
   <script type="module">
     import { initInteractiveBackground } from './_engine/js/interactive-bg.js';
     import './_engine/js/main.js';
