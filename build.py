@@ -769,20 +769,14 @@ def sync_all():
 
     about_data = {
         "name": "Prasannakumar T Bhat",
-        "designation": "Senior Visual Effects Compositor",
-        "experience": "10+ Years Visual Effects Experience",
+        "designation": "Visual Effects Compositor",
+        "experience": "",
         "info": "For <strong>10+ years</strong>, I've been weaving magic with pixels in the world of visual effects. It's thrilling to take raw footage, images, and 3D elements, and mold them into the final image that graces the big screen or TV. Seeing my work come to life is an unparalleled reward!\n\nI'm a relentless explorer, always pushing the boundaries of what's possible with the latest software in <strong>feature films, commercials, and TV projects</strong>.\n\nMy passion for innovation extends beyond the screen. In my spare time, I delve into research, <strong>crafting tools and automating tasks with scripts</strong>. With deep expertise in compositing, I'm currently bringing my vision to life as a <strong>Compositing Artist at DNEG</strong>.",
-        "resumeLink": f"{about_dir}/resume.pdf",
-        "coverLetterLink": f"{about_dir}/coverLetter.pdf",
-        "vimeoUrl": "https://vimeo.com/835414002",
-        "phone": "+91 9449267068",
-        "email": "pbhat99@gmail.com",
-        "github": "https://github.com/pbhat99",
-        "location": "Karnataka, India - 581337"
+        "showreelLink": "https://vimeo.com/835414002"
     }
 
-    # Load from aboutMe.json or content.json
-    for cand_json in ["aboutMe.json", "content.json"]:
+    # Load from content.json (or aboutMe.json fallback)
+    for cand_json in ["content.json", "aboutMe.json"]:
         cand_path = os.path.join(about_dir, cand_json)
         if os.path.exists(cand_path):
             try:
@@ -792,12 +786,22 @@ def sync_all():
                 pass
 
     name = about_data.get("name", "Prasannakumar T Bhat")
-    designation = about_data.get("designation", "Senior Visual Effects Compositor")
+    designation = about_data.get("designation", "Visual Effects Compositor")
     experience = about_data.get("experience", "")
     info_raw = about_data.get("info", "")
-    resume_link = about_data.get("resumeLink", f"{about_dir}/resume.pdf")
-    cover_letter_link = about_data.get("coverLetterLink", f"{about_dir}/coverLetter.pdf")
-    vimeo_url = about_data.get("vimeoUrl", "").strip()
+    resume_link = about_data.get("resumeLink") or (f"{about_dir}/resume.pdf" if os.path.exists(f"{about_dir}/resume.pdf") else "#")
+    cover_letter_link = about_data.get("coverLetterLink") or (f"{about_dir}/coverLetter.pdf" if os.path.exists(f"{about_dir}/coverLetter.pdf") else "#")
+    showreel_url = (
+        about_data.get("showreelLink")
+        or about_data.get("showreel link")
+        or about_data.get("showreel")
+        or about_data.get("showreelUrl")
+        or about_data.get("showreel url")
+        or about_data.get("vimeoUrl")
+        or about_data.get("vimeoLink")
+        or about_data.get("vimeo")
+        or ""
+    ).strip()
     phone = about_data.get("phone", "+91 9449267068")
     email = about_data.get("email", "pbhat99@gmail.com")
     github_link = about_data.get("github", "https://github.com/pbhat99")
@@ -844,17 +848,37 @@ def sync_all():
         </div>
       </section>'''
 
-    # Vimeo embed
-    vimeo_section_html = ""
-    if vimeo_url:
-        vimeo_id_match = re.search(r'(\d{6,})', vimeo_url)
-        if vimeo_id_match:
-            vimeo_id = vimeo_id_match.group(1)
-            vimeo_section_html = f'''
+    # Showreel Video Embed (Vimeo or YouTube)
+    showreel_section_html = ""
+    if showreel_url:
+        embed_src = None
+        allow_attr = "autoplay; fullscreen; picture-in-picture"
+        
+        # Check YouTube
+        yt_match = re.search(r'(?:youtube\.com\/(?:watch\?.*?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})', showreel_url)
+        if yt_match:
+            yt_id = yt_match.group(1)
+            embed_src = f"https://www.youtube.com/embed/{yt_id}?rel=0"
+            allow_attr = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        else:
+            # Check Vimeo
+            vimeo_match = re.search(r'vimeo\.com\/(?:video\/|channels\/[^\/]+\/|manage\/videos\/)?(\d{6,})', showreel_url)
+            if not vimeo_match and "vimeo" in showreel_url.lower():
+                vimeo_match = re.search(r'(\d{6,})', showreel_url)
+            if vimeo_match:
+                vimeo_id = vimeo_match.group(1)
+                embed_src = f"https://player.vimeo.com/video/{vimeo_id}?title=0&byline=0&portrait=0"
+                allow_attr = "autoplay; fullscreen; picture-in-picture"
+            elif "embed" in showreel_url:
+                embed_src = showreel_url
+                allow_attr = "autoplay; fullscreen; picture-in-picture"
+
+        if embed_src:
+            showreel_section_html = f'''
       <section class="about-video-card">
         <div class="about-video-container">
-          <iframe src="https://player.vimeo.com/video/{vimeo_id}?title=0&byline=0&portrait=0"
-                  allow="autoplay; fullscreen; picture-in-picture" allowfullscreen
+          <iframe src="{embed_src}"
+                  allow="{allow_attr}" allowfullscreen
                   title="VFX Showreel - {name}"></iframe>
         </div>
       </section>'''
@@ -904,18 +928,21 @@ def sync_all():
         if location:
             contact_lines_html.append(f'<div class="contact-line-item"><span class="contact-line-label">Location:</span><span class="contact-line-val">{location}</span></div>')
 
-    # 2. Right-Aligned Contact Image (contact.jpg)
-    contact_img_path = None
-    for cand in ["contact.jpg", "contact.png", "contact.webp", "contact.jpeg"]:
-        p = os.path.join(about_dir, cand)
-        if os.path.exists(p):
-            contact_img_path = p.replace("\\", "/")
-            break
-            
-    contact_img_html = f'''
+    # 2. Right-Aligned Contact Image (Optional: rendered only if explicitly configured in JSON and file exists)
+    contact_img_prop = (
+        about_data.get("contactImage")
+        or about_data.get("contact image")
+        or ""
+    ).strip()
+    contact_img_html = ""
+    if contact_img_prop:
+        cand_p = contact_img_prop if os.path.exists(contact_img_prop) else os.path.join(about_dir, contact_img_prop)
+        if os.path.exists(cand_p):
+            contact_img_path = cand_p.replace("\\", "/")
+            contact_img_html = f'''
           <div class="contact-image-wrap">
             <img src="{contact_img_path}" alt="Contact Visual" class="contact-img" loading="lazy">
-          </div>''' if contact_img_path else ''
+          </div>'''
 
     # 3. Social Media Section (from pages/05_about/social/ or socialMedia/)
     social_tiles_html = []
@@ -1019,10 +1046,10 @@ def sync_all():
       <!-- Known Tools Strip (Single Row Auto-Fitted Across Full Width) -->
       {tools_section_html}
 
-      <!-- Vimeo Showreel Video Embed -->
-      {vimeo_section_html}
+      <!-- Showreel Video Embed (Vimeo or YouTube) -->
+      {showreel_section_html}
 
-      <!-- Contact Information Card (Lines List on Left, Right-Aligned Image) -->
+      <!-- Contact Information Card (Lines List on Left, Optional Right-Aligned Image) -->
       <section id="contact" class="contact-card">
         <div class="contact-content-grid">
           <div class="contact-info-col">
@@ -1055,7 +1082,7 @@ def sync_all():
 '''
     with open("about.html", "w", encoding="utf-8") as f:
         f.write(about_html)
-    print("  -> Updated about.html (Nav: About, Vertical Photo Tile, Known Tools Strip, Vimeo Embed)")
+    print("  -> Updated about.html (Nav: About, Vertical Photo Tile, Known Tools Strip, Showreel Embed)")
 
     # Also generate about-me.html meta-refresh redirect to about.html
     about_redirect_html = '''<!DOCTYPE html>

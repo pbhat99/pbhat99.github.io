@@ -1111,10 +1111,14 @@ button {
 
 .contact-content-grid {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr;
   gap: clamp(24px, 4vw, 48px);
   align-items: center;
   margin-bottom: 0;
+}
+
+.contact-content-grid:has(.contact-image-wrap) {
+  grid-template-columns: 1fr auto;
 }
 
 @media (max-width: 768px) {
