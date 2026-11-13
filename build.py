@@ -404,6 +404,7 @@ def sync_all():
     
     company_sections_html = []
     total_projects_count = 0
+    all_categories = set()
     valid_img_exts = {'.jpg', '.jpeg', '.png', '.webp', '.avif', '.gif'}
 
     for comp_folder in company_subdirs:
@@ -494,7 +495,8 @@ def sync_all():
 
             p_title = proj_info.get("title") or format_title_from_filename(p_folder)
             p_desc = proj_info.get("description", "")
-            p_category = proj_info.get("category", "commercials")
+            p_category = (proj_info.get("category") or "commercials").strip().lower()
+            all_categories.add(p_category)
             p_year = proj_info.get("year", "")
             p_orientation = proj_info.get("orientation", "horizontal").lower()
             if p_orientation not in ("horizontal", "vertical", "square"):
@@ -510,6 +512,8 @@ def sync_all():
             cat_label = "Commercial"
             if p_category == "films": cat_label = "Feature Film"
             elif p_category == "music-videos": cat_label = "Music Video"
+            elif p_category == "other": cat_label = "Other"
+            else: cat_label = p_category.replace('-', ' ').replace('_', ' ').title()
 
             year_span = f'<span class="tile-year">{p_year}</span>' if p_year else ''
             desc_html = f'<p class="tile-desc">{p_desc}</p>' if p_desc else ''
@@ -538,8 +542,14 @@ def sync_all():
             </article>''')
             total_projects_count += 1
 
-        # Company Banner HTML (Fixed-Height Banner Strip with Right-Edge Logo)
-        designation_html = f'<div class="company-banner-designation">{comp_designation}</div>' if comp_designation else ''
+        # Company Banner HTML (Reduced Height Strip with Right-Edge Flush Logo)
+        meta_items = []
+        if comp_period:
+            meta_items.append(f'<span class="company-banner-period">{comp_period}</span>')
+        if comp_designation:
+            meta_items.append(f'<span class="company-banner-designation">{comp_designation}</span>')
+
+        meta_html = f'<div class="company-banner-meta">{"<span class=\"company-banner-sep\"> - </span>".join(meta_items)}</div>' if meta_items else ''
         description_html = f'<div class="company-banner-desc">{comp_description}</div>' if comp_description else ''
         logo_html = f'''
         <div class="company-banner-logo-wrap">
@@ -550,8 +560,7 @@ def sync_all():
         <div class="company-banner-strip" style="background-color: {comp_color};">
           <div class="company-banner-info">
             <h2 class="company-banner-heading">{company_name}</h2>
-            <div class="company-banner-period">{comp_period}</div>
-            {designation_html}
+            {meta_html}
             {description_html}
           </div>
           {logo_html}
@@ -564,6 +573,28 @@ def sync_all():
             {"".join(tiles_html)}
           </div>
         </section>''')
+
+    # Dynamic Category Filter Pills (Ordered with 'All' first without count)
+    CATEGORY_LABELS = {
+        "commercials": "Commercials",
+        "films": "Feature Films",
+        "music-videos": "Music Videos",
+        "other": "Other"
+    }
+
+    preferred_order = ["commercials", "films", "music-videos", "other"]
+    sorted_categories = []
+    for c in preferred_order:
+        if c in all_categories:
+            sorted_categories.append(c)
+    for c in sorted(all_categories):
+        if c not in sorted_categories:
+            sorted_categories.append(c)
+
+    filter_buttons_html = ['<button class="filter-btn active" data-filter="all">All</button>']
+    for cat in sorted_categories:
+        label = CATEGORY_LABELS.get(cat, cat.replace('-', ' ').replace('_', ' ').title())
+        filter_buttons_html.append(f'<button class="filter-btn" data-filter="{cat}">{label}</button>')
 
     vfx_html = f'''<!DOCTYPE html>
 <html lang="en">
@@ -586,7 +617,7 @@ def sync_all():
 
   <main style="padding-block: clamp(24px, 4vw, 56px);">
     <div class="container-wide">
-      <div class="section-header section-header-center">
+      <div class="section-header">
         <div class="section-label">Production Archive</div>
         <h1 class="section-title">{vfx_content.get('title', 'Visual Effects & Compositing')}</h1>
         <p class="section-desc">
@@ -594,12 +625,9 @@ def sync_all():
         </p>
       </div>
 
-      <!-- Filter Controls: Categories Only (Company pills removed, tag filter status attached) -->
+      <!-- Filter Controls: Dynamic Categories (No count on 'All', dynamically appends any added category) -->
       <div class="filter-bar filter-bar-center">
-        <button class="filter-btn active" data-filter="all">All Projects ({total_projects_count})</button>
-        <button class="filter-btn" data-filter="commercials">Commercials</button>
-        <button class="filter-btn" data-filter="films">Feature Films</button>
-        <button class="filter-btn" data-filter="music-videos">Music Videos</button>
+        {"".join(filter_buttons_html)}
         <span class="tag-filter-status" style="display: none;"></span>
       </div>
 
@@ -747,6 +775,14 @@ def sync_all():
 
   <main style="padding-block: clamp(24px, 4vw, 56px);">
     <div class="container">
+      <div class="section-header">
+        <div class="section-label">Biography & Expertise</div>
+        <h1 class="section-title">About Me</h1>
+        <p class="section-desc">
+          Visual Effects Compositor with 10+ years of studio experience across feature films, commercials, and next-generation AI pipelines.
+        </p>
+      </div>
+
       <div style="display: grid; grid-template-columns: 1fr 2fr; gap: clamp(24px, 5vw, 48px); align-items: start; margin-bottom: 56px;">
         <div>
           <div style="border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--border-subtle); background: var(--bg-card); box-shadow: var(--shadow-subtle);">
@@ -763,8 +799,7 @@ def sync_all():
         </div>
 
         <div>
-          <div class="section-label">Biography & Expertise</div>
-          <h1 class="section-title" style="margin-bottom: 20px;">It's Me! Prasannakumar</h1>
+          <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 16px;">It's Me! Prasannakumar</h2>
           <div style="font-size: 1.05rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 18px; line-height: 1.7;">
             <p>
               For <strong>10+ years</strong>, I've been weaving magic with pixels in the world of visual effects. It's thrilling to take raw footage, images, and 3D elements, and mold them into the final image that graces the big screen or TV. Seeing my work come to life is an unparalleled reward!

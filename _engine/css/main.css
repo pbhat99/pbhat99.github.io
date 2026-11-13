@@ -250,9 +250,13 @@ button {
   transform: translateY(-2px);
 }
 
-/* Section Header */
+/* Section Header - Centered for All Pages */
 .section-header {
   margin-bottom: clamp(32px, 5vw, 48px);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .section-header-center {
@@ -262,12 +266,6 @@ button {
   align-items: center;
 }
 
-.section-header-center .section-desc {
-  max-width: 800px;
-  margin-inline: auto;
-  white-space: normal;
-}
-
 .section-label {
   font-family: var(--font-mono);
   font-size: 0.8rem;
@@ -275,19 +273,24 @@ button {
   color: var(--accent-primary);
   letter-spacing: 0.1em;
   margin-bottom: 8px;
+  text-align: center;
 }
 
 .section-title {
   font-size: clamp(1.8rem, 3.5vw, 2.5rem);
   font-weight: 700;
   letter-spacing: -0.02em;
+  text-align: center;
 }
 
 .section-desc {
   font-size: 1.05rem;
   color: var(--text-muted);
-  max-width: 650px;
+  max-width: 760px;
   margin-top: 8px;
+  margin-inline: auto;
+  text-align: center;
+  line-height: 1.6;
 }
 
 /* Portfolio Filters */
@@ -471,14 +474,14 @@ button {
 /* Fixed-Height Reusable Company Banner */
 .company-banner-strip {
   position: relative;
-  height: 125px;
+  height: 96px;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-subtle);
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: stretch;
   overflow: hidden;
-  padding: 12px 24px;
+  padding: 0;
   margin-bottom: 24px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
@@ -492,13 +495,13 @@ button {
   gap: 3px;
   min-width: 0;
   flex-grow: 1;
-  padding-right: 16px;
+  padding: 10px 20px 10px 24px;
   z-index: 2;
 }
 
 .company-banner-heading {
   font-family: 'Ubuntu', sans-serif;
-  font-size: clamp(1.2rem, 2.2vw, 1.6rem);
+  font-size: clamp(1.15rem, 1.8vw, 1.45rem);
   font-weight: 700;
   color: var(--text-main);
   line-height: 1.15;
@@ -509,19 +512,12 @@ button {
   max-width: 100%;
 }
 
-.company-banner-period {
+.company-banner-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-family: 'Ubuntu', sans-serif;
   font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--accent-primary);
-  line-height: 1.2;
-  white-space: nowrap;
-}
-
-.company-banner-designation {
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--text-muted);
   line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
@@ -529,14 +525,35 @@ button {
   max-width: 100%;
 }
 
-.company-banner-desc {
-  font-size: 0.8rem;
+.company-banner-period {
+  font-weight: 500;
+  color: var(--accent-primary);
+  flex-shrink: 0;
+}
+
+.company-banner-sep {
   color: var(--text-subtle);
-  line-height: 1.2;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.company-banner-designation {
+  font-weight: 500;
+  color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 95%;
+}
+
+.company-banner-desc {
+  font-size: 0.8rem;
+  color: var(--text-subtle);
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  margin: 0;
 }
 
 .company-banner-logo-wrap {
@@ -546,14 +563,16 @@ button {
   justify-content: flex-end;
   flex-shrink: 0;
   max-width: 45%;
+  margin: 0;
+  padding: 0;
   z-index: 1;
+  overflow: hidden;
 }
 
 .company-banner-logo-img {
   height: 100%;
   width: auto;
   max-height: 100%;
-  max-width: 100%;
   object-fit: contain;
   object-position: right center;
   display: block;
@@ -561,13 +580,25 @@ button {
 }
 
 /* ==========================================================================
-   PROJECT TILES COMPONENT (3 Fixed Aspects, Circling Outline, Hover Scrim)
+   PROJECT TILES COMPONENT (Always 3 per row, Circling Outline, Hover Scrim)
    ========================================================================== */
 .company-project-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 24px;
   align-items: start;
+}
+
+@media (max-width: 960px) {
+  .company-project-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 580px) {
+  .company-project-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .project-tile {
@@ -598,15 +629,15 @@ button {
   box-shadow: 0 14px 40px rgba(0, 0, 0, 0.65), 0 0 25px rgba(249, 134, 3, 0.3);
 }
 
-/* Animated Circling Outline on Hover */
+/* Animated Circling Outline on Hover (Reduced width, slowed down, subtle glow) */
 .tile-circling-border {
   position: absolute;
-  inset: -2px;
-  border-radius: calc(var(--radius-md) + 2px);
+  inset: -1.5px;
+  border-radius: calc(var(--radius-md) + 1.5px);
   z-index: 0;
   overflow: hidden;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.35s ease;
   pointer-events: none;
 }
 
@@ -617,13 +648,15 @@ button {
   background: conic-gradient(
     from 0deg,
     transparent 0deg,
-    var(--accent-primary) 45deg,
-    transparent 90deg,
+    var(--accent-primary) 25deg,
+    rgba(249, 134, 3, 0.95) 35deg,
+    transparent 50deg,
     transparent 180deg,
-    var(--accent-hover) 225deg,
-    transparent 270deg
+    var(--accent-hover) 205deg,
+    rgba(255, 155, 38, 0.95) 215deg,
+    transparent 230deg
   );
-  animation: circleTrace 3s linear infinite;
+  animation: circleTrace 7s linear infinite;
 }
 
 @keyframes circleTrace {
@@ -633,6 +666,7 @@ button {
 
 .project-tile:hover .tile-circling-border {
   opacity: 1;
+  filter: drop-shadow(0 0 5px rgba(249, 134, 3, 0.65));
 }
 
 /* Tile Inner Container (Applies company cardBgColor & opacity) */
@@ -827,13 +861,76 @@ button {
   line-height: 1;
 }
 
+/* Scroll to Top Floating Button (Bottom Right, visible past 1 screen) */
+.back-to-top {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  width: 46px;
+  height: 46px;
+  border-radius: var(--radius-full);
+  background: rgba(14, 23, 51, 0.94);
+  border: 1px solid var(--accent-primary);
+  color: var(--accent-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(14px);
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.55), 0 0 12px rgba(249, 134, 3, 0.2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.back-to-top:hover {
+  background: var(--accent-primary);
+  color: #ffffff;
+  border-color: var(--accent-hover);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 28px rgba(249, 134, 3, 0.55);
+}
+
+.back-to-top.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.back-to-top svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  transition: transform 0.2s ease;
+}
+
+.back-to-top:hover svg {
+  transform: translateY(-2px);
+}
+
 @media (max-width: 640px) {
   .company-banner-strip {
     height: auto;
-    min-height: 100px;
-    padding: 12px 16px;
+    min-height: 80px;
+  }
+  .company-banner-info {
+    padding: 10px 14px;
   }
   .company-banner-logo-wrap {
-    max-width: 35%;
+    max-width: 32%;
+  }
+  .back-to-top {
+    bottom: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+  }
+  .back-to-top svg {
+    width: 18px;
+    height: 18px;
   }
 }

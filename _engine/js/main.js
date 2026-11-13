@@ -96,13 +96,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 220);
   }
 
-  filterBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
+  // Category Button Click (Delegated for dynamically generated pills)
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.filter-bar .filter-btn');
+    if (btn) {
+      e.preventDefault();
       currentCategory = btn.getAttribute('data-filter') || 'all';
       currentTag = null;
       updateCategoryButtons();
       applyFilters();
-    });
+    }
   });
 
   // Delegated clicks for interactive Category Pills and Clickable Tags on Tiles
@@ -142,6 +145,38 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
   });
+
+  // Scroll to Top Floating Button (Show only when scrolled past one screen height)
+  let backToTopBtn = document.getElementById('back-to-top');
+  if (!backToTopBtn) {
+    backToTopBtn = document.createElement('button');
+    backToTopBtn.id = 'back-to-top';
+    backToTopBtn.className = 'back-to-top';
+    backToTopBtn.setAttribute('aria-label', 'Scroll to top');
+    backToTopBtn.setAttribute('title', 'Scroll to top');
+    backToTopBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="18 15 12 9 6 15"></polyline>
+      </svg>
+    `;
+    document.body.appendChild(backToTopBtn);
+  }
+
+  function handleScroll() {
+    const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+    const screenHeight = window.innerHeight || document.documentElement.clientHeight;
+    if (scrollY > screenHeight) {
+      backToTopBtn.classList.add('visible');
+    } else {
+      backToTopBtn.classList.remove('visible');
+    }
+  }
+
+  window.addEventListener('scroll', handleScroll, { passive: true });
+  backToTopBtn.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+  handleScroll();
 
   // Showreel Timestamp Jumpers
   const reelBadges = document.querySelectorAll('.reel-time-badge');
