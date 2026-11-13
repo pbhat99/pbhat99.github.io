@@ -474,7 +474,7 @@ button {
 /* Fixed-Height Reusable Company Banner */
 .company-banner-strip {
   position: relative;
-  height: 96px;
+  height: 80px;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-subtle);
   display: flex;
@@ -492,16 +492,16 @@ button {
   justify-content: center;
   align-items: flex-start;
   text-align: left;
-  gap: 3px;
+  gap: 2px;
   min-width: 0;
   flex-grow: 1;
-  padding: 10px 20px 10px 24px;
+  padding: 8px 18px 8px 22px;
   z-index: 2;
 }
 
 .company-banner-heading {
   font-family: 'Ubuntu', sans-serif;
-  font-size: clamp(1.15rem, 1.8vw, 1.45rem);
+  font-size: clamp(1.1rem, 1.6vw, 1.35rem);
   font-weight: 700;
   color: var(--text-main);
   line-height: 1.15;
@@ -517,7 +517,7 @@ button {
   align-items: center;
   gap: 6px;
   font-family: 'Ubuntu', sans-serif;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
@@ -546,9 +546,9 @@ button {
 }
 
 .company-banner-desc {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--text-subtle);
-  line-height: 1.25;
+  line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -559,21 +559,25 @@ button {
 .company-banner-logo-wrap {
   height: 100%;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: flex-end;
   flex-shrink: 0;
-  max-width: 45%;
+  max-width: 50%;
   margin: 0;
   padding: 0;
   z-index: 1;
   overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 20%);
+  mask-image: linear-gradient(to right, transparent 0%, black 20%);
 }
 
 .company-banner-logo-img {
-  height: 100%;
-  width: auto;
-  max-height: 100%;
-  object-fit: contain;
+  height: 100% !important;
+  width: auto !important;
+  min-height: 100% !important;
+  max-height: 100% !important;
+  max-width: none !important;
+  object-fit: cover !important;
   object-position: right center;
   display: block;
   filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.4));
