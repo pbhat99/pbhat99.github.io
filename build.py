@@ -1038,7 +1038,7 @@ def sync_all():
           {social_section_html}
           <div class="about-actions-wrap">
             <a href="{resume_link}" class="btn btn-primary" download>Resume</a>
-            <a href="{cover_letter_link}" class="btn btn-secondary" download>Cover Letter</a>
+            <a href="{cover_letter_link}" class="btn btn-primary" download>Cover Letter</a>
           </div>
         </div>
       </div>
