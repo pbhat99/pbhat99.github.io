@@ -1,15 +1,13 @@
 {
   "title": "DirecTV - GOATbusters",
-  "client": "DirecTV",
+  "description": "Ghostbusters-themed commercial featuring hologram compositing, particle simulations, and intricate live plate cleanup.",
   "category": "commercials",
   "year": "2023",
-  "role": "Lead Compositor",
-  "description": "Ghostbusters-themed commercial featuring hologram compositing, particle simulations, and intricate live plate cleanup.",
-  "tools": [
+  "tags": [
     "Nuke",
     "Maya",
     "Python",
     "Flame"
   ],
-  "hasBeforeAfter": true
+  "orientation": "horizontal"
 }

@@ -1,13 +1,11 @@
 {
   "title": "Eradu Kanasu",
-  "client": "Production",
+  "description": "Visual effects compositing, clean plate reconstruction, and integration for Eradu Kanasu.",
   "category": "films",
   "year": "2018 - 2023",
-  "role": "Compositing Artist",
-  "description": "Visual effects compositing, clean plate reconstruction, and integration for Eradu Kanasu.",
-  "tools": [
+  "tags": [
     "Nuke",
     "Maya"
   ],
-  "hasBeforeAfter": false
+  "orientation": "horizontal"
 }

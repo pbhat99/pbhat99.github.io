@@ -34,7 +34,7 @@
 
   <main style="padding-block: clamp(24px, 4vw, 56px);">
     <div class="container-wide">
-      <div class="section-header">
+      <div class="section-header section-header-center">
         <div class="section-label">Production Archive</div>
         <h1 class="section-title">Visual Effects & Compositing</h1>
         <p class="section-desc">
@@ -42,1260 +42,1224 @@
         </p>
       </div>
 
-      <!-- Filter Controls: Categories & Company Jump Pills -->
-      <div class="filter-bar">
+      <!-- Filter Controls: Categories Only (Company pills removed, tag filter status attached) -->
+      <div class="filter-bar filter-bar-center">
         <button class="filter-btn active" data-filter="all">All Projects (68)</button>
         <button class="filter-btn" data-filter="commercials">Commercials</button>
         <button class="filter-btn" data-filter="films">Feature Films</button>
         <button class="filter-btn" data-filter="music-videos">Music Videos</button>
-        <button class="filter-btn" data-company="01-dneg">DNEG</button><button class="filter-btn" data-company="02-the-mill">The Mill</button><button class="filter-btn" data-company="03-zebu-animation-studios">Zebu Animation Studios & Sandalwood</button>
+        <span class="tag-filter-status" style="display: none;"></span>
       </div>
 
       <!-- Company Sections with Banners & Project Grids -->
       <div class="vfx-companies-container">
         
         <section class="company-section" id="01-dneg" data-company="01-dneg">
-          <div class="company-banner-card">
-            
-        <div class="company-banner-media">
-          <img src="pages/02_VFX/01_DNEG/banner_DNEG.png" alt="DNEG Banner" class="company-banner-img">
-          <div class="company-banner-overlay"></div>
-        </div>
-            <div class="company-banner-content">
-              <div class="company-meta-strip">
-                <span class="company-badge">Senior Visual Effects Compositor</span>
-                <span class="company-period">2021 - Present</span>
-                <span class="company-location">Bengaluru / Global</span>
-              </div>
-              <h2 class="company-name">DNEG</h2>
-              <p class="company-desc">High-end visual effects compositing for feature films, episodic television, and major commercial productions.</p>
-            </div>
+          
+        <div class="company-banner-strip" style="background-color: #111b38;">
+          <div class="company-banner-info">
+            <h2 class="company-banner-heading">DNEG</h2>
+            <div class="company-banner-period">Aug-2021 to Present</div>
+            <div class="company-banner-designation">Senior Visual Effects Compositor</div>
+            <div class="company-banner-desc">Visual effects compositing for feature films, episodic television, and major commercial productions.</div>
           </div>
-
-          <div class="portfolio-grid company-project-grid">
+          
+        <div class="company-banner-logo-wrap">
+          <img src="pages/02_VFX/01_DNEG/banner_DNEG.png" alt="DNEG Logo" class="company-banner-logo-img">
+        </div>
+        </div>
+          <div class="portfolio-grid company-project-grid" style="--tile-bg: rgba(19, 30, 66, 0.85);">
             
-            <article class="project-card" data-category="commercials" data-company="01-dneg">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/01_DNEG/16_xbox-forza-the-getaway-driver/projectImage.jpg" alt="Xbox Forza - The Getaway Driver" class="project-thumb" loading="lazy" data-lightbox data-caption="Xbox Forza - The Getaway Driver - VFX Compositor">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Microsoft / Xbox</span>
-                  <span>2021</span>
-                </div>
-                <h3 class="card-title">Xbox Forza - The Getaway Driver</h3>
-                <p class="card-desc">High-octane car chase sequences blending live-action stunt driving with CG sports cars and motion blur.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Maya</span></div>
-                
-              </div>
-            </article>
-            <article class="project-card" data-category="commercials" data-company="01-dneg">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/01_DNEG/15_ralph-lauren/projectImage.png" alt="Ralph Lauren" class="project-thumb" loading="lazy" data-lightbox data-caption="Ralph Lauren - Compositing Artist">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
-                </div>
-                <h3 class="card-title">Ralph Lauren</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Ralph Lauren.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Mocha</span></div>
-                
-              </div>
-            </article>
-            <article class="project-card" data-category="commercials" data-company="01-dneg">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/01_DNEG/14_mayans/projectImage.png" alt="Mayans" class="project-thumb" loading="lazy" data-lightbox data-caption="Mayans - Compositing Artist">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
-                </div>
-                <h3 class="card-title">Mayans</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Mayans.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Mocha</span></div>
-                
-              </div>
-            </article>
-            <article class="project-card" data-category="commercials" data-company="01-dneg">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/01_DNEG/13_comcast/projectImage.png" alt="Comcast" class="project-thumb" loading="lazy" data-lightbox data-caption="Comcast - Compositing Artist">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
-                </div>
-                <h3 class="card-title">Comcast</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Comcast.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Mocha</span></div>
-                
-              </div>
-            </article>
-            <article class="project-card" data-category="commercials" data-company="01-dneg">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/01_DNEG/12_the-disney-wish-cruise-line/projectImage.png" alt="The Disney Wish - Cruise Line" class="project-thumb" loading="lazy" data-lightbox data-caption="The Disney Wish - Cruise Line - Compositor">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Disney</span>
-                  <span>2022</span>
-                </div>
-                <h3 class="card-title">The Disney Wish - Cruise Line</h3>
-                <p class="card-desc">Magical particle effects, fairy dust simulation compositing, water plate extension, and photoreal CG Disney ship.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Houdini</span></div>
-                
-              </div>
-            </article>
-            <article class="project-card" data-category="commercials" data-company="01-dneg">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/01_DNEG/11_gmc-hummer-ev-quiet-revolution/projectImage.png" alt="GMC Hummer EV - Quiet Revolution" class="project-thumb" loading="lazy" data-lightbox data-caption="GMC Hummer EV - Quiet Revolution - Senior Compositing Artist">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">GMC</span>
-                  <span>2023</span>
-                </div>
-                <h3 class="card-title">GMC Hummer EV - Quiet Revolution</h3>
-                <p class="card-desc">Photoreal CG truck integration, interactive lighting reflections on wet asphalt, and realistic tire dust spray passes.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke Studio</span><span class="tool-tag">V-Ray</span><span class="tool-tag">Houdini</span></div>
-                
-                <div class="accordion-wrapper">
-                  <button class="accordion-trigger" aria-expanded="false">
-                    <span>Interactive Wipe Comparison</span>
-                    <span class="accordion-icon">&#9662;</span>
-                  </button>
-                  <div class="accordion-content">
-                    <div class="accordion-inner">
-                      <div class="accordion-breakdown-box">
-                        <div class="before-after-container" style="aspect-ratio: 16/9;">
-                          <div class="ba-image-layer ba-before-layer">
-                            <img src="pages/02_VFX/01_DNEG/11_gmc-hummer-ev-quiet-revolution/projectImage.png" alt="Raw Plate">
-                            <span class="ba-badge ba-badge-before">Raw Plate</span>
-                          </div>
-                          <div class="ba-image-layer ba-after-layer">
-                            <img src="pages/02_VFX/01_DNEG/11_gmc-hummer-ev-quiet-revolution/projectImage.png" alt="Final Comp">
-                            <span class="ba-badge ba-badge-after">Final Comp</span>
-                          </div>
-                          <div class="ba-handle"><div class="ba-handle-circle"><div class="ba-handle-arrows"><span>&#9664;</span><span>&#9654;</span></div></div></div>
-                        </div>
-                      </div>
-                    </div>
+            <article class="project-tile aspect-horizontal" data-category="commercials" data-tags="Nuke,Maya">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/01_DNEG/16_xbox-forza-the-getaway-driver/projectImage.jpg" alt="Xbox Forza - The Getaway Driver" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Xbox Forza - The Getaway Driver</span>
+                      <span class="tile-year">2021</span>
+                    </h3>
+                    <p class="tile-desc">High-octane car chase sequences blending live-action stunt driving with CG sports cars and motion blur.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Maya">Maya</button></div>
                   </div>
                 </div>
               </div>
             </article>
-            <article class="project-card" data-category="commercials" data-company="01-dneg">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/01_DNEG/10_three-5g-real-5g-has-arrived/projectImage.png" alt="Three 5G - Real 5G Has Arrived" class="project-thumb" loading="lazy" data-lightbox data-caption="Three 5G - Real 5G Has Arrived - Compositor">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Three UK</span>
-                  <span>2021</span>
-                </div>
-                <h3 class="card-title">Three 5G - Real 5G Has Arrived</h3>
-                <p class="card-desc">Futuristic London city transformation, holographic AR interfaces, digital doubles, and seamless invisible VFX.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Flame</span></div>
-                
-              </div>
-            </article>
-            <article class="project-card" data-category="commercials" data-company="01-dneg">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/01_DNEG/09_michelob-ultra/projectImage.png" alt="Michelob Ultra" class="project-thumb" loading="lazy" data-lightbox data-caption="Michelob Ultra - Compositing Artist">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
-                </div>
-                <h3 class="card-title">Michelob Ultra</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Michelob Ultra.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Mocha</span></div>
-                
-              </div>
-            </article>
-            <article class="project-card" data-category="commercials" data-company="01-dneg">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/01_DNEG/08_servicenow/projectImage.png" alt="ServiceNow" class="project-thumb" loading="lazy" data-lightbox data-caption="ServiceNow - Compositing Artist">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
-                </div>
-                <h3 class="card-title">ServiceNow</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for ServiceNow.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Mocha</span></div>
-                
-              </div>
-            </article>
-            <article class="project-card" data-category="commercials" data-company="01-dneg">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/01_DNEG/07_person-of-interest/projectImage.jpg" alt="Person Of Interest" class="project-thumb" loading="lazy" data-lightbox data-caption="Person Of Interest - Compositing Artist">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2023</span>
-                </div>
-                <h3 class="card-title">Person Of Interest</h3>
-                <p class="card-desc">Visual effects compositing and shot integration for Person Of Interest.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Maya</span></div>
-                
-              </div>
-            </article>
-            <article class="project-card" data-category="commercials" data-company="01-dneg">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/01_DNEG/06_pepsi-the-call-super-bowl-halftime/projectImage.jpg" alt="Pepsi - 'The Call' Super Bowl Halftime" class="project-thumb" loading="lazy" data-lightbox data-caption="Pepsi - 'The Call' Super Bowl Halftime - Compositing Artist">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Pepsi / NFL</span>
-                  <span>2022</span>
-                </div>
-                <h3 class="card-title">Pepsi - 'The Call' Super Bowl Halftime</h3>
-                <p class="card-desc">Halftime show teaser featuring stadium-scale CG crowd multiplication, holographic displays, and energetic lighting passes.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Maya</span><span class="tool-tag">Mocha Pro</span></div>
-                
-              </div>
-            </article>
-            <article class="project-card" data-category="commercials" data-company="01-dneg">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/01_DNEG/05_pepsi-superbowl/projectImage.jpg" alt="Pepsi Superbowl" class="project-thumb" loading="lazy" data-lightbox data-caption="Pepsi Superbowl - Compositing Artist">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2023</span>
-                </div>
-                <h3 class="card-title">Pepsi Superbowl</h3>
-                <p class="card-desc">Visual effects compositing and shot integration for Pepsi Superbowl.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Maya</span></div>
-                
-              </div>
-            </article>
-            <article class="project-card" data-category="commercials" data-company="01-dneg">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/01_DNEG/04_directv-goatbusters/projectImage.jpg" alt="DirecTV - GOATbusters" class="project-thumb" loading="lazy" data-lightbox data-caption="DirecTV - GOATbusters - Lead Compositor">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">DirecTV</span>
-                  <span>2023</span>
-                </div>
-                <h3 class="card-title">DirecTV - GOATbusters</h3>
-                <p class="card-desc">Ghostbusters-themed commercial featuring hologram compositing, particle simulations, and intricate live plate cleanup.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Maya</span><span class="tool-tag">Python</span><span class="tool-tag">Flame</span></div>
-                
-                <div class="accordion-wrapper">
-                  <button class="accordion-trigger" aria-expanded="false">
-                    <span>Interactive Wipe Comparison</span>
-                    <span class="accordion-icon">&#9662;</span>
-                  </button>
-                  <div class="accordion-content">
-                    <div class="accordion-inner">
-                      <div class="accordion-breakdown-box">
-                        <div class="before-after-container" style="aspect-ratio: 16/9;">
-                          <div class="ba-image-layer ba-before-layer">
-                            <img src="pages/02_VFX/01_DNEG/04_directv-goatbusters/projectImage.jpg" alt="Raw Plate">
-                            <span class="ba-badge ba-badge-before">Raw Plate</span>
-                          </div>
-                          <div class="ba-image-layer ba-after-layer">
-                            <img src="pages/02_VFX/01_DNEG/04_directv-goatbusters/projectImage.jpg" alt="Final Comp">
-                            <span class="ba-badge ba-badge-after">Final Comp</span>
-                          </div>
-                          <div class="ba-handle"><div class="ba-handle-circle"><div class="ba-handle-arrows"><span>&#9664;</span><span>&#9654;</span></div></div></div>
-                        </div>
-                      </div>
-                    </div>
+            <article class="project-tile aspect-horizontal" data-category="commercials" data-tags="Nuke,Mocha">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/01_DNEG/15_ralph-lauren/projectImage.png" alt="Ralph Lauren" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Ralph Lauren</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Ralph Lauren.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Mocha">Mocha</button></div>
                   </div>
                 </div>
               </div>
             </article>
-            <article class="project-card" data-category="commercials" data-company="01-dneg">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/01_DNEG/03_gmc-hummer-ev-quiet-revolution/projectImage.jpg" alt="GMC Hummer EV - Quiet Revolution" class="project-thumb" loading="lazy" data-lightbox data-caption="GMC Hummer EV - Quiet Revolution - Senior Compositing Artist">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">GMC</span>
-                  <span>2023</span>
-                </div>
-                <h3 class="card-title">GMC Hummer EV - Quiet Revolution</h3>
-                <p class="card-desc">Photoreal CG truck integration, interactive lighting reflections on wet asphalt, and realistic tire dust spray passes.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke Studio</span><span class="tool-tag">V-Ray</span><span class="tool-tag">Houdini</span></div>
-                
-                <div class="accordion-wrapper">
-                  <button class="accordion-trigger" aria-expanded="false">
-                    <span>Interactive Wipe Comparison</span>
-                    <span class="accordion-icon">&#9662;</span>
-                  </button>
-                  <div class="accordion-content">
-                    <div class="accordion-inner">
-                      <div class="accordion-breakdown-box">
-                        <div class="before-after-container" style="aspect-ratio: 16/9;">
-                          <div class="ba-image-layer ba-before-layer">
-                            <img src="pages/02_VFX/01_DNEG/03_gmc-hummer-ev-quiet-revolution/projectImage.jpg" alt="Raw Plate">
-                            <span class="ba-badge ba-badge-before">Raw Plate</span>
-                          </div>
-                          <div class="ba-image-layer ba-after-layer">
-                            <img src="pages/02_VFX/01_DNEG/03_gmc-hummer-ev-quiet-revolution/projectImage.jpg" alt="Final Comp">
-                            <span class="ba-badge ba-badge-after">Final Comp</span>
-                          </div>
-                          <div class="ba-handle"><div class="ba-handle-circle"><div class="ba-handle-arrows"><span>&#9664;</span><span>&#9654;</span></div></div></div>
-                        </div>
-                      </div>
-                    </div>
+            <article class="project-tile aspect-horizontal" data-category="commercials" data-tags="Nuke,Mocha">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/01_DNEG/14_mayans/projectImage.png" alt="Mayans" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Mayans</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Mayans.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Mocha">Mocha</button></div>
                   </div>
                 </div>
               </div>
             </article>
-            <article class="project-card" data-category="commercials" data-company="01-dneg">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/01_DNEG/02_goatbusters/projectImage.jpg" alt="Goatbusters" class="project-thumb" loading="lazy" data-lightbox data-caption="Goatbusters - Compositing Artist">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2023</span>
+            <article class="project-tile aspect-horizontal" data-category="commercials" data-tags="Nuke,Mocha">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/01_DNEG/13_comcast/projectImage.png" alt="Comcast" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Comcast</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Comcast.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Mocha">Mocha</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Goatbusters</h3>
-                <p class="card-desc">Visual effects compositing and shot integration for Goatbusters.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Maya</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="commercials" data-company="01-dneg">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/01_DNEG/01_jini-analytics/projectImage.jpg" alt="JiNi Analytics" class="project-thumb" loading="lazy" data-lightbox data-caption="JiNi Analytics - Compositing Artist">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-horizontal" data-category="commercials" data-tags="Nuke,Houdini">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/01_DNEG/12_the-disney-wish-cruise-line/projectImage.png" alt="The Disney Wish - Cruise Line" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>The Disney Wish - Cruise Line</span>
+                      <span class="tile-year">2022</span>
+                    </h3>
+                    <p class="tile-desc">Magical particle effects, fairy dust simulation compositing, water plate extension, and photoreal CG Disney ship.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Houdini">Houdini</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">JiNi Analytics</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for JiNi Analytics.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Mocha</span></div>
-                
+              </div>
+            </article>
+            <article class="project-tile aspect-horizontal" data-category="commercials" data-tags="Nuke Studio,V-Ray,Houdini">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/01_DNEG/11_gmc-hummer-ev-quiet-revolution/projectImage.png" alt="GMC Hummer EV - Quiet Revolution" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>GMC Hummer EV - Quiet Revolution</span>
+                      <span class="tile-year">2023</span>
+                    </h3>
+                    <p class="tile-desc">Photoreal CG truck integration, interactive lighting reflections on wet asphalt, and realistic tire dust spray passes.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke Studio">Nuke Studio</button><button class="tile-tag" data-tag="V-Ray">V-Ray</button><button class="tile-tag" data-tag="Houdini">Houdini</button></div>
+                  </div>
+                </div>
+              </div>
+            </article>
+            <article class="project-tile aspect-horizontal" data-category="commercials" data-tags="Nuke,Flame">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/01_DNEG/10_three-5g-real-5g-has-arrived/projectImage.png" alt="Three 5G - Real 5G Has Arrived" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Three 5G - Real 5G Has Arrived</span>
+                      <span class="tile-year">2021</span>
+                    </h3>
+                    <p class="tile-desc">Futuristic London city transformation, holographic AR interfaces, digital doubles, and seamless invisible VFX.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Flame">Flame</button></div>
+                  </div>
+                </div>
+              </div>
+            </article>
+            <article class="project-tile aspect-horizontal" data-category="commercials" data-tags="Nuke,Mocha">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/01_DNEG/09_michelob-ultra/projectImage.png" alt="Michelob Ultra" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Michelob Ultra</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Michelob Ultra.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Mocha">Mocha</button></div>
+                  </div>
+                </div>
+              </div>
+            </article>
+            <article class="project-tile aspect-horizontal" data-category="commercials" data-tags="Nuke,Mocha">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/01_DNEG/08_servicenow/projectImage.png" alt="ServiceNow" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>ServiceNow</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for ServiceNow.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Mocha">Mocha</button></div>
+                  </div>
+                </div>
+              </div>
+            </article>
+            <article class="project-tile aspect-horizontal" data-category="commercials" data-tags="Nuke,Maya">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/01_DNEG/07_person-of-interest/projectImage.jpg" alt="Person Of Interest" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Person Of Interest</span>
+                      <span class="tile-year">2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing and shot integration for Person Of Interest.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Maya">Maya</button></div>
+                  </div>
+                </div>
+              </div>
+            </article>
+            <article class="project-tile aspect-horizontal" data-category="commercials" data-tags="Nuke,Maya,Mocha Pro">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/01_DNEG/06_pepsi-the-call-super-bowl-halftime/projectImage.jpg" alt="Pepsi - 'The Call' Super Bowl Halftime" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Pepsi - 'The Call' Super Bowl Halftime</span>
+                      <span class="tile-year">2022</span>
+                    </h3>
+                    <p class="tile-desc">Halftime show teaser featuring stadium-scale CG crowd multiplication, holographic displays, and energetic lighting passes.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Maya">Maya</button><button class="tile-tag" data-tag="Mocha Pro">Mocha Pro</button></div>
+                  </div>
+                </div>
+              </div>
+            </article>
+            <article class="project-tile aspect-vertical" data-category="commercials" data-tags="Nuke,Maya">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/01_DNEG/05_pepsi-superbowl/projectImage.jpg" alt="Pepsi Superbowl" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Pepsi Superbowl</span>
+                      <span class="tile-year">2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing and shot integration for Pepsi Superbowl.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Maya">Maya</button></div>
+                  </div>
+                </div>
+              </div>
+            </article>
+            <article class="project-tile aspect-horizontal" data-category="commercials" data-tags="Nuke,Maya,Python,Flame">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/01_DNEG/04_directv-goatbusters/projectImage.jpg" alt="DirecTV - GOATbusters" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>DirecTV - GOATbusters</span>
+                      <span class="tile-year">2023</span>
+                    </h3>
+                    <p class="tile-desc">Ghostbusters-themed commercial featuring hologram compositing, particle simulations, and intricate live plate cleanup.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Maya">Maya</button><button class="tile-tag" data-tag="Python">Python</button><button class="tile-tag" data-tag="Flame">Flame</button></div>
+                  </div>
+                </div>
+              </div>
+            </article>
+            <article class="project-tile aspect-vertical" data-category="commercials" data-tags="Nuke Studio,V-Ray,Houdini">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/01_DNEG/03_gmc-hummer-ev-quiet-revolution/projectImage.jpg" alt="GMC Hummer EV - Quiet Revolution" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>GMC Hummer EV - Quiet Revolution</span>
+                      <span class="tile-year">2023</span>
+                    </h3>
+                    <p class="tile-desc">Photoreal CG truck integration, interactive lighting reflections on wet asphalt, and realistic tire dust spray passes.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke Studio">Nuke Studio</button><button class="tile-tag" data-tag="V-Ray">V-Ray</button><button class="tile-tag" data-tag="Houdini">Houdini</button></div>
+                  </div>
+                </div>
+              </div>
+            </article>
+            <article class="project-tile aspect-vertical" data-category="commercials" data-tags="Nuke,Maya">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/01_DNEG/02_goatbusters/projectImage.jpg" alt="Goatbusters" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Goatbusters</span>
+                      <span class="tile-year">2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing and shot integration for Goatbusters.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Maya">Maya</button></div>
+                  </div>
+                </div>
+              </div>
+            </article>
+            <article class="project-tile aspect-horizontal" data-category="commercials" data-tags="Nuke,Mocha">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/01_DNEG/01_jini-analytics/projectImage.jpg" alt="JiNi Analytics" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>JiNi Analytics</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for JiNi Analytics.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Mocha">Mocha</button></div>
+                  </div>
+                </div>
               </div>
             </article>
           </div>
         </section>
         <section class="company-section" id="02-the-mill" data-company="02-the-mill">
-          <div class="company-banner-card">
-            
-        <div class="company-banner-media">
-          <img src="pages/02_VFX/02_The-Mill/banner_The-Mill.png" alt="The Mill Banner" class="company-banner-img">
-          <div class="company-banner-overlay"></div>
-        </div>
-            <div class="company-banner-content">
-              <div class="company-meta-strip">
-                <span class="company-badge">Visual Effects Compositor</span>
-                <span class="company-period">2017 - 2021</span>
-                <span class="company-location">London / Global</span>
-              </div>
-              <h2 class="company-name">The Mill</h2>
-              <p class="company-desc">Award-winning commercials, automotive CG integration, photoreal creature compositing, and music videos.</p>
-            </div>
+          
+        <div class="company-banner-strip" style="background-color: #131833;">
+          <div class="company-banner-info">
+            <h2 class="company-banner-heading">The Mill</h2>
+            <div class="company-banner-period">Feb-2017 to Jul-2021</div>
+            <div class="company-banner-designation">Visual Effects Compositor</div>
+            <div class="company-banner-desc">Award-winning commercials, automotive CG integration, photoreal creature compositing, and music videos.</div>
           </div>
-
-          <div class="portfolio-grid company-project-grid">
+          
+        <div class="company-banner-logo-wrap">
+          <img src="pages/02_VFX/02_The-Mill/banner_The-Mill.png" alt="The Mill Logo" class="company-banner-logo-img">
+        </div>
+        </div>
+          <div class="portfolio-grid company-project-grid" style="--tile-bg: rgba(19, 30, 66, 0.85);">
             
-            <article class="project-card" data-category="films" data-company="02-the-mill">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/02_The-Mill/15_mv5bmwjmyjcwmtmtmdu1zc00zgi5ltlmzdatodi3nda2zte5zgvlxkeyxkfqcgc-v1-fmjpg-uy4080-jpg/projectImage.jpg" alt="Mv5Bmwjmyjcwmtmtmdu1Zc00Zgi5Ltlmzdatodi3Nda2Zte5Zgvlxkeyxkfqcgc V1 Fmjpg Uy4080.Jpg" class="project-thumb" loading="lazy" data-lightbox data-caption="Mv5Bmwjmyjcwmtmtmdu1Zc00Zgi5Ltlmzdatodi3Nda2Zte5Zgvlxkeyxkfqcgc V1 Fmjpg Uy4080.Jpg - Compositing Artist">
-                <span class="card-overlay-badge">Feature Film</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
-                </div>
-                <h3 class="card-title">Mv5Bmwjmyjcwmtmtmdu1Zc00Zgi5Ltlmzdatodi3Nda2Zte5Zgvlxkeyxkfqcgc V1 Fmjpg Uy4080.Jpg</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Mv5Bmwjmyjcwmtmtmdu1Zc00Zgi5Ltlmzdatodi3Nda2Zte5Zgvlxkeyxkfqcgc V1 Fmjpg Uy4080.Jpg.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Maya</span></div>
-                
-              </div>
-            </article>
-            <article class="project-card" data-category="commercials" data-company="02-the-mill">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/02_The-Mill/14_the-most-vicious-cycle/projectImage.jpg" alt="The Most Vicious Cycle" class="project-thumb" loading="lazy" data-lightbox data-caption="The Most Vicious Cycle - Compositing Artist">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
-                </div>
-                <h3 class="card-title">The Most Vicious Cycle</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for The Most Vicious Cycle.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Mocha</span></div>
-                
-              </div>
-            </article>
-            <article class="project-card" data-category="commercials" data-company="02-the-mill">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/02_The-Mill/13_dick-s-sporting-goods-play-like-you-own-it/projectImage.jpg" alt="Dick's Sporting Goods- Play Like You Own It" class="project-thumb" loading="lazy" data-lightbox data-caption="Dick's Sporting Goods- Play Like You Own It - Compositing Artist">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
-                </div>
-                <h3 class="card-title">Dick's Sporting Goods- Play Like You Own It</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Dick's Sporting Goods- Play Like You Own It.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Mocha</span></div>
-                
-              </div>
-            </article>
-            <article class="project-card" data-category="commercials" data-company="02-the-mill">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/02_The-Mill/12_buschlight/projectImage.jpg" alt="Buschlight" class="project-thumb" loading="lazy" data-lightbox data-caption="Buschlight - Compositing Artist">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2023</span>
-                </div>
-                <h3 class="card-title">Buschlight</h3>
-                <p class="card-desc">Visual effects compositing and shot integration for Buschlight.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Maya</span></div>
-                
-              </div>
-            </article>
-            <article class="project-card" data-category="commercials" data-company="02-the-mill">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/02_The-Mill/11_buschlight-voice-of-the-mountains/projectImage.jpg" alt="BuschLight - Voice of the Mountains" class="project-thumb" loading="lazy" data-lightbox data-caption="BuschLight - Voice of the Mountains - Compositor">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Busch Light</span>
-                  <span>2023</span>
-                </div>
-                <h3 class="card-title">BuschLight - Voice of the Mountains</h3>
-                <p class="card-desc">Extensive matte painting set extension, icy atmospheric snow simulation, and character integration.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Photoshop</span><span class="tool-tag">SynthEyes</span></div>
-                
-                <div class="accordion-wrapper">
-                  <button class="accordion-trigger" aria-expanded="false">
-                    <span>Interactive Wipe Comparison</span>
-                    <span class="accordion-icon">&#9662;</span>
-                  </button>
-                  <div class="accordion-content">
-                    <div class="accordion-inner">
-                      <div class="accordion-breakdown-box">
-                        <div class="before-after-container" style="aspect-ratio: 16/9;">
-                          <div class="ba-image-layer ba-before-layer">
-                            <img src="pages/02_VFX/02_The-Mill/11_buschlight-voice-of-the-mountains/projectImage.jpg" alt="Raw Plate">
-                            <span class="ba-badge ba-badge-before">Raw Plate</span>
-                          </div>
-                          <div class="ba-image-layer ba-after-layer">
-                            <img src="pages/02_VFX/02_The-Mill/11_buschlight-voice-of-the-mountains/projectImage.jpg" alt="Final Comp">
-                            <span class="ba-badge ba-badge-after">Final Comp</span>
-                          </div>
-                          <div class="ba-handle"><div class="ba-handle-circle"><div class="ba-handle-arrows"><span>&#9664;</span><span>&#9654;</span></div></div></div>
-                        </div>
-                      </div>
-                    </div>
+            <article class="project-tile aspect-vertical" data-category="films" data-tags="Nuke,Maya">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/02_The-Mill/15_mv5bmwjmyjcwmtmtmdu1zc00zgi5ltlmzdatodi3nda2zte5zgvlxkeyxkfqcgc-v1-fmjpg-uy4080-jpg/projectImage.jpg" alt="Mv5Bmwjmyjcwmtmtmdu1Zc00Zgi5Ltlmzdatodi3Nda2Zte5Zgvlxkeyxkfqcgc V1 Fmjpg Uy4080.Jpg" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="films" title="Filter by Feature Film">Feature Film</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Mv5Bmwjmyjcwmtmtmdu1Zc00Zgi5Ltlmzdatodi3Nda2Zte5Zgvlxkeyxkfqcgc V1 Fmjpg Uy4080.Jpg</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Mv5Bmwjmyjcwmtmtmdu1Zc00Zgi5Ltlmzdatodi3Nda2Zte5Zgvlxkeyxkfqcgc V1 Fmjpg Uy4080.Jpg.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Maya">Maya</button></div>
                   </div>
                 </div>
               </div>
             </article>
-            <article class="project-card" data-category="commercials" data-company="02-the-mill">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/02_The-Mill/10_adidas/projectImage.jpg" alt="Adidas" class="project-thumb" loading="lazy" data-lightbox data-caption="Adidas - Compositing Artist">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2023</span>
+            <article class="project-tile aspect-horizontal" data-category="commercials" data-tags="Nuke,Mocha">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/02_The-Mill/14_the-most-vicious-cycle/projectImage.jpg" alt="The Most Vicious Cycle" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>The Most Vicious Cycle</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for The Most Vicious Cycle.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Mocha">Mocha</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Adidas</h3>
-                <p class="card-desc">Visual effects compositing and shot integration for Adidas.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Maya</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="commercials" data-company="02-the-mill">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/02_The-Mill/09_adidas-create-the-answer/projectImage.jpg" alt="Adidas - Create The Answer" class="project-thumb" loading="lazy" data-lightbox data-caption="Adidas - Create The Answer - Compositor">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Adidas</span>
-                  <span>2018</span>
+            <article class="project-tile aspect-horizontal" data-category="commercials" data-tags="Nuke,Mocha">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/02_The-Mill/13_dick-s-sporting-goods-play-like-you-own-it/projectImage.jpg" alt="Dick's Sporting Goods- Play Like You Own It" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Dick's Sporting Goods- Play Like You Own It</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Dick's Sporting Goods- Play Like You Own It.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Mocha">Mocha</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Adidas - Create The Answer</h3>
-                <p class="card-desc">Fast-paced World Cup campaign with dynamic camera transitions, rapid roto, holographic UI elements, and color grading.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">After Effects</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="films" data-company="02-the-mill">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/02_The-Mill/08_bmw/projectImage.jpg" alt="BMW" class="project-thumb" loading="lazy" data-lightbox data-caption="BMW - Compositing Artist">
-                <span class="card-overlay-badge">Feature Film</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-horizontal" data-category="commercials" data-tags="Nuke,Maya">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/02_The-Mill/12_buschlight/projectImage.jpg" alt="Buschlight" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Buschlight</span>
+                      <span class="tile-year">2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing and shot integration for Buschlight.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Maya">Maya</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">BMW</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for BMW.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Maya</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="commercials" data-company="02-the-mill">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/02_The-Mill/07_the-odd-one-out/projectImage.jpg" alt="The Odd One Out" class="project-thumb" loading="lazy" data-lightbox data-caption="The Odd One Out - Compositing Artist">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-horizontal" data-category="commercials" data-tags="Nuke,Photoshop,SynthEyes">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/02_The-Mill/11_buschlight-voice-of-the-mountains/projectImage.jpg" alt="BuschLight - Voice of the Mountains" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>BuschLight - Voice of the Mountains</span>
+                      <span class="tile-year">2023</span>
+                    </h3>
+                    <p class="tile-desc">Extensive matte painting set extension, icy atmospheric snow simulation, and character integration.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Photoshop">Photoshop</button><button class="tile-tag" data-tag="SynthEyes">SynthEyes</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">The Odd One Out</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for The Odd One Out.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Mocha</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="commercials" data-company="02-the-mill">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/02_The-Mill/06_budlight-hbo-joust/projectImage.jpg" alt="BudLight - HBO Joust" class="project-thumb" loading="lazy" data-lightbox data-caption="BudLight - HBO Joust - Compositing Artist">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-horizontal" data-category="commercials" data-tags="Nuke,Maya">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/02_The-Mill/10_adidas/projectImage.jpg" alt="Adidas" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Adidas</span>
+                      <span class="tile-year">2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing and shot integration for Adidas.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Maya">Maya</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">BudLight - HBO Joust</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for BudLight - HBO Joust.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Mocha</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="music-videos" data-company="02-the-mill">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/02_The-Mill/05_jay-prince-beamlight/projectImage.jpg" alt="JAY PRINCE - Beamlight" class="project-thumb" loading="lazy" data-lightbox data-caption="JAY PRINCE - Beamlight - Compositing Artist">
-                <span class="card-overlay-badge">Music Video</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-horizontal" data-category="commercials" data-tags="Nuke,After Effects">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/02_The-Mill/09_adidas-create-the-answer/projectImage.jpg" alt="Adidas - Create The Answer" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Adidas - Create The Answer</span>
+                      <span class="tile-year">2018</span>
+                    </h3>
+                    <p class="tile-desc">Fast-paced World Cup campaign with dynamic camera transitions, rapid roto, holographic UI elements, and color grading.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="After Effects">After Effects</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">JAY PRINCE - Beamlight</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for JAY PRINCE - Beamlight.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Mocha</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="commercials" data-company="02-the-mill">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/02_The-Mill/04_walmart-famous-cars/projectImage.jpeg" alt="Walmart | Famous Cars" class="project-thumb" loading="lazy" data-lightbox data-caption="Walmart | Famous Cars - Compositing Artist">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-horizontal" data-category="films" data-tags="Nuke,Maya">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/02_The-Mill/08_bmw/projectImage.jpg" alt="BMW" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="films" title="Filter by Feature Film">Feature Film</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>BMW</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for BMW.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Maya">Maya</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Walmart | Famous Cars</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Walmart | Famous Cars.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Mocha</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="commercials" data-company="02-the-mill">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/02_The-Mill/03_asda-christmas-is-coming/projectImage.jpg" alt="ASDA - Christmas is Coming" class="project-thumb" loading="lazy" data-lightbox data-caption="ASDA - Christmas is Coming - Compositing Artist">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-horizontal" data-category="commercials" data-tags="Nuke,Mocha">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/02_The-Mill/07_the-odd-one-out/projectImage.jpg" alt="The Odd One Out" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>The Odd One Out</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for The Odd One Out.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Mocha">Mocha</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">ASDA - Christmas is Coming</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for ASDA - Christmas is Coming.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Mocha</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="music-videos" data-company="02-the-mill">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/02_The-Mill/02_the-chemical-brothers-free-yourself/projectImage.jpg" alt="The Chemical Brothers - Free Yourself" class="project-thumb" loading="lazy" data-lightbox data-caption="The Chemical Brothers - Free Yourself - VFX Compositor">
-                <span class="card-overlay-badge">Music Video</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Virgin EMI</span>
-                  <span>2018</span>
+            <article class="project-tile aspect-horizontal" data-category="commercials" data-tags="Nuke,Mocha">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/02_The-Mill/06_budlight-hbo-joust/projectImage.jpg" alt="BudLight - HBO Joust" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>BudLight - HBO Joust</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for BudLight - HBO Joust.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Mocha">Mocha</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">The Chemical Brothers - Free Yourself</h3>
-                <p class="card-desc">Award-winning music video featuring dancing robots, photoreal chrome/metal shading comp, and mocap alignment.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Maya</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="commercials" data-company="02-the-mill">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/02_The-Mill/01_doller-shave-club-get-ready/projectImage.jpeg" alt="Doller Shave Club - Get Ready" class="project-thumb" loading="lazy" data-lightbox data-caption="Doller Shave Club - Get Ready - Compositing Artist">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-horizontal" data-category="music-videos" data-tags="Nuke,Mocha">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/02_The-Mill/05_jay-prince-beamlight/projectImage.jpg" alt="JAY PRINCE - Beamlight" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="music-videos" title="Filter by Music Video">Music Video</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>JAY PRINCE - Beamlight</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for JAY PRINCE - Beamlight.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Mocha">Mocha</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Doller Shave Club - Get Ready</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Doller Shave Club - Get Ready.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Mocha</span></div>
-                
+              </div>
+            </article>
+            <article class="project-tile aspect-horizontal" data-category="commercials" data-tags="Nuke,Mocha">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/02_The-Mill/04_walmart-famous-cars/projectImage.jpeg" alt="Walmart | Famous Cars" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Walmart | Famous Cars</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Walmart | Famous Cars.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Mocha">Mocha</button></div>
+                  </div>
+                </div>
+              </div>
+            </article>
+            <article class="project-tile aspect-horizontal" data-category="commercials" data-tags="Nuke,Mocha">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/02_The-Mill/03_asda-christmas-is-coming/projectImage.jpg" alt="ASDA - Christmas is Coming" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>ASDA - Christmas is Coming</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for ASDA - Christmas is Coming.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Mocha">Mocha</button></div>
+                  </div>
+                </div>
+              </div>
+            </article>
+            <article class="project-tile aspect-horizontal" data-category="music-videos" data-tags="Nuke,Maya">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/02_The-Mill/02_the-chemical-brothers-free-yourself/projectImage.jpg" alt="The Chemical Brothers - Free Yourself" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="music-videos" title="Filter by Music Video">Music Video</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>The Chemical Brothers - Free Yourself</span>
+                      <span class="tile-year">2018</span>
+                    </h3>
+                    <p class="tile-desc">Award-winning music video featuring dancing robots, photoreal chrome/metal shading comp, and mocap alignment.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Maya">Maya</button></div>
+                  </div>
+                </div>
+              </div>
+            </article>
+            <article class="project-tile aspect-horizontal" data-category="commercials" data-tags="Nuke,Mocha">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/02_The-Mill/01_doller-shave-club-get-ready/projectImage.jpeg" alt="Doller Shave Club - Get Ready" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Doller Shave Club - Get Ready</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Doller Shave Club - Get Ready.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Mocha">Mocha</button></div>
+                  </div>
+                </div>
               </div>
             </article>
           </div>
         </section>
         <section class="company-section" id="03-zebu-animation-studios" data-company="03-zebu-animation-studios">
-          <div class="company-banner-card">
-            
-        <div class="company-banner-media">
-          <img src="pages/02_VFX/03_Zebu-Animation-Studios/banner_Zebu.png" alt="Zebu Animation Studios & Sandalwood Banner" class="company-banner-img">
-          <div class="company-banner-overlay"></div>
-        </div>
-            <div class="company-banner-content">
-              <div class="company-meta-strip">
-                <span class="company-badge">Compositing Artist / Lead</span>
-                <span class="company-period">2014 - 2017</span>
-                <span class="company-location">Bengaluru, India</span>
-              </div>
-              <h2 class="company-name">Zebu Animation Studios & Sandalwood</h2>
-              <p class="company-desc">Kannada feature film visual effects, live plate integration, wire removals, set extensions, and CG multi-pass compositing.</p>
-            </div>
+          
+        <div class="company-banner-strip" style="background-color: #181432;">
+          <div class="company-banner-info">
+            <h2 class="company-banner-heading">Zebu Animation Studios & Sandalwood</h2>
+            <div class="company-banner-period">Jan-2014 to Jan-2017</div>
+            <div class="company-banner-designation">Compositing Artist / Lead</div>
+            <div class="company-banner-desc">Kannada feature film visual effects, live plate integration, wire removals, set extensions, and CG compositing.</div>
           </div>
-
-          <div class="portfolio-grid company-project-grid">
+          
+        <div class="company-banner-logo-wrap">
+          <img src="pages/02_VFX/03_Zebu-Animation-Studios/banner_Zebu.png" alt="Zebu Animation Studios & Sandalwood Logo" class="company-banner-logo-img">
+        </div>
+        </div>
+          <div class="portfolio-grid company-project-grid" style="--tile-bg: rgba(19, 30, 66, 0.85);">
             
-            <article class="project-card" data-category="commercials" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/37_navashakthi-navarathri/projectImage.png" alt="Navashakthi Navarathri" class="project-thumb" loading="lazy" data-lightbox data-caption="Navashakthi Navarathri - Compositing Artist">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-horizontal" data-category="commercials" data-tags="Nuke,Mocha">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/37_navashakthi-navarathri/projectImage.png" alt="Navashakthi Navarathri" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Navashakthi Navarathri</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Navashakthi Navarathri.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Mocha">Mocha</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Navashakthi Navarathri</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Navashakthi Navarathri.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Mocha</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="commercials" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/36_mv5bztviyzewyjmtmdjlny00ztdilwe3ywmtn2q3mwfiytfjzgzmxkeyxkfqcgc-v1-fmjpg-ux1080-jpg/projectImage.jpg" alt="Mv5Bztviyzewyjmtmdjlny00Ztdilwe3Ywmtn2Q3Mwfiytfjzgzmxkeyxkfqcgc V1 Fmjpg Ux1080.Jpg" class="project-thumb" loading="lazy" data-lightbox data-caption="Mv5Bztviyzewyjmtmdjlny00Ztdilwe3Ywmtn2Q3Mwfiytfjzgzmxkeyxkfqcgc V1 Fmjpg Ux1080.Jpg - Compositing Artist">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-vertical" data-category="commercials" data-tags="Nuke,Mocha">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/36_mv5bztviyzewyjmtmdjlny00ztdilwe3ywmtn2q3mwfiytfjzgzmxkeyxkfqcgc-v1-fmjpg-ux1080-jpg/projectImage.jpg" alt="Mv5Bztviyzewyjmtmdjlny00Ztdilwe3Ywmtn2Q3Mwfiytfjzgzmxkeyxkfqcgc V1 Fmjpg Ux1080.Jpg" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Mv5Bztviyzewyjmtmdjlny00Ztdilwe3Ywmtn2Q3Mwfiytfjzgzmxkeyxkfqcgc V1 Fmjpg Ux1080.Jpg</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Mv5Bztviyzewyjmtmdjlny00Ztdilwe3Ywmtn2Q3Mwfiytfjzgzmxkeyxkfqcgc V1 Fmjpg Ux1080.Jpg.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Mocha">Mocha</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Mv5Bztviyzewyjmtmdjlny00Ztdilwe3Ywmtn2Q3Mwfiytfjzgzmxkeyxkfqcgc V1 Fmjpg Ux1080.Jpg</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Mv5Bztviyzewyjmtmdjlny00Ztdilwe3Ywmtn2Q3Mwfiytfjzgzmxkeyxkfqcgc V1 Fmjpg Ux1080.Jpg.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Mocha</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="commercials" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/35_mv5bzmjmnzg0njytm2vhzi00mjlhlwexmzutowmwnjq4mmq5n2uyxkeyxkfqcgc-v1-fmjpg-ux1024-jpg/projectImage.jpg" alt="Mv5Bzmjmnzg0Njytm2Vhzi00Mjlhlwexmzutowmwnjq4Mmq5N2Uyxkeyxkfqcgc V1 Fmjpg Ux1024.Jpg" class="project-thumb" loading="lazy" data-lightbox data-caption="Mv5Bzmjmnzg0Njytm2Vhzi00Mjlhlwexmzutowmwnjq4Mmq5N2Uyxkeyxkfqcgc V1 Fmjpg Ux1024.Jpg - Compositing Artist">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-vertical" data-category="commercials" data-tags="Nuke,Mocha">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/35_mv5bzmjmnzg0njytm2vhzi00mjlhlwexmzutowmwnjq4mmq5n2uyxkeyxkfqcgc-v1-fmjpg-ux1024-jpg/projectImage.jpg" alt="Mv5Bzmjmnzg0Njytm2Vhzi00Mjlhlwexmzutowmwnjq4Mmq5N2Uyxkeyxkfqcgc V1 Fmjpg Ux1024.Jpg" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Mv5Bzmjmnzg0Njytm2Vhzi00Mjlhlwexmzutowmwnjq4Mmq5N2Uyxkeyxkfqcgc V1 Fmjpg Ux1024.Jpg</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Mv5Bzmjmnzg0Njytm2Vhzi00Mjlhlwexmzutowmwnjq4Mmq5N2Uyxkeyxkfqcgc V1 Fmjpg Ux1024.Jpg.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Mocha">Mocha</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Mv5Bzmjmnzg0Njytm2Vhzi00Mjlhlwexmzutowmwnjq4Mmq5N2Uyxkeyxkfqcgc V1 Fmjpg Ux1024.Jpg</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Mv5Bzmjmnzg0Njytm2Vhzi00Mjlhlwexmzutowmwnjq4Mmq5N2Uyxkeyxkfqcgc V1 Fmjpg Ux1024.Jpg.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Mocha</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="commercials" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/34_mv5bzdlhywixy2utnzc4ns00n2rlltk5nwitymnhzjhizja5zty1xkeyxkfqcgc-v1-fmjpg-ux1000-jpg/projectImage.jpg" alt="Mv5Bzdlhywixy2Utnzc4Ns00N2Rlltk5Nwitymnhzjhizja5Zty1Xkeyxkfqcgc V1 Fmjpg Ux1000.Jpg" class="project-thumb" loading="lazy" data-lightbox data-caption="Mv5Bzdlhywixy2Utnzc4Ns00N2Rlltk5Nwitymnhzjhizja5Zty1Xkeyxkfqcgc V1 Fmjpg Ux1000.Jpg - Compositing Artist">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-vertical" data-category="commercials" data-tags="Nuke,Mocha">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/34_mv5bzdlhywixy2utnzc4ns00n2rlltk5nwitymnhzjhizja5zty1xkeyxkfqcgc-v1-fmjpg-ux1000-jpg/projectImage.jpg" alt="Mv5Bzdlhywixy2Utnzc4Ns00N2Rlltk5Nwitymnhzjhizja5Zty1Xkeyxkfqcgc V1 Fmjpg Ux1000.Jpg" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Mv5Bzdlhywixy2Utnzc4Ns00N2Rlltk5Nwitymnhzjhizja5Zty1Xkeyxkfqcgc V1 Fmjpg Ux1000.Jpg</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Mv5Bzdlhywixy2Utnzc4Ns00N2Rlltk5Nwitymnhzjhizja5Zty1Xkeyxkfqcgc V1 Fmjpg Ux1000.Jpg.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Mocha">Mocha</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Mv5Bzdlhywixy2Utnzc4Ns00N2Rlltk5Nwitymnhzjhizja5Zty1Xkeyxkfqcgc V1 Fmjpg Ux1000.Jpg</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Mv5Bzdlhywixy2Utnzc4Ns00N2Rlltk5Nwitymnhzjhizja5Zty1Xkeyxkfqcgc V1 Fmjpg Ux1000.Jpg.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Mocha</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="commercials" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/33_mv5byme4zgixmmetyzk3zs00ytizltg5yzgtothhngvkymewytk0xkeyxkfqcgdeqxvymtqznta5mzyz-v1-fmjpg-uy2880-jpg/projectImage.jpg" alt="Mv5Byme4Zgixmmetyzk3Zs00Ytizltg5Yzgtothhngvkymewytk0Xkeyxkfqcgdeqxvymtqznta5Mzyz V1 Fmjpg Uy2880.Jpg" class="project-thumb" loading="lazy" data-lightbox data-caption="Mv5Byme4Zgixmmetyzk3Zs00Ytizltg5Yzgtothhngvkymewytk0Xkeyxkfqcgdeqxvymtqznta5Mzyz V1 Fmjpg Uy2880.Jpg - Compositing Artist">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-vertical" data-category="commercials" data-tags="Nuke,Mocha">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/33_mv5byme4zgixmmetyzk3zs00ytizltg5yzgtothhngvkymewytk0xkeyxkfqcgdeqxvymtqznta5mzyz-v1-fmjpg-uy2880-jpg/projectImage.jpg" alt="Mv5Byme4Zgixmmetyzk3Zs00Ytizltg5Yzgtothhngvkymewytk0Xkeyxkfqcgdeqxvymtqznta5Mzyz V1 Fmjpg Uy2880.Jpg" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Mv5Byme4Zgixmmetyzk3Zs00Ytizltg5Yzgtothhngvkymewytk0Xkeyxkfqcgdeqxvymtqznta5Mzyz V1 Fmjpg Uy2880.Jpg</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Mv5Byme4Zgixmmetyzk3Zs00Ytizltg5Yzgtothhngvkymewytk0Xkeyxkfqcgdeqxvymtqznta5Mzyz V1 Fmjpg Uy2880.Jpg.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Mocha">Mocha</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Mv5Byme4Zgixmmetyzk3Zs00Ytizltg5Yzgtothhngvkymewytk0Xkeyxkfqcgdeqxvymtqznta5Mzyz V1 Fmjpg Uy2880.Jpg</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Mv5Byme4Zgixmmetyzk3Zs00Ytizltg5Yzgtothhngvkymewytk0Xkeyxkfqcgdeqxvymtqznta5Mzyz V1 Fmjpg Uy2880.Jpg.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Mocha</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="commercials" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/32_mv5by2y5ngy5m2mtmzc3zi00yjzhlwjhowmtmjy4ywrimzzlowjixkeyxkfqcgc-v1-fmjpg-ux686-jpg/projectImage.jpg" alt="Mv5By2Y5Ngy5M2Mtmzc3Zi00Yjzhlwjhowmtmjy4Ywrimzzlowjixkeyxkfqcgc V1 Fmjpg Ux686.Jpg" class="project-thumb" loading="lazy" data-lightbox data-caption="Mv5By2Y5Ngy5M2Mtmzc3Zi00Yjzhlwjhowmtmjy4Ywrimzzlowjixkeyxkfqcgc V1 Fmjpg Ux686.Jpg - Compositing Artist">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-horizontal" data-category="commercials" data-tags="Nuke,Mocha">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/32_mv5by2y5ngy5m2mtmzc3zi00yjzhlwjhowmtmjy4ywrimzzlowjixkeyxkfqcgc-v1-fmjpg-ux686-jpg/projectImage.jpg" alt="Mv5By2Y5Ngy5M2Mtmzc3Zi00Yjzhlwjhowmtmjy4Ywrimzzlowjixkeyxkfqcgc V1 Fmjpg Ux686.Jpg" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Mv5By2Y5Ngy5M2Mtmzc3Zi00Yjzhlwjhowmtmjy4Ywrimzzlowjixkeyxkfqcgc V1 Fmjpg Ux686.Jpg</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Mv5By2Y5Ngy5M2Mtmzc3Zi00Yjzhlwjhowmtmjy4Ywrimzzlowjixkeyxkfqcgc V1 Fmjpg Ux686.Jpg.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Mocha">Mocha</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Mv5By2Y5Ngy5M2Mtmzc3Zi00Yjzhlwjhowmtmjy4Ywrimzzlowjixkeyxkfqcgc V1 Fmjpg Ux686.Jpg</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Mv5By2Y5Ngy5M2Mtmzc3Zi00Yjzhlwjhowmtmjy4Ywrimzzlowjixkeyxkfqcgc V1 Fmjpg Ux686.Jpg.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Mocha</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="commercials" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/31_mv5bote0zwi1mmitoda4ns00njm0lwjiodutyzg0y2i1ytuwytrmxkeyxkfqcgc-v1-fmjpg-uy2880-jpg/projectImage.jpg" alt="Mv5Bote0Zwi1Mmitoda4Ns00Njm0Lwjiodutyzg0Y2I1Ytuwytrmxkeyxkfqcgc V1 Fmjpg Uy2880.Jpg" class="project-thumb" loading="lazy" data-lightbox data-caption="Mv5Bote0Zwi1Mmitoda4Ns00Njm0Lwjiodutyzg0Y2I1Ytuwytrmxkeyxkfqcgc V1 Fmjpg Uy2880.Jpg - Compositing Artist">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-vertical" data-category="commercials" data-tags="Nuke,Mocha">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/31_mv5bote0zwi1mmitoda4ns00njm0lwjiodutyzg0y2i1ytuwytrmxkeyxkfqcgc-v1-fmjpg-uy2880-jpg/projectImage.jpg" alt="Mv5Bote0Zwi1Mmitoda4Ns00Njm0Lwjiodutyzg0Y2I1Ytuwytrmxkeyxkfqcgc V1 Fmjpg Uy2880.Jpg" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Mv5Bote0Zwi1Mmitoda4Ns00Njm0Lwjiodutyzg0Y2I1Ytuwytrmxkeyxkfqcgc V1 Fmjpg Uy2880.Jpg</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Mv5Bote0Zwi1Mmitoda4Ns00Njm0Lwjiodutyzg0Y2I1Ytuwytrmxkeyxkfqcgc V1 Fmjpg Uy2880.Jpg.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Mocha">Mocha</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Mv5Bote0Zwi1Mmitoda4Ns00Njm0Lwjiodutyzg0Y2I1Ytuwytrmxkeyxkfqcgc V1 Fmjpg Uy2880.Jpg</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Mv5Bote0Zwi1Mmitoda4Ns00Njm0Lwjiodutyzg0Y2I1Ytuwytrmxkeyxkfqcgc V1 Fmjpg Uy2880.Jpg.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Mocha</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="commercials" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/30_mv5bnwu2owyxmjmtoduzms00zmzjlwe5njetzwe1nmzjzme2yte1xkeyxkfqcgc-v1-fmjpg-uy3000-jpg/projectImage.jpg" alt="Mv5Bnwu2Owyxmjmtoduzms00Zmzjlwe5Njetzwe1Nmzjzme2Yte1Xkeyxkfqcgc V1 Fmjpg Uy3000.Jpg" class="project-thumb" loading="lazy" data-lightbox data-caption="Mv5Bnwu2Owyxmjmtoduzms00Zmzjlwe5Njetzwe1Nmzjzme2Yte1Xkeyxkfqcgc V1 Fmjpg Uy3000.Jpg - Compositing Artist">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-vertical" data-category="commercials" data-tags="Nuke,Mocha">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/30_mv5bnwu2owyxmjmtoduzms00zmzjlwe5njetzwe1nmzjzme2yte1xkeyxkfqcgc-v1-fmjpg-uy3000-jpg/projectImage.jpg" alt="Mv5Bnwu2Owyxmjmtoduzms00Zmzjlwe5Njetzwe1Nmzjzme2Yte1Xkeyxkfqcgc V1 Fmjpg Uy3000.Jpg" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Mv5Bnwu2Owyxmjmtoduzms00Zmzjlwe5Njetzwe1Nmzjzme2Yte1Xkeyxkfqcgc V1 Fmjpg Uy3000.Jpg</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Mv5Bnwu2Owyxmjmtoduzms00Zmzjlwe5Njetzwe1Nmzjzme2Yte1Xkeyxkfqcgc V1 Fmjpg Uy3000.Jpg.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Mocha">Mocha</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Mv5Bnwu2Owyxmjmtoduzms00Zmzjlwe5Njetzwe1Nmzjzme2Yte1Xkeyxkfqcgc V1 Fmjpg Uy3000.Jpg</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Mv5Bnwu2Owyxmjmtoduzms00Zmzjlwe5Njetzwe1Nmzjzme2Yte1Xkeyxkfqcgc V1 Fmjpg Uy3000.Jpg.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Mocha</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="commercials" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/29_mv5bntywnmzhzjqtnzqzni00zgrhlwixmtutywi1otmwotq5ndlixkeyxkfqcgc-v1-fmjpg-uy3000-jpg/projectImage.jpg" alt="Mv5Bntywnmzhzjqtnzqzni00Zgrhlwixmtutywi1Otmwotq5Ndlixkeyxkfqcgc V1 Fmjpg Uy3000.Jpg" class="project-thumb" loading="lazy" data-lightbox data-caption="Mv5Bntywnmzhzjqtnzqzni00Zgrhlwixmtutywi1Otmwotq5Ndlixkeyxkfqcgc V1 Fmjpg Uy3000.Jpg - Compositing Artist">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-vertical" data-category="commercials" data-tags="Nuke,Mocha">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/29_mv5bntywnmzhzjqtnzqzni00zgrhlwixmtutywi1otmwotq5ndlixkeyxkfqcgc-v1-fmjpg-uy3000-jpg/projectImage.jpg" alt="Mv5Bntywnmzhzjqtnzqzni00Zgrhlwixmtutywi1Otmwotq5Ndlixkeyxkfqcgc V1 Fmjpg Uy3000.Jpg" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Mv5Bntywnmzhzjqtnzqzni00Zgrhlwixmtutywi1Otmwotq5Ndlixkeyxkfqcgc V1 Fmjpg Uy3000.Jpg</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Mv5Bntywnmzhzjqtnzqzni00Zgrhlwixmtutywi1Otmwotq5Ndlixkeyxkfqcgc V1 Fmjpg Uy3000.Jpg.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Mocha">Mocha</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Mv5Bntywnmzhzjqtnzqzni00Zgrhlwixmtutywi1Otmwotq5Ndlixkeyxkfqcgc V1 Fmjpg Uy3000.Jpg</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Mv5Bntywnmzhzjqtnzqzni00Zgrhlwixmtutywi1Otmwotq5Ndlixkeyxkfqcgc V1 Fmjpg Uy3000.Jpg.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Mocha</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="commercials" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/28_mv5bntuzy2vmogqtzjq3my00njbmlwjimzatmjc3ndq0ywu5otg2xkeyxkfqcgdeqxvymta3mdk2ndg2-v1-fmjpg-ux505-jpg/projectImage.jpg" alt="Mv5Bntuzy2Vmogqtzjq3My00Njbmlwjimzatmjc3Ndq0Ywu5Otg2Xkeyxkfqcgdeqxvymta3Mdk2Ndg2 V1 Fmjpg Ux505.Jpg" class="project-thumb" loading="lazy" data-lightbox data-caption="Mv5Bntuzy2Vmogqtzjq3My00Njbmlwjimzatmjc3Ndq0Ywu5Otg2Xkeyxkfqcgdeqxvymta3Mdk2Ndg2 V1 Fmjpg Ux505.Jpg - Compositing Artist">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-vertical" data-category="commercials" data-tags="Nuke,Mocha">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/28_mv5bntuzy2vmogqtzjq3my00njbmlwjimzatmjc3ndq0ywu5otg2xkeyxkfqcgdeqxvymta3mdk2ndg2-v1-fmjpg-ux505-jpg/projectImage.jpg" alt="Mv5Bntuzy2Vmogqtzjq3My00Njbmlwjimzatmjc3Ndq0Ywu5Otg2Xkeyxkfqcgdeqxvymta3Mdk2Ndg2 V1 Fmjpg Ux505.Jpg" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Mv5Bntuzy2Vmogqtzjq3My00Njbmlwjimzatmjc3Ndq0Ywu5Otg2Xkeyxkfqcgdeqxvymta3Mdk2Ndg2 V1 Fmjpg Ux505.Jpg</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Mv5Bntuzy2Vmogqtzjq3My00Njbmlwjimzatmjc3Ndq0Ywu5Otg2Xkeyxkfqcgdeqxvymta3Mdk2Ndg2 V1 Fmjpg Ux505.Jpg.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Mocha">Mocha</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Mv5Bntuzy2Vmogqtzjq3My00Njbmlwjimzatmjc3Ndq0Ywu5Otg2Xkeyxkfqcgdeqxvymta3Mdk2Ndg2 V1 Fmjpg Ux505.Jpg</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Mv5Bntuzy2Vmogqtzjq3My00Njbmlwjimzatmjc3Ndq0Ywu5Otg2Xkeyxkfqcgdeqxvymta3Mdk2Ndg2 V1 Fmjpg Ux505.Jpg.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Mocha</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="commercials" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/27_mv5bnjyxzjy3zdatndc1mi00yzmxlwi4mwetnzqwzgexymmzodfhxkeyxkfqcgdeqxvynzawmju2mty-v1-fmjpg-uy2000-jpg/projectImage.jpg" alt="Mv5Bnjyxzjy3Zdatndc1Mi00Yzmxlwi4Mwetnzqwzgexymmzodfhxkeyxkfqcgdeqxvynzawmju2Mty V1 Fmjpg Uy2000.Jpg" class="project-thumb" loading="lazy" data-lightbox data-caption="Mv5Bnjyxzjy3Zdatndc1Mi00Yzmxlwi4Mwetnzqwzgexymmzodfhxkeyxkfqcgdeqxvynzawmju2Mty V1 Fmjpg Uy2000.Jpg - Compositing Artist">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-vertical" data-category="commercials" data-tags="Nuke,Mocha">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/27_mv5bnjyxzjy3zdatndc1mi00yzmxlwi4mwetnzqwzgexymmzodfhxkeyxkfqcgdeqxvynzawmju2mty-v1-fmjpg-uy2000-jpg/projectImage.jpg" alt="Mv5Bnjyxzjy3Zdatndc1Mi00Yzmxlwi4Mwetnzqwzgexymmzodfhxkeyxkfqcgdeqxvynzawmju2Mty V1 Fmjpg Uy2000.Jpg" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Mv5Bnjyxzjy3Zdatndc1Mi00Yzmxlwi4Mwetnzqwzgexymmzodfhxkeyxkfqcgdeqxvynzawmju2Mty V1 Fmjpg Uy2000.Jpg</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Mv5Bnjyxzjy3Zdatndc1Mi00Yzmxlwi4Mwetnzqwzgexymmzodfhxkeyxkfqcgdeqxvynzawmju2Mty V1 Fmjpg Uy2000.Jpg.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Mocha">Mocha</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Mv5Bnjyxzjy3Zdatndc1Mi00Yzmxlwi4Mwetnzqwzgexymmzodfhxkeyxkfqcgdeqxvynzawmju2Mty V1 Fmjpg Uy2000.Jpg</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Mv5Bnjyxzjy3Zdatndc1Mi00Yzmxlwi4Mwetnzqwzgexymmzodfhxkeyxkfqcgdeqxvynzawmju2Mty V1 Fmjpg Uy2000.Jpg.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Mocha</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="commercials" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/26_mv5bndazmdvhyjktmtk2zs00zjk3lwi4ywutmdy1nji5mdgxyzk5xkeyxkfqcgc-v1-fmjpg-ux640-jpg/projectImage.jpg" alt="Mv5Bndazmdvhyjktmtk2Zs00Zjk3Lwi4Ywutmdy1Nji5Mdgxyzk5Xkeyxkfqcgc V1 Fmjpg Ux640.Jpg" class="project-thumb" loading="lazy" data-lightbox data-caption="Mv5Bndazmdvhyjktmtk2Zs00Zjk3Lwi4Ywutmdy1Nji5Mdgxyzk5Xkeyxkfqcgc V1 Fmjpg Ux640.Jpg - Compositing Artist">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-vertical" data-category="commercials" data-tags="Nuke,Mocha">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/26_mv5bndazmdvhyjktmtk2zs00zjk3lwi4ywutmdy1nji5mdgxyzk5xkeyxkfqcgc-v1-fmjpg-ux640-jpg/projectImage.jpg" alt="Mv5Bndazmdvhyjktmtk2Zs00Zjk3Lwi4Ywutmdy1Nji5Mdgxyzk5Xkeyxkfqcgc V1 Fmjpg Ux640.Jpg" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Mv5Bndazmdvhyjktmtk2Zs00Zjk3Lwi4Ywutmdy1Nji5Mdgxyzk5Xkeyxkfqcgc V1 Fmjpg Ux640.Jpg</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Mv5Bndazmdvhyjktmtk2Zs00Zjk3Lwi4Ywutmdy1Nji5Mdgxyzk5Xkeyxkfqcgc V1 Fmjpg Ux640.Jpg.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Mocha">Mocha</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Mv5Bndazmdvhyjktmtk2Zs00Zjk3Lwi4Ywutmdy1Nji5Mdgxyzk5Xkeyxkfqcgc V1 Fmjpg Ux640.Jpg</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Mv5Bndazmdvhyjktmtk2Zs00Zjk3Lwi4Ywutmdy1Nji5Mdgxyzk5Xkeyxkfqcgc V1 Fmjpg Ux640.Jpg.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Mocha</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="commercials" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/25_mv5bm2zknzrhndmtndkzos00zjk1ltllzgqtnjiyytmxnjg1yzkzxkeyxkfqcgc-v1-fmjpg-ux1200-jpg/projectImage.jpg" alt="Mv5Bm2Zknzrhndmtndkzos00Zjk1Ltllzgqtnjiyytmxnjg1Yzkzxkeyxkfqcgc V1 Fmjpg Ux1200.Jpg" class="project-thumb" loading="lazy" data-lightbox data-caption="Mv5Bm2Zknzrhndmtndkzos00Zjk1Ltllzgqtnjiyytmxnjg1Yzkzxkeyxkfqcgc V1 Fmjpg Ux1200.Jpg - Compositing Artist">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-vertical" data-category="commercials" data-tags="Nuke,Mocha">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/25_mv5bm2zknzrhndmtndkzos00zjk1ltllzgqtnjiyytmxnjg1yzkzxkeyxkfqcgc-v1-fmjpg-ux1200-jpg/projectImage.jpg" alt="Mv5Bm2Zknzrhndmtndkzos00Zjk1Ltllzgqtnjiyytmxnjg1Yzkzxkeyxkfqcgc V1 Fmjpg Ux1200.Jpg" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Mv5Bm2Zknzrhndmtndkzos00Zjk1Ltllzgqtnjiyytmxnjg1Yzkzxkeyxkfqcgc V1 Fmjpg Ux1200.Jpg</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Mv5Bm2Zknzrhndmtndkzos00Zjk1Ltllzgqtnjiyytmxnjg1Yzkzxkeyxkfqcgc V1 Fmjpg Ux1200.Jpg.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Mocha">Mocha</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Mv5Bm2Zknzrhndmtndkzos00Zjk1Ltllzgqtnjiyytmxnjg1Yzkzxkeyxkfqcgc V1 Fmjpg Ux1200.Jpg</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Mv5Bm2Zknzrhndmtndkzos00Zjk1Ltllzgqtnjiyytmxnjg1Yzkzxkeyxkfqcgc V1 Fmjpg Ux1200.Jpg.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Mocha</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="films" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/24_uddishya/projectImage.jpeg" alt="Uddishya" class="project-thumb" loading="lazy" data-lightbox data-caption="Uddishya - Compositing Artist">
-                <span class="card-overlay-badge">Feature Film</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-vertical" data-category="films" data-tags="Nuke,Maya">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/24_uddishya/projectImage.jpeg" alt="Uddishya" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="films" title="Filter by Feature Film">Feature Film</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Uddishya</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Uddishya.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Maya">Maya</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Uddishya</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Uddishya.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Maya</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="films" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/23_smile-please/projectImage.jpg" alt="Smile Please" class="project-thumb" loading="lazy" data-lightbox data-caption="Smile Please - Compositing Artist">
-                <span class="card-overlay-badge">Feature Film</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-horizontal" data-category="films" data-tags="Nuke,Maya">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/23_smile-please/projectImage.jpg" alt="Smile Please" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="films" title="Filter by Feature Film">Feature Film</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Smile Please</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Smile Please.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Maya">Maya</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Smile Please</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Smile Please.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Maya</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="films" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/22_java/projectImage.jpeg" alt="Java" class="project-thumb" loading="lazy" data-lightbox data-caption="Java - Compositing Artist">
-                <span class="card-overlay-badge">Feature Film</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-vertical" data-category="films" data-tags="Nuke,Maya">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/22_java/projectImage.jpeg" alt="Java" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="films" title="Filter by Feature Film">Feature Film</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Java</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Java.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Maya">Maya</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Java</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Java.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Maya</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="films" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/21_saguva-dariyalli/projectImage.jpg" alt="Saguva Dariyalli" class="project-thumb" loading="lazy" data-lightbox data-caption="Saguva Dariyalli - Compositing Artist">
-                <span class="card-overlay-badge">Feature Film</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-horizontal" data-category="films" data-tags="Nuke,Maya">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/21_saguva-dariyalli/projectImage.jpg" alt="Saguva Dariyalli" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="films" title="Filter by Feature Film">Feature Film</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Saguva Dariyalli</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Saguva Dariyalli.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Maya">Maya</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Saguva Dariyalli</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Saguva Dariyalli.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Maya</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="films" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/20_mantram/projectImage.jpeg" alt="Mantram" class="project-thumb" loading="lazy" data-lightbox data-caption="Mantram - Compositing Artist">
-                <span class="card-overlay-badge">Feature Film</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-vertical" data-category="films" data-tags="Nuke,Maya">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/20_mantram/projectImage.jpeg" alt="Mantram" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="films" title="Filter by Feature Film">Feature Film</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Mantram</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Mantram.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Maya">Maya</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Mantram</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Mantram.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Maya</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="films" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/19_kamarottu-checkpost/projectImage.jpg" alt="Kamarottu CheckPost" class="project-thumb" loading="lazy" data-lightbox data-caption="Kamarottu CheckPost - Compositing Artist">
-                <span class="card-overlay-badge">Feature Film</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-horizontal" data-category="films" data-tags="Nuke,Maya">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/19_kamarottu-checkpost/projectImage.jpg" alt="Kamarottu CheckPost" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="films" title="Filter by Feature Film">Feature Film</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Kamarottu CheckPost</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Kamarottu CheckPost.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Maya">Maya</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Kamarottu CheckPost</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Kamarottu CheckPost.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Maya</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="films" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/18_jai-maruti-800/projectImage.jpg" alt="Jai Maruti 800" class="project-thumb" loading="lazy" data-lightbox data-caption="Jai Maruti 800 - Compositing Artist">
-                <span class="card-overlay-badge">Feature Film</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-horizontal" data-category="films" data-tags="Nuke,Maya">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/18_jai-maruti-800/projectImage.jpg" alt="Jai Maruti 800" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="films" title="Filter by Feature Film">Feature Film</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Jai Maruti 800</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Jai Maruti 800.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Maya">Maya</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Jai Maruti 800</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Jai Maruti 800.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Maya</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="films" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/17_bcl-sandalwood/projectImage.jpeg" alt="BCL Sandalwood" class="project-thumb" loading="lazy" data-lightbox data-caption="BCL Sandalwood - Compositing Artist">
-                <span class="card-overlay-badge">Feature Film</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-horizontal" data-category="films" data-tags="Nuke,Maya">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/17_bcl-sandalwood/projectImage.jpeg" alt="BCL Sandalwood" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="films" title="Filter by Feature Film">Feature Film</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>BCL Sandalwood</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for BCL Sandalwood.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Maya">Maya</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">BCL Sandalwood</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for BCL Sandalwood.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Maya</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="films" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/16_patibeku-com/projectImage.jpeg" alt="PatiBeku.com" class="project-thumb" loading="lazy" data-lightbox data-caption="PatiBeku.com - Compositing Artist">
-                <span class="card-overlay-badge">Feature Film</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-vertical" data-category="films" data-tags="Nuke,Maya">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/16_patibeku-com/projectImage.jpeg" alt="PatiBeku.com" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="films" title="Filter by Feature Film">Feature Film</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>PatiBeku.com</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for PatiBeku.com.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Maya">Maya</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">PatiBeku.com</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for PatiBeku.com.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Maya</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="films" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/15_abhisaarike/projectImage.jpg" alt="Abhisaarike" class="project-thumb" loading="lazy" data-lightbox data-caption="Abhisaarike - Compositing Artist">
-                <span class="card-overlay-badge">Feature Film</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-horizontal" data-category="films" data-tags="Nuke,Maya">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/15_abhisaarike/projectImage.jpg" alt="Abhisaarike" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="films" title="Filter by Feature Film">Feature Film</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Abhisaarike</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Abhisaarike.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Maya">Maya</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Abhisaarike</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Abhisaarike.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Maya</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="films" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/14_anjaniputra/projectImage.jpg" alt="Anjaniputra" class="project-thumb" loading="lazy" data-lightbox data-caption="Anjaniputra - Senior Compositor">
-                <span class="card-overlay-badge">Feature Film</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">MNK Movies</span>
-                  <span>2017</span>
+            <article class="project-tile aspect-horizontal" data-category="films" data-tags="Nuke,Silhouette,Mocha">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/14_anjaniputra/projectImage.jpg" alt="Anjaniputra" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="films" title="Filter by Feature Film">Feature Film</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Anjaniputra</span>
+                      <span class="tile-year">2017</span>
+                    </h3>
+                    <p class="tile-desc">Action feature film: wire removals, muzzle flash hits, matte backgrounds, and dynamic speed ramping.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Silhouette">Silhouette</button><button class="tile-tag" data-tag="Mocha">Mocha</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Anjaniputra</h3>
-                <p class="card-desc">Action feature film: wire removals, muzzle flash hits, matte backgrounds, and dynamic speed ramping.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Silhouette</span><span class="tool-tag">Mocha</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="films" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/13_kataka/projectImage.jpeg" alt="Kataka" class="project-thumb" loading="lazy" data-lightbox data-caption="Kataka - Visual Effects Lead">
-                <span class="card-overlay-badge">Feature Film</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Feature Film</span>
-                  <span>2017</span>
+            <article class="project-tile aspect-vertical" data-category="films" data-tags="Nuke,Maya,Photoshop">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/13_kataka/projectImage.jpeg" alt="Kataka" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="films" title="Filter by Feature Film">Feature Film</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Kataka</span>
+                      <span class="tile-year">2017</span>
+                    </h3>
+                    <p class="tile-desc">Supernatural horror feature film with creature compositing, dark atmosphere layering, and set cleanups.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Maya">Maya</button><button class="tile-tag" data-tag="Photoshop">Photoshop</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Kataka</h3>
-                <p class="card-desc">Supernatural horror feature film with creature compositing, dark atmosphere layering, and set cleanups.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Maya</span><span class="tool-tag">Photoshop</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="films" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/12_sihir/projectImage.jpg" alt="Sihir" class="project-thumb" loading="lazy" data-lightbox data-caption="Sihir - Compositing Artist">
-                <span class="card-overlay-badge">Feature Film</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-vertical" data-category="films" data-tags="Nuke,Maya">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/12_sihir/projectImage.jpg" alt="Sihir" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="films" title="Filter by Feature Film">Feature Film</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Sihir</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Sihir.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Maya">Maya</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Sihir</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Sihir.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Maya</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="films" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/11_double-engine/projectImage.jpeg" alt="Double Engine" class="project-thumb" loading="lazy" data-lightbox data-caption="Double Engine - Compositing Artist">
-                <span class="card-overlay-badge">Feature Film</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-vertical" data-category="films" data-tags="Nuke,Maya">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/11_double-engine/projectImage.jpeg" alt="Double Engine" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="films" title="Filter by Feature Film">Feature Film</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Double Engine</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Double Engine.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Maya">Maya</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Double Engine</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Double Engine.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Maya</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="films" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/10_samhara/projectImage.jpg" alt="Samhara" class="project-thumb" loading="lazy" data-lightbox data-caption="Samhara - Compositing Artist">
-                <span class="card-overlay-badge">Feature Film</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-horizontal" data-category="films" data-tags="Nuke,Maya">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/10_samhara/projectImage.jpg" alt="Samhara" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="films" title="Filter by Feature Film">Feature Film</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Samhara</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Samhara.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Maya">Maya</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Samhara</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Samhara.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Maya</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="films" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/09_shankanaada/projectImage.jpg" alt="Shankanaada" class="project-thumb" loading="lazy" data-lightbox data-caption="Shankanaada - Compositing Artist">
-                <span class="card-overlay-badge">Feature Film</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-horizontal" data-category="films" data-tags="Nuke,Maya">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/09_shankanaada/projectImage.jpg" alt="Shankanaada" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="films" title="Filter by Feature Film">Feature Film</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Shankanaada</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Shankanaada.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Maya">Maya</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Shankanaada</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Shankanaada.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Maya</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="films" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/08_ajaramara/projectImage.jpeg" alt="Ajaramara" class="project-thumb" loading="lazy" data-lightbox data-caption="Ajaramara - Compositing Artist">
-                <span class="card-overlay-badge">Feature Film</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-horizontal" data-category="films" data-tags="Nuke,Maya">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/08_ajaramara/projectImage.jpeg" alt="Ajaramara" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="films" title="Filter by Feature Film">Feature Film</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Ajaramara</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Ajaramara.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Maya">Maya</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Ajaramara</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Ajaramara.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Maya</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="films" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/07_eradu-kanasu/projectImage.jpeg" alt="Eradu Kanasu" class="project-thumb" loading="lazy" data-lightbox data-caption="Eradu Kanasu - Compositing Artist">
-                <span class="card-overlay-badge">Feature Film</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-horizontal" data-category="films" data-tags="Nuke,Maya">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/07_eradu-kanasu/projectImage.jpeg" alt="Eradu Kanasu" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="films" title="Filter by Feature Film">Feature Film</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Eradu Kanasu</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Eradu Kanasu.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Maya">Maya</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Eradu Kanasu</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Eradu Kanasu.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Maya</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="films" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/06_samyuktha-2/projectImage.jpeg" alt="Samyuktha-2" class="project-thumb" loading="lazy" data-lightbox data-caption="Samyuktha-2 - Compositing Artist">
-                <span class="card-overlay-badge">Feature Film</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-vertical" data-category="films" data-tags="Nuke,Maya">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/06_samyuktha-2/projectImage.jpeg" alt="Samyuktha-2" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="films" title="Filter by Feature Film">Feature Film</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Samyuktha-2</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Samyuktha-2.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Maya">Maya</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Samyuktha-2</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Samyuktha-2.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Maya</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="films" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/05_bengaluru-underworld/projectImage.jpeg" alt="Bengaluru Underworld" class="project-thumb" loading="lazy" data-lightbox data-caption="Bengaluru Underworld - Compositing Artist">
-                <span class="card-overlay-badge">Feature Film</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-horizontal" data-category="films" data-tags="Nuke,Maya">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/05_bengaluru-underworld/projectImage.jpeg" alt="Bengaluru Underworld" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="films" title="Filter by Feature Film">Feature Film</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Bengaluru Underworld</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Bengaluru Underworld.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Maya">Maya</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Bengaluru Underworld</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Bengaluru Underworld.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Maya</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="films" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/04_badmaash/projectImage.jpg" alt="Badmaash" class="project-thumb" loading="lazy" data-lightbox data-caption="Badmaash - Compositing Artist">
-                <span class="card-overlay-badge">Feature Film</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-horizontal" data-category="films" data-tags="Nuke,Maya">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/04_badmaash/projectImage.jpg" alt="Badmaash" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="films" title="Filter by Feature Film">Feature Film</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Badmaash</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Badmaash.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Maya">Maya</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Badmaash</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Badmaash.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Maya</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="films" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/03_ricky/projectImage.jpg" alt="Ricky" class="project-thumb" loading="lazy" data-lightbox data-caption="Ricky - Compositing Artist">
-                <span class="card-overlay-badge">Feature Film</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-horizontal" data-category="films" data-tags="Nuke,Maya">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/03_ricky/projectImage.jpg" alt="Ricky" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="films" title="Filter by Feature Film">Feature Film</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>Ricky</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for Ricky.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Maya">Maya</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">Ricky</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for Ricky.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Maya</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="commercials" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/02_1178337386-png/projectImage.png" alt="1178337386.Png" class="project-thumb" loading="lazy" data-lightbox data-caption="1178337386.Png - Compositing Artist">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-horizontal" data-category="commercials" data-tags="Nuke,Mocha">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/02_1178337386-png/projectImage.png" alt="1178337386.Png" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>1178337386.Png</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for 1178337386.Png.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Mocha">Mocha</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">1178337386.Png</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for 1178337386.Png.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Mocha</span></div>
-                
               </div>
             </article>
-            <article class="project-card" data-category="commercials" data-company="03-zebu-animation-studios">
-              <div class="project-thumb-wrapper">
-                <img src="pages/02_VFX/03_Zebu-Animation-Studios/01_arxiv-archive/projectImage.jpg" alt="ARXIV/ Archive" class="project-thumb" loading="lazy" data-lightbox data-caption="ARXIV/ Archive - Compositing Artist">
-                <span class="card-overlay-badge">Commercial</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">Production</span>
-                  <span>2018 - 2023</span>
+            <article class="project-tile aspect-horizontal" data-category="commercials" data-tags="Nuke,Mocha">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/02_VFX/03_Zebu-Animation-Studios/01_arxiv-archive/projectImage.jpg" alt="ARXIV/ Archive" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="commercials" title="Filter by Commercial">Commercial</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>ARXIV/ Archive</span>
+                      <span class="tile-year">2018 - 2023</span>
+                    </h3>
+                    <p class="tile-desc">Visual effects compositing, clean plate reconstruction, and integration for ARXIV/ Archive.</p>
+                    <div class="tile-tags-wrap"><button class="tile-tag" data-tag="Nuke">Nuke</button><button class="tile-tag" data-tag="Mocha">Mocha</button></div>
+                  </div>
                 </div>
-                <h3 class="card-title">ARXIV/ Archive</h3>
-                <p class="card-desc">Visual effects compositing, clean plate reconstruction, and integration for ARXIV/ Archive.</p>
-                <div class="card-tools"><span class="tool-tag">Nuke</span><span class="tool-tag">Mocha</span></div>
-                
               </div>
             </article>
           </div>

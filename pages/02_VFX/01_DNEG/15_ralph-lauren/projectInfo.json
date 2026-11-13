@@ -1,13 +1,11 @@
 {
   "title": "Ralph Lauren",
-  "client": "Production",
+  "description": "Visual effects compositing, clean plate reconstruction, and integration for Ralph Lauren.",
   "category": "commercials",
   "year": "2018 - 2023",
-  "role": "Compositing Artist",
-  "description": "Visual effects compositing, clean plate reconstruction, and integration for Ralph Lauren.",
-  "tools": [
+  "tags": [
     "Nuke",
     "Mocha"
   ],
-  "hasBeforeAfter": false
+  "orientation": "horizontal"
 }

@@ -1,8 +1,9 @@
 {
   "companyName": "Zebu Animation Studios & Sandalwood",
-  "role": "Compositing Artist / Lead",
-  "period": "2014 - 2017",
-  "location": "Bengaluru, India",
-  "description": "Kannada feature film visual effects, live plate integration, wire removals, set extensions, and CG multi-pass compositing.",
-  "sortOrder": "desc"
+  "period": "Jan-2014 to Jan-2017",
+  "designation": "Compositing Artist / Lead",
+  "description": "Kannada feature film visual effects, live plate integration, wire removals, set extensions, and CG compositing.",
+  "color": "#181432",
+  "cardBgColor": "#131e42",
+  "cardBgOpacity": 85
 }

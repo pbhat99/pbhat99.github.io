@@ -1,13 +1,11 @@
 {
   "title": "Smile Please",
-  "client": "Production",
+  "description": "Visual effects compositing, clean plate reconstruction, and integration for Smile Please.",
   "category": "films",
   "year": "2018 - 2023",
-  "role": "Compositing Artist",
-  "description": "Visual effects compositing, clean plate reconstruction, and integration for Smile Please.",
-  "tools": [
+  "tags": [
     "Nuke",
     "Maya"
   ],
-  "hasBeforeAfter": false
+  "orientation": "horizontal"
 }

@@ -1,13 +1,11 @@
 {
   "title": "Goatbusters",
-  "client": "Production",
+  "description": "Visual effects compositing and shot integration for Goatbusters.",
   "category": "commercials",
   "year": "2023",
-  "role": "Compositing Artist",
-  "description": "Visual effects compositing and shot integration for Goatbusters.",
-  "tools": [
+  "tags": [
     "Nuke",
     "Maya"
   ],
-  "hasBeforeAfter": false
+  "orientation": "vertical"
 }

@@ -1,14 +1,12 @@
 {
   "title": "GMC Hummer EV - Quiet Revolution",
-  "client": "GMC",
+  "description": "Photoreal CG truck integration, interactive lighting reflections on wet asphalt, and realistic tire dust spray passes.",
   "category": "commercials",
   "year": "2023",
-  "role": "Senior Compositing Artist",
-  "description": "Photoreal CG truck integration, interactive lighting reflections on wet asphalt, and realistic tire dust spray passes.",
-  "tools": [
+  "tags": [
     "Nuke Studio",
     "V-Ray",
     "Houdini"
   ],
-  "hasBeforeAfter": true
+  "orientation": "vertical"
 }

@@ -1,14 +1,12 @@
 {
   "title": "Anjaniputra",
-  "client": "MNK Movies",
+  "description": "Action feature film: wire removals, muzzle flash hits, matte backgrounds, and dynamic speed ramping.",
   "category": "films",
   "year": "2017",
-  "role": "Senior Compositor",
-  "description": "Action feature film: wire removals, muzzle flash hits, matte backgrounds, and dynamic speed ramping.",
-  "tools": [
+  "tags": [
     "Nuke",
     "Silhouette",
     "Mocha"
   ],
-  "hasBeforeAfter": false
+  "orientation": "horizontal"
 }

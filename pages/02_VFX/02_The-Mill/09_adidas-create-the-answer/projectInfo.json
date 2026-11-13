@@ -1,13 +1,11 @@
 {
   "title": "Adidas - Create The Answer",
-  "client": "Adidas",
+  "description": "Fast-paced World Cup campaign with dynamic camera transitions, rapid roto, holographic UI elements, and color grading.",
   "category": "commercials",
   "year": "2018",
-  "role": "Compositor",
-  "description": "Fast-paced World Cup campaign with dynamic camera transitions, rapid roto, holographic UI elements, and color grading.",
-  "tools": [
+  "tags": [
     "Nuke",
     "After Effects"
   ],
-  "hasBeforeAfter": false
+  "orientation": "horizontal"
 }

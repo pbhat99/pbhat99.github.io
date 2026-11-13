@@ -1,13 +1,11 @@
 {
   "title": "PatiBeku.com",
-  "client": "Production",
+  "description": "Visual effects compositing, clean plate reconstruction, and integration for PatiBeku.com.",
   "category": "films",
   "year": "2018 - 2023",
-  "role": "Compositing Artist",
-  "description": "Visual effects compositing, clean plate reconstruction, and integration for PatiBeku.com.",
-  "tools": [
+  "tags": [
     "Nuke",
     "Maya"
   ],
-  "hasBeforeAfter": false
+  "orientation": "vertical"
 }

@@ -24,52 +24,123 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Portfolio Tag Filtering
-  const filterBtns = document.querySelectorAll('.filter-btn');
-  const projectCards = document.querySelectorAll('.project-card');
-  const companySections = document.querySelectorAll('.company-section');
+  // Portfolio & VFX Tag / Category Filtering
+  let currentCategory = 'all';
+  let currentTag = null;
+
+  const filterBtns = document.querySelectorAll('.filter-bar .filter-btn');
+
+  function updateCategoryButtons() {
+    filterBtns.forEach(b => {
+      if (b.getAttribute('data-filter') === currentCategory) {
+        b.classList.add('active');
+      } else {
+        b.classList.remove('active');
+      }
+    });
+  }
+
+  function applyFilters() {
+    const tiles = document.querySelectorAll('.project-tile, .project-card');
+    const companySections = document.querySelectorAll('.company-section');
+
+    tiles.forEach(tile => {
+      const category = tile.getAttribute('data-category');
+      const tagsAttr = tile.getAttribute('data-tags') || '';
+      const tags = tagsAttr.split(',').map(t => t.trim().toLowerCase());
+
+      const matchCategory = (currentCategory === 'all' || category === currentCategory);
+      const matchTag = (!currentTag || tags.includes(currentTag.toLowerCase()));
+
+      if (matchCategory && matchTag) {
+        tile.style.display = 'block';
+        setTimeout(() => { tile.style.opacity = '1'; }, 10);
+      } else {
+        tile.style.opacity = '0';
+        setTimeout(() => { tile.style.display = 'none'; }, 200);
+      }
+    });
+
+    // Highlight active tags
+    document.querySelectorAll('.tile-tag').forEach(tagEl => {
+      const tagVal = tagEl.getAttribute('data-tag');
+      if (currentTag && tagVal && tagVal.toLowerCase() === currentTag.toLowerCase()) {
+        tagEl.classList.add('active');
+      } else {
+        tagEl.classList.remove('active');
+      }
+    });
+
+    // Update active tag banner
+    const tagStatus = document.querySelector('.tag-filter-status');
+    if (tagStatus) {
+      if (currentTag) {
+        tagStatus.innerHTML = `Filter: <strong>#${currentTag}</strong> <button class="tag-filter-clear" title="Clear tag filter">&times;</button>`;
+        tagStatus.style.display = 'inline-flex';
+      } else {
+        tagStatus.style.display = 'none';
+      }
+    }
+
+    // Update company sections visibility
+    setTimeout(() => {
+      companySections.forEach(section => {
+        const visibleTiles = section.querySelectorAll('.project-tile:not([style*="display: none"]), .project-card:not([style*="display: none"])');
+        if (visibleTiles.length === 0) {
+          section.style.display = 'none';
+        } else {
+          section.style.display = 'block';
+          section.style.opacity = '1';
+        }
+      });
+    }, 220);
+  }
 
   filterBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-      filterBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      const filter = btn.getAttribute('data-filter');
-      const companyFilter = btn.getAttribute('data-company');
-
-      projectCards.forEach(card => {
-        const category = card.getAttribute('data-category');
-        const cardCompany = card.getAttribute('data-company');
-
-        let match = false;
-        if (companyFilter) {
-          match = (cardCompany === companyFilter);
-        } else if (filter === 'all' || category === filter) {
-          match = true;
-        }
-
-        if (match) {
-          card.style.display = 'flex';
-          setTimeout(() => { card.style.opacity = '1'; }, 10);
-        } else {
-          card.style.opacity = '0';
-          setTimeout(() => { card.style.display = 'none'; }, 200);
-        }
-      });
-
-      // Update company sections visibility based on visible project cards
-      setTimeout(() => {
-        companySections.forEach(section => {
-          const visibleCards = section.querySelectorAll('.project-card:not([style*="display: none"])');
-          if (visibleCards.length === 0) {
-            section.style.display = 'none';
-          } else {
-            section.style.display = 'block';
-            section.style.opacity = '1';
-          }
-        });
-      }, 220);
+      currentCategory = btn.getAttribute('data-filter') || 'all';
+      currentTag = null;
+      updateCategoryButtons();
+      applyFilters();
     });
+  });
+
+  // Delegated clicks for interactive Category Pills and Clickable Tags on Tiles
+  document.addEventListener('click', (e) => {
+    // Tag Click
+    const tagBtn = e.target.closest('.tile-tag');
+    if (tagBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      const clickedTag = tagBtn.getAttribute('data-tag');
+      if (currentTag && currentTag.toLowerCase() === clickedTag.toLowerCase()) {
+        currentTag = null; // toggle off
+      } else {
+        currentTag = clickedTag;
+      }
+      applyFilters();
+      return;
+    }
+
+    // Category Pill Click
+    const catPill = e.target.closest('.tile-category-pill');
+    if (catPill) {
+      e.preventDefault();
+      e.stopPropagation();
+      currentCategory = catPill.getAttribute('data-filter-category') || 'all';
+      currentTag = null;
+      updateCategoryButtons();
+      applyFilters();
+      return;
+    }
+
+    // Clear Tag Filter
+    if (e.target.classList.contains('tag-filter-clear') || e.target.closest('.tag-filter-clear')) {
+      e.preventDefault();
+      currentTag = null;
+      applyFilters();
+      return;
+    }
   });
 
   // Showreel Timestamp Jumpers

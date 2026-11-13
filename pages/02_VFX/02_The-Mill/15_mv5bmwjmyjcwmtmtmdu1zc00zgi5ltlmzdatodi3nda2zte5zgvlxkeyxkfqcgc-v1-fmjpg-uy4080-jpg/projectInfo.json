@@ -1,13 +1,11 @@
 {
   "title": "Mv5Bmwjmyjcwmtmtmdu1Zc00Zgi5Ltlmzdatodi3Nda2Zte5Zgvlxkeyxkfqcgc V1 Fmjpg Uy4080.Jpg",
-  "client": "Production",
+  "description": "Visual effects compositing, clean plate reconstruction, and integration for Mv5Bmwjmyjcwmtmtmdu1Zc00Zgi5Ltlmzdatodi3Nda2Zte5Zgvlxkeyxkfqcgc V1 Fmjpg Uy4080.Jpg.",
   "category": "films",
   "year": "2018 - 2023",
-  "role": "Compositing Artist",
-  "description": "Visual effects compositing, clean plate reconstruction, and integration for Mv5Bmwjmyjcwmtmtmdu1Zc00Zgi5Ltlmzdatodi3Nda2Zte5Zgvlxkeyxkfqcgc V1 Fmjpg Uy4080.Jpg.",
-  "tools": [
+  "tags": [
     "Nuke",
     "Maya"
   ],
-  "hasBeforeAfter": false
+  "orientation": "vertical"
 }

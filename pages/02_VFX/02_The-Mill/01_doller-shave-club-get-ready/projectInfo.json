@@ -1,13 +1,11 @@
 {
   "title": "Doller Shave Club - Get Ready",
-  "client": "Production",
+  "description": "Visual effects compositing, clean plate reconstruction, and integration for Doller Shave Club - Get Ready.",
   "category": "commercials",
   "year": "2018 - 2023",
-  "role": "Compositing Artist",
-  "description": "Visual effects compositing, clean plate reconstruction, and integration for Doller Shave Club - Get Ready.",
-  "tools": [
+  "tags": [
     "Nuke",
     "Mocha"
   ],
-  "hasBeforeAfter": false
+  "orientation": "horizontal"
 }

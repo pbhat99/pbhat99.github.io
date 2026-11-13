@@ -1,14 +1,12 @@
 {
   "title": "Kataka",
-  "client": "Feature Film",
+  "description": "Supernatural horror feature film with creature compositing, dark atmosphere layering, and set cleanups.",
   "category": "films",
   "year": "2017",
-  "role": "Visual Effects Lead",
-  "description": "Supernatural horror feature film with creature compositing, dark atmosphere layering, and set cleanups.",
-  "tools": [
+  "tags": [
     "Nuke",
     "Maya",
     "Photoshop"
   ],
-  "hasBeforeAfter": false
+  "orientation": "vertical"
 }

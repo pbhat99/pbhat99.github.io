@@ -74,6 +74,28 @@ def get_page_background_and_overlay(page_dir):
 
     return bg_img_html, bg_overlay_html, resolved_bg, overlay_alpha
 
+def hex_to_rgba(hex_str, opacity_val=100):
+    """Converts a hex string like #0e1733 and opacity (0-100 or 0.0-1.0) to rgba(...)"""
+    if not hex_str:
+        return "rgba(14, 23, 51, 0.85)"
+    s = hex_str.strip().lstrip('#')
+    if len(s) == 3:
+        s = ''.join([c*2 for c in s])
+    try:
+        r = int(s[0:2], 16)
+        g = int(s[2:4], 16)
+        b = int(s[4:6], 16)
+    except Exception:
+        return "rgba(14, 23, 51, 0.85)"
+    try:
+        op = float(opacity_val)
+        if op > 1.0:
+            op = op / 100.0
+        op = max(0.0, min(1.0, op))
+    except Exception:
+        op = 0.85
+    return f"rgba({r}, {g}, {b}, {op:.2f})"
+
 def generate_nav_html(active_page="home"):
     """
     Renders the unified transparent header with clean 6-item navigation (VFX instead of VFX Works, NO contact button).
@@ -382,8 +404,6 @@ def sync_all():
     
     company_sections_html = []
     total_projects_count = 0
-    all_categories = set()
-    company_filter_pills = []
     valid_img_exts = {'.jpg', '.jpeg', '.png', '.webp', '.avif', '.gif'}
 
     for comp_folder in company_subdirs:
@@ -393,11 +413,12 @@ def sync_all():
         # 1. Company Info
         comp_info = {
             "companyName": format_title_from_filename(comp_folder),
-            "role": "Visual Effects Artist",
-            "period": "Production",
-            "location": "Global",
+            "period": "Aug-2021 to Present",
+            "designation": "",
             "description": "",
-            "sortOrder": "desc"
+            "color": "#0e1733",
+            "cardBgColor": "#131e42",
+            "cardBgOpacity": 85
         }
         comp_info_file = os.path.join(comp_path, "companyInfo.json")
         if not os.path.exists(comp_info_file):
@@ -410,24 +431,29 @@ def sync_all():
                 pass
 
         company_name = comp_info.get("companyName") or comp_info.get("name") or format_title_from_filename(comp_folder)
-        company_filter_pills.append(f'<button class="filter-btn" data-company="{comp_slug}">{company_name}</button>')
+        comp_period = comp_info.get("period", "")
+        comp_designation = comp_info.get("designation", "")
+        comp_description = comp_info.get("description", "")
+        comp_color = comp_info.get("color", "#0e1733")
+        card_bg_color = comp_info.get("cardBgColor", "#131e42")
+        card_bg_opacity = comp_info.get("cardBgOpacity", 85)
+        tile_bg_rgba = hex_to_rgba(card_bg_color, card_bg_opacity)
 
-        # 2. Company Banner
+        # 2. Company Banner Logo (right edge fit)
         banner_path = None
         for f in os.listdir(comp_path):
             if os.path.isfile(os.path.join(comp_path, f)) and os.path.splitext(f)[1].lower() in valid_img_exts:
-                if 'banner' in f.lower():
+                if 'banner' in f.lower() or 'logo' in f.lower():
                     banner_path = f"{comp_path}/{f}".replace("\\", "/")
                     break
 
         # 3. Project Folders inside Company
         proj_subdirs = [d for d in os.listdir(comp_path) if os.path.isdir(os.path.join(comp_path, d)) and not d.startswith('.')]
         
-        # Sort project folders in descending order as requested (or by sortOrder)
-        sort_order = comp_info.get("sortOrder", "desc").lower()
-        proj_subdirs.sort(reverse=(sort_order == "desc"))
+        # Sort project folders in descending order as requested
+        proj_subdirs.sort(reverse=True)
 
-        cards_html = []
+        tiles_html = []
         for p_folder in proj_subdirs:
             p_folder_path = os.path.join(comp_path, p_folder)
             
@@ -450,13 +476,11 @@ def sync_all():
             # Read projectInfo.json
             proj_info = {
                 "title": format_title_from_filename(p_folder),
-                "client": company_name,
-                "category": "commercials",
-                "year": "2023",
-                "role": comp_info.get("role", "Compositor"),
                 "description": "",
-                "tools": ["Nuke", "Maya"],
-                "hasBeforeAfter": False
+                "category": "commercials",
+                "year": "",
+                "tags": [],
+                "orientation": "horizontal"
             }
             proj_info_file = os.path.join(p_folder_path, "projectInfo.json")
             if not os.path.exists(proj_info_file):
@@ -468,94 +492,76 @@ def sync_all():
                 except Exception:
                     pass
 
-            p_title = proj_info.get("title", format_title_from_filename(p_folder))
+            p_title = proj_info.get("title") or format_title_from_filename(p_folder)
+            p_desc = proj_info.get("description", "")
             p_category = proj_info.get("category", "commercials")
-            all_categories.add(p_category)
+            p_year = proj_info.get("year", "")
+            p_orientation = proj_info.get("orientation", "horizontal").lower()
+            if p_orientation not in ("horizontal", "vertical", "square"):
+                p_orientation = "horizontal"
+
+            # Tags processing
+            raw_tags = proj_info.get("tags") or proj_info.get("tools") or []
+            if isinstance(raw_tags, str):
+                p_tags = [t.strip() for t in raw_tags.split(",") if t.strip()]
+            else:
+                p_tags = [str(t).strip() for t in raw_tags if str(t).strip()]
+
             cat_label = "Commercial"
             if p_category == "films": cat_label = "Feature Film"
             elif p_category == "music-videos": cat_label = "Music Video"
 
-            tools_html = "".join([f'<span class="tool-tag">{t}</span>' for t in proj_info.get('tools', ['Nuke'])])
+            year_span = f'<span class="tile-year">{p_year}</span>' if p_year else ''
+            desc_html = f'<p class="tile-desc">{p_desc}</p>' if p_desc else ''
+            
+            tags_csv = ",".join(p_tags)
+            tags_buttons = "".join([f'<button class="tile-tag" data-tag="{t}">{t}</button>' for t in p_tags])
+            tags_html = f'<div class="tile-tags-wrap">{tags_buttons}</div>' if p_tags else ''
 
-            ba_html = ""
-            if proj_info.get("hasBeforeAfter", False):
-                before_img = proj_img_path
-                after_img = proj_img_path
-                if proj_info.get("beforeImage"):
-                    b_cand = os.path.join(p_folder_path, proj_info["beforeImage"])
-                    if os.path.exists(b_cand): before_img = b_cand.replace("\\", "/")
-                if proj_info.get("afterImage"):
-                    a_cand = os.path.join(p_folder_path, proj_info["afterImage"])
-                    if os.path.exists(a_cand): after_img = a_cand.replace("\\", "/")
-
-                ba_html = f'''
-                <div class="accordion-wrapper">
-                  <button class="accordion-trigger" aria-expanded="false">
-                    <span>Interactive Wipe Comparison</span>
-                    <span class="accordion-icon">&#9662;</span>
-                  </button>
-                  <div class="accordion-content">
-                    <div class="accordion-inner">
-                      <div class="accordion-breakdown-box">
-                        <div class="before-after-container" style="aspect-ratio: 16/9;">
-                          <div class="ba-image-layer ba-before-layer">
-                            <img src="{before_img}" alt="Raw Plate">
-                            <span class="ba-badge ba-badge-before">Raw Plate</span>
-                          </div>
-                          <div class="ba-image-layer ba-after-layer">
-                            <img src="{after_img}" alt="Final Comp">
-                            <span class="ba-badge ba-badge-after">Final Comp</span>
-                          </div>
-                          <div class="ba-handle"><div class="ba-handle-circle"><div class="ba-handle-arrows"><span>&#9664;</span><span>&#9654;</span></div></div></div>
-                        </div>
-                      </div>
-                    </div>
+            tiles_html.append(f'''
+            <article class="project-tile aspect-{p_orientation}" data-category="{p_category}" data-tags="{tags_csv}">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="{proj_img_path}" alt="{p_title}" class="tile-img" loading="lazy">
+                <button class="tile-category-pill" data-filter-category="{p_category}" title="Filter by {cat_label}">{cat_label}</button>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>{p_title}</span>
+                      {year_span}
+                    </h3>
+                    {desc_html}
+                    {tags_html}
                   </div>
-                </div>'''
-
-            cards_html.append(f'''
-            <article class="project-card" data-category="{p_category}" data-company="{comp_slug}">
-              <div class="project-thumb-wrapper">
-                <img src="{proj_img_path}" alt="{p_title}" class="project-thumb" loading="lazy" data-lightbox data-caption="{p_title} - {proj_info.get('role', 'Compositor')}">
-                <span class="card-overlay-badge">{cat_label}</span>
-              </div>
-              <div class="card-content">
-                <div class="card-meta">
-                  <span class="card-client">{proj_info.get('client', company_name)}</span>
-                  <span>{proj_info.get('year', '')}</span>
                 </div>
-                <h3 class="card-title">{p_title}</h3>
-                <p class="card-desc">{proj_info.get('description', '')}</p>
-                <div class="card-tools">{tools_html}</div>
-                {ba_html}
               </div>
             </article>''')
             total_projects_count += 1
 
-        # Assemble company section
-        banner_media_html = f'''
-        <div class="company-banner-media">
-          <img src="{banner_path}" alt="{company_name} Banner" class="company-banner-img">
-          <div class="company-banner-overlay"></div>
+        # Company Banner HTML (Fixed-Height Banner Strip with Right-Edge Logo)
+        designation_html = f'<div class="company-banner-designation">{comp_designation}</div>' if comp_designation else ''
+        description_html = f'<div class="company-banner-desc">{comp_description}</div>' if comp_description else ''
+        logo_html = f'''
+        <div class="company-banner-logo-wrap">
+          <img src="{banner_path}" alt="{company_name} Logo" class="company-banner-logo-img">
         </div>''' if banner_path else ''
+
+        company_banner_html = f'''
+        <div class="company-banner-strip" style="background-color: {comp_color};">
+          <div class="company-banner-info">
+            <h2 class="company-banner-heading">{company_name}</h2>
+            <div class="company-banner-period">{comp_period}</div>
+            {designation_html}
+            {description_html}
+          </div>
+          {logo_html}
+        </div>'''
 
         company_sections_html.append(f'''
         <section class="company-section" id="{comp_slug}" data-company="{comp_slug}">
-          <div class="company-banner-card">
-            {banner_media_html}
-            <div class="company-banner-content">
-              <div class="company-meta-strip">
-                <span class="company-badge">{comp_info.get('role', 'Visual Effects')}</span>
-                <span class="company-period">{comp_info.get('period', '')}</span>
-                <span class="company-location">{comp_info.get('location', '')}</span>
-              </div>
-              <h2 class="company-name">{company_name}</h2>
-              <p class="company-desc">{comp_info.get('description', '')}</p>
-            </div>
-          </div>
-
-          <div class="portfolio-grid company-project-grid">
-            {"".join(cards_html)}
+          {company_banner_html}
+          <div class="portfolio-grid company-project-grid" style="--tile-bg: {tile_bg_rgba};">
+            {"".join(tiles_html)}
           </div>
         </section>''')
 
@@ -580,7 +586,7 @@ def sync_all():
 
   <main style="padding-block: clamp(24px, 4vw, 56px);">
     <div class="container-wide">
-      <div class="section-header">
+      <div class="section-header section-header-center">
         <div class="section-label">Production Archive</div>
         <h1 class="section-title">{vfx_content.get('title', 'Visual Effects & Compositing')}</h1>
         <p class="section-desc">
@@ -588,13 +594,13 @@ def sync_all():
         </p>
       </div>
 
-      <!-- Filter Controls: Categories & Company Jump Pills -->
-      <div class="filter-bar">
+      <!-- Filter Controls: Categories Only (Company pills removed, tag filter status attached) -->
+      <div class="filter-bar filter-bar-center">
         <button class="filter-btn active" data-filter="all">All Projects ({total_projects_count})</button>
         <button class="filter-btn" data-filter="commercials">Commercials</button>
         <button class="filter-btn" data-filter="films">Feature Films</button>
         <button class="filter-btn" data-filter="music-videos">Music Videos</button>
-        {"".join(company_filter_pills)}
+        <span class="tag-filter-status" style="display: none;"></span>
       </div>
 
       <!-- Company Sections with Banners & Project Grids -->

@@ -1,13 +1,11 @@
 {
   "title": "Three 5G - Real 5G Has Arrived",
-  "client": "Three UK",
+  "description": "Futuristic London city transformation, holographic AR interfaces, digital doubles, and seamless invisible VFX.",
   "category": "commercials",
   "year": "2021",
-  "role": "Compositor",
-  "description": "Futuristic London city transformation, holographic AR interfaces, digital doubles, and seamless invisible VFX.",
-  "tools": [
+  "tags": [
     "Nuke",
     "Flame"
   ],
-  "hasBeforeAfter": false
+  "orientation": "horizontal"
 }

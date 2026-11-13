@@ -1,14 +1,12 @@
 {
   "title": "Pepsi - 'The Call' Super Bowl Halftime",
-  "client": "Pepsi / NFL",
+  "description": "Halftime show teaser featuring stadium-scale CG crowd multiplication, holographic displays, and energetic lighting passes.",
   "category": "commercials",
   "year": "2022",
-  "role": "Compositing Artist",
-  "description": "Halftime show teaser featuring stadium-scale CG crowd multiplication, holographic displays, and energetic lighting passes.",
-  "tools": [
+  "tags": [
     "Nuke",
     "Maya",
     "Mocha Pro"
   ],
-  "hasBeforeAfter": false
+  "orientation": "horizontal"
 }

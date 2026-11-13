@@ -1,13 +1,11 @@
 {
   "title": "ARXIV/ Archive",
-  "client": "Production",
+  "description": "Visual effects compositing, clean plate reconstruction, and integration for ARXIV/ Archive.",
   "category": "commercials",
   "year": "2018 - 2023",
-  "role": "Compositing Artist",
-  "description": "Visual effects compositing, clean plate reconstruction, and integration for ARXIV/ Archive.",
-  "tools": [
+  "tags": [
     "Nuke",
     "Mocha"
   ],
-  "hasBeforeAfter": false
+  "orientation": "horizontal"
 }

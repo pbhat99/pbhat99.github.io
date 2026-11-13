@@ -1,13 +1,11 @@
 {
   "title": "Mv5By2Y5Ngy5M2Mtmzc3Zi00Yjzhlwjhowmtmjy4Ywrimzzlowjixkeyxkfqcgc V1 Fmjpg Ux686.Jpg",
-  "client": "Production",
+  "description": "Visual effects compositing, clean plate reconstruction, and integration for Mv5By2Y5Ngy5M2Mtmzc3Zi00Yjzhlwjhowmtmjy4Ywrimzzlowjixkeyxkfqcgc V1 Fmjpg Ux686.Jpg.",
   "category": "commercials",
   "year": "2018 - 2023",
-  "role": "Compositing Artist",
-  "description": "Visual effects compositing, clean plate reconstruction, and integration for Mv5By2Y5Ngy5M2Mtmzc3Zi00Yjzhlwjhowmtmjy4Ywrimzzlowjixkeyxkfqcgc V1 Fmjpg Ux686.Jpg.",
-  "tools": [
+  "tags": [
     "Nuke",
     "Mocha"
   ],
-  "hasBeforeAfter": false
+  "orientation": "horizontal"
 }

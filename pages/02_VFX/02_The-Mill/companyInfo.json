@@ -1,8 +1,9 @@
 {
   "companyName": "The Mill",
-  "role": "Visual Effects Compositor",
-  "period": "2017 - 2021",
-  "location": "London / Global",
+  "period": "Feb-2017 to Jul-2021",
+  "designation": "Visual Effects Compositor",
   "description": "Award-winning commercials, automotive CG integration, photoreal creature compositing, and music videos.",
-  "sortOrder": "desc"
+  "color": "#131833",
+  "cardBgColor": "#131e42",
+  "cardBgOpacity": 85
 }

@@ -1,13 +1,11 @@
 {
   "title": "Person Of Interest",
-  "client": "Production",
+  "description": "Visual effects compositing and shot integration for Person Of Interest.",
   "category": "commercials",
   "year": "2023",
-  "role": "Compositing Artist",
-  "description": "Visual effects compositing and shot integration for Person Of Interest.",
-  "tools": [
+  "tags": [
     "Nuke",
     "Maya"
   ],
-  "hasBeforeAfter": false
+  "orientation": "horizontal"
 }
