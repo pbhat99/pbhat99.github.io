@@ -959,11 +959,9 @@ def sync_all():
     social_section_html = ""
     if social_tiles_html:
         social_section_html = f'''
-        <div class="contact-social-section">
-          <div class="contact-social-strip">
+          <div class="about-social-row">
             {"".join(social_tiles_html)}
-          </div>
-        </div>'''
+          </div>'''
 
     about_html = f'''<!DOCTYPE html>
 <html lang="en">
@@ -1010,6 +1008,7 @@ def sync_all():
           <div class="about-paragraphs">
             {paragraphs_html}
           </div>
+          {social_section_html}
           <div class="about-actions-wrap">
             <a href="{resume_link}" class="btn btn-primary" download>Resume</a>
             <a href="{cover_letter_link}" class="btn btn-secondary" download>Cover Letter</a>
@@ -1023,7 +1022,7 @@ def sync_all():
       <!-- Vimeo Showreel Video Embed -->
       {vimeo_section_html}
 
-      <!-- Contact Information Card (Lines List on Left, Right-Aligned Image, Social Media Center Aligned at Bottom) -->
+      <!-- Contact Information Card (Lines List on Left, Right-Aligned Image) -->
       <section id="contact" class="contact-card">
         <div class="contact-content-grid">
           <div class="contact-info-col">
@@ -1034,7 +1033,6 @@ def sync_all():
           </div>
           {contact_img_html}
         </div>
-        {social_section_html}
       </section>
 
     </div>

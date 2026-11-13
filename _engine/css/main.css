@@ -951,11 +951,19 @@ button {
   gap: 16px;
 }
 
+.about-social-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+}
+
 .about-actions-wrap {
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
-  margin-top: 28px;
+  margin-top: 18px;
 }
 
 .about-actions-wrap .btn {
@@ -1106,7 +1114,7 @@ button {
   grid-template-columns: 1fr auto;
   gap: clamp(24px, 4vw, 48px);
   align-items: center;
-  margin-bottom: 32px;
+  margin-bottom: 0;
 }
 
 @media (max-width: 768px) {
@@ -1275,15 +1283,14 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8px;
+  padding: 0 !important;
 }
 
 .social-icon-img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   display: block;
-  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.3));
 }
 
 /* Scroll to Top Floating Button (Bottom Right, visible past 1 screen) */
