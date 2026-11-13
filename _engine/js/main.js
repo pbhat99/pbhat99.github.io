@@ -163,8 +163,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function handleScroll() {
-    const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-    const screenHeight = window.innerHeight || document.documentElement.clientHeight;
+    const scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    const screenHeight = window.innerHeight || document.documentElement.clientHeight || 600;
     if (scrollY > screenHeight) {
       backToTopBtn.classList.add('visible');
     } else {
@@ -173,8 +173,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   window.addEventListener('scroll', handleScroll, { passive: true });
-  backToTopBtn.addEventListener('click', () => {
+  document.addEventListener('scroll', handleScroll, { passive: true });
+  backToTopBtn.addEventListener('click', (e) => {
+    e.preventDefault();
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.documentElement.scrollTo({ top: 0, behavior: 'smooth' });
   });
   handleScroll();
 

@@ -1088,6 +1088,204 @@ button {
   }
 }
 
+/* ==========================================================================
+   CONTACT SECTION & SOCIAL MEDIA TILES
+   ========================================================================== */
+.contact-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: clamp(24px, 4vw, 40px);
+  margin-bottom: 56px;
+  box-shadow: var(--shadow-subtle);
+  position: relative;
+}
+
+.contact-content-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: clamp(24px, 4vw, 48px);
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+@media (max-width: 768px) {
+  .contact-content-grid {
+    grid-template-columns: 1fr;
+  }
+  .contact-image-wrap {
+    max-width: 260px;
+    margin-inline: auto;
+  }
+}
+
+.contact-info-col {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+.contact-heading {
+  font-family: 'Ubuntu', sans-serif;
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 20px;
+}
+
+.contact-lines-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 0.95rem;
+}
+
+.contact-line-item {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  line-height: 1.5;
+}
+
+.contact-line-label {
+  color: var(--text-subtle);
+  font-weight: 500;
+  min-width: 95px;
+  flex-shrink: 0;
+}
+
+.contact-line-val {
+  color: var(--text-main);
+  word-break: break-word;
+}
+
+.contact-line-val a {
+  color: var(--accent-primary);
+  text-decoration: underline;
+  transition: color var(--transition-fast);
+}
+
+.contact-line-val a:hover {
+  color: var(--accent-hover);
+}
+
+/* Right-Aligned Contact Image */
+.contact-image-wrap {
+  width: 240px;
+  height: 190px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-secondary);
+  flex-shrink: 0;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
+}
+
+.contact-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+/* Bottom Center Aligned Social Media Icons */
+.contact-social-section {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.contact-social-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+/* Social Tile: Button Sized (44x44px), Project Tile Edge-Line Animation */
+.social-tile {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.social-tile:hover {
+  transform: scale(1.15);
+  z-index: 10;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 16px rgba(249, 134, 3, 0.35);
+}
+
+.social-tile .tile-circling-border {
+  position: absolute;
+  inset: -2px;
+  border-radius: calc(var(--radius-sm) + 2px);
+  z-index: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.social-tile .tile-circling-border::before {
+  content: '';
+  position: absolute;
+  inset: -150%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgba(249, 134, 3, 0.2) 20deg,
+    var(--accent-primary) 50deg,
+    #ffffff 65deg,
+    var(--accent-primary) 80deg,
+    transparent 105deg
+  );
+  animation: circleTrace 5s linear infinite;
+  filter: drop-shadow(0 0 4px var(--accent-primary));
+}
+
+.social-tile:hover .tile-circling-border {
+  opacity: 1;
+}
+
+.social-tile .tile-inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+}
+
+.social-icon-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.3));
+}
+
 /* Scroll to Top Floating Button (Bottom Right, visible past 1 screen) */
 .back-to-top {
   position: fixed;

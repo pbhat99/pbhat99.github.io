@@ -8,6 +8,14 @@
   "resumeLink": "pages/05_about/resume.pdf",
   "coverLetterLink": "pages/05_about/coverLetter.pdf",
   "vimeoUrl": "https://vimeo.com/835414002",
+  "contactImage": "pages/05_about/contact.jpg",
+  "contactInfoLines": [
+    { "label": "Phone", "value": "+91 9449267068" },
+    { "label": "Email", "value": "pbhat99@gmail.com", "link": "mailto:pbhat99@gmail.com" },
+    { "label": "GitHub", "value": "github.com/pbhat99", "link": "https://github.com/pbhat99" },
+    { "label": "Location", "value": "Karnataka, India - 581337" },
+    { "label": "Availability", "value": "Open for Feature Film & Studio Compositing Roles" }
+  ],
   "phone": "+91 9449267068",
   "email": "pbhat99@gmail.com",
   "github": "https://github.com/pbhat99",

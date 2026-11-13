@@ -1,0 +1,32 @@
+[
+  {
+    "name": "LinkedIn",
+    "image": "linkedin.png",
+    "link": "https://www.linkedin.com/in/prasannakumar-t-bhat"
+  },
+  {
+    "name": "GitHub",
+    "image": "github.png",
+    "link": "https://github.com/pbhat99"
+  },
+  {
+    "name": "Vimeo",
+    "image": "vimeo.png",
+    "link": "https://vimeo.com/835414002"
+  },
+  {
+    "name": "IMDb",
+    "image": "imdb.png",
+    "link": "https://www.imdb.com"
+  },
+  {
+    "name": "ArtStation",
+    "image": "artstation.png",
+    "link": "https://www.artstation.com"
+  },
+  {
+    "name": "Instagram",
+    "image": "instagram.png",
+    "link": "https://www.instagram.com"
+  }
+]

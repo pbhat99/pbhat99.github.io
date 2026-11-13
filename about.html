@@ -145,15 +145,60 @@
         </div>
       </section>
 
-      <!-- Contact Information Card (Clean, No Unintended Section Labels) -->
-      <section id="contact" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: clamp(24px, 4vw, 36px); margin-bottom: 48px;">
-        <div style="max-width: 600px;">
-          <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 16px;">Contact Information</h2>
-          <div style="display: flex; flex-direction: column; gap: 14px; font-size: 0.92rem;">
-            <div><span style="color: var(--text-subtle); width: 80px; display: inline-block;">Phone:</span> <strong style="color: #fff;">+91 9449267068</strong></div>
-            <div><span style="color: var(--text-subtle); width: 80px; display: inline-block;">Email:</span> <a href="mailto:pbhat99@gmail.com" style="color: var(--accent-primary); text-decoration: underline;">pbhat99@gmail.com</a></div>
-            <div><span style="color: var(--text-subtle); width: 80px; display: inline-block;">GitHub:</span> <a href="https://github.com/pbhat99" target="_blank" rel="noopener" style="color: var(--accent-primary); text-decoration: underline;">github.com/pbhat99</a></div>
-            <div><span style="color: var(--text-subtle); width: 80px; display: inline-block;">Location:</span> <span style="color: var(--text-muted);">Karnataka, India - 581337</span></div>
+      <!-- Contact Information Card (Lines List on Left, Right-Aligned Image, Social Media Center Aligned at Bottom) -->
+      <section id="contact" class="contact-card">
+        <div class="contact-content-grid">
+          <div class="contact-info-col">
+            <h2 class="contact-heading">Contact Information</h2>
+            <div class="contact-lines-list">
+              <div class="contact-line-item"><span class="contact-line-label">Phone:</span><span class="contact-line-val"><strong>+91 9449267068</strong></span></div><div class="contact-line-item"><span class="contact-line-label">Email:</span><span class="contact-line-val"><a href="mailto:pbhat99@gmail.com" target="_blank" rel="noopener noreferrer">pbhat99@gmail.com</a></span></div><div class="contact-line-item"><span class="contact-line-label">GitHub:</span><span class="contact-line-val"><a href="https://github.com/pbhat99" target="_blank" rel="noopener noreferrer">github.com/pbhat99</a></span></div><div class="contact-line-item"><span class="contact-line-label">Location:</span><span class="contact-line-val">Karnataka, India - 581337</span></div><div class="contact-line-item"><span class="contact-line-label">Availability:</span><span class="contact-line-val">Open for Feature Film & Studio Compositing Roles</span></div>
+            </div>
+          </div>
+          
+          <div class="contact-image-wrap">
+            <img src="pages/05_about/contact.jpg" alt="Contact Visual" class="contact-img" loading="lazy">
+          </div>
+        </div>
+        
+        <div class="contact-social-section">
+          <div class="contact-social-strip">
+            
+            <a href="https://www.linkedin.com/in/prasannakumar-t-bhat" target="_blank" rel="noopener noreferrer" class="social-tile" title="LinkedIn">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/05_about/social/linkedin.png" alt="LinkedIn" class="social-icon-img" loading="lazy">
+              </div>
+            </a>
+            <a href="https://github.com/pbhat99" target="_blank" rel="noopener noreferrer" class="social-tile" title="GitHub">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/05_about/social/github.png" alt="GitHub" class="social-icon-img" loading="lazy">
+              </div>
+            </a>
+            <a href="https://vimeo.com/835414002" target="_blank" rel="noopener noreferrer" class="social-tile" title="Vimeo">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/05_about/social/vimeo.png" alt="Vimeo" class="social-icon-img" loading="lazy">
+              </div>
+            </a>
+            <a href="https://www.imdb.com" target="_blank" rel="noopener noreferrer" class="social-tile" title="IMDb">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/05_about/social/imdb.png" alt="IMDb" class="social-icon-img" loading="lazy">
+              </div>
+            </a>
+            <a href="https://www.artstation.com" target="_blank" rel="noopener noreferrer" class="social-tile" title="ArtStation">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/05_about/social/artstation.png" alt="ArtStation" class="social-icon-img" loading="lazy">
+              </div>
+            </a>
+            <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" class="social-tile" title="Instagram">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="pages/05_about/social/instagram.png" alt="Instagram" class="social-icon-img" loading="lazy">
+              </div>
+            </a>
           </div>
         </div>
       </section>
@@ -171,5 +216,12 @@
   </footer>
 
   <script type="module" src="_engine/js/main.js"></script>
+
+  <!-- Jump to Top Floating Button (Visible past 1 screen height) -->
+  <button id="back-to-top" class="back-to-top" aria-label="Jump to top" title="Jump to top">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="18 15 12 9 6 15"></polyline>
+    </svg>
+  </button>
 </body>
 </html>

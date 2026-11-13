@@ -131,6 +131,13 @@ def generate_nav_html(active_page="home"):
     </div>
   </header>'''
 
+BACK_TO_TOP_HTML = '''  <!-- Jump to Top Floating Button (Visible past 1 screen height) -->
+  <button id="back-to-top" class="back-to-top" aria-label="Jump to top" title="Jump to top">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="18 15 12 9 6 15"></polyline>
+    </svg>
+  </button>'''
+
 def sync_all():
     print("=== Syncing site (02_VFX company structure, vfx.html, proportional background fallback) ===")
 
@@ -374,6 +381,8 @@ def sync_all():
         }}
       }}).catch(() => {{}});
   </script>
+
+{BACK_TO_TOP_HTML}
 </body>
 </html>
 '''
@@ -652,6 +661,8 @@ def sync_all():
   </footer>
 
   <script type="module" src="_engine/js/main.js"></script>
+
+{BACK_TO_TOP_HTML}
 </body>
 </html>
 '''
@@ -741,6 +752,8 @@ def sync_all():
       initPanoramaViewer('panorama-viewer', 'https://pannellum.org/images/alma.jpg');
     }});
   </script>
+
+{BACK_TO_TOP_HTML}
 </body>
 </html>
 '''
@@ -855,6 +868,103 @@ def sync_all():
     title_inner = page_title if page_title else '&nbsp;'
     desc_inner = page_desc if page_desc else ''
 
+    # 1. Contact Info Lines (separate key section in aboutMe.json, one per line, expands height)
+    contact_lines_data = (
+        about_data.get("contactInfoLines")
+        or about_data.get("contactLines")
+        or about_data.get("infoLines")
+    )
+    contact_lines_html = []
+    if contact_lines_data and isinstance(contact_lines_data, list):
+        for item in contact_lines_data:
+            if isinstance(item, dict):
+                label = item.get("label") or item.get("key") or ""
+                val = str(item.get("value") or item.get("text") or item.get("val") or "")
+                link = item.get("link") or item.get("url") or ""
+                
+                label_html = f'<span class="contact-line-label">{label}:</span>' if label else ''
+                if link:
+                    val_html = f'<a href="{link}" target="_blank" rel="noopener noreferrer">{val}</a>'
+                elif '@' in val and not val.startswith('http'):
+                    val_html = f'<a href="mailto:{val}">{val}</a>'
+                else:
+                    val_html = f'<strong>{val}</strong>' if 'phone' in label.lower() else val
+                contact_lines_html.append(f'<div class="contact-line-item">{label_html}<span class="contact-line-val">{val_html}</span></div>')
+            elif isinstance(item, str) and item.strip():
+                contact_lines_html.append(f'<div class="contact-line-item"><span class="contact-line-val">{item.strip()}</span></div>')
+
+    if not contact_lines_html:
+        # Fallback to standard contact info
+        if phone:
+            contact_lines_html.append(f'<div class="contact-line-item"><span class="contact-line-label">Phone:</span><span class="contact-line-val"><strong>{phone}</strong></span></div>')
+        if email:
+            contact_lines_html.append(f'<div class="contact-line-item"><span class="contact-line-label">Email:</span><span class="contact-line-val"><a href="mailto:{email}">{email}</a></span></div>')
+        if github_link:
+            contact_lines_html.append(f'<div class="contact-line-item"><span class="contact-line-label">GitHub:</span><span class="contact-line-val"><a href="{github_link}" target="_blank" rel="noopener">{github_link.replace("https://", "")}</a></span></div>')
+        if location:
+            contact_lines_html.append(f'<div class="contact-line-item"><span class="contact-line-label">Location:</span><span class="contact-line-val">{location}</span></div>')
+
+    # 2. Right-Aligned Contact Image (contact.jpg)
+    contact_img_path = None
+    for cand in ["contact.jpg", "contact.png", "contact.webp", "contact.jpeg"]:
+        p = os.path.join(about_dir, cand)
+        if os.path.exists(p):
+            contact_img_path = p.replace("\\", "/")
+            break
+            
+    contact_img_html = f'''
+          <div class="contact-image-wrap">
+            <img src="{contact_img_path}" alt="Contact Visual" class="contact-img" loading="lazy">
+          </div>''' if contact_img_path else ''
+
+    # 3. Social Media Section (from pages/05_about/social/ or socialMedia/)
+    social_tiles_html = []
+    social_folder = None
+    for folder_cand in ["social", "socialMedia"]:
+        cand_dir = os.path.join(about_dir, folder_cand)
+        if os.path.exists(cand_dir) and os.path.isdir(cand_dir):
+            social_folder = cand_dir
+            break
+
+    if social_folder:
+        social_json_file = None
+        for jcand in ["social.json", "socialMedia.json", "links.json"]:
+            jp = os.path.join(social_folder, jcand)
+            if os.path.exists(jp):
+                social_json_file = jp
+                break
+
+        if social_json_file:
+            try:
+                with open(social_json_file, "r", encoding="utf-8") as sf:
+                    social_items = json.load(sf)
+                    if isinstance(social_items, list):
+                        for s_item in social_items:
+                            img_name = s_item.get("image") or s_item.get("image name") or s_item.get("icon") or ""
+                            s_link = s_item.get("link") or s_item.get("url") or "#"
+                            s_name = s_item.get("name") or s_item.get("title") or os.path.splitext(img_name)[0].title()
+                            
+                            s_img_path = f"{social_folder}/{img_name}".replace("\\", "/")
+                            if os.path.exists(os.path.join(social_folder, img_name)):
+                                social_tiles_html.append(f'''
+            <a href="{s_link}" target="_blank" rel="noopener noreferrer" class="social-tile" title="{s_name}">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                <img src="{s_img_path}" alt="{s_name}" class="social-icon-img" loading="lazy">
+              </div>
+            </a>''')
+            except Exception as e:
+                print("Notice reading social.json:", e)
+
+    social_section_html = ""
+    if social_tiles_html:
+        social_section_html = f'''
+        <div class="contact-social-section">
+          <div class="contact-social-strip">
+            {"".join(social_tiles_html)}
+          </div>
+        </div>'''
+
     about_html = f'''<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -913,17 +1023,18 @@ def sync_all():
       <!-- Vimeo Showreel Video Embed -->
       {vimeo_section_html}
 
-      <!-- Contact Information Card (Clean, No Unintended Section Labels) -->
-      <section id="contact" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: clamp(24px, 4vw, 36px); margin-bottom: 48px;">
-        <div style="max-width: 600px;">
-          <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 16px;">Contact Information</h2>
-          <div style="display: flex; flex-direction: column; gap: 14px; font-size: 0.92rem;">
-            <div><span style="color: var(--text-subtle); width: 80px; display: inline-block;">Phone:</span> <strong style="color: #fff;">{phone}</strong></div>
-            <div><span style="color: var(--text-subtle); width: 80px; display: inline-block;">Email:</span> <a href="mailto:{email}" style="color: var(--accent-primary); text-decoration: underline;">{email}</a></div>
-            <div><span style="color: var(--text-subtle); width: 80px; display: inline-block;">GitHub:</span> <a href="{github_link}" target="_blank" rel="noopener" style="color: var(--accent-primary); text-decoration: underline;">{github_link.replace('https://', '')}</a></div>
-            <div><span style="color: var(--text-subtle); width: 80px; display: inline-block;">Location:</span> <span style="color: var(--text-muted);">{location}</span></div>
+      <!-- Contact Information Card (Lines List on Left, Right-Aligned Image, Social Media Center Aligned at Bottom) -->
+      <section id="contact" class="contact-card">
+        <div class="contact-content-grid">
+          <div class="contact-info-col">
+            <h2 class="contact-heading">Contact Information</h2>
+            <div class="contact-lines-list">
+              {"".join(contact_lines_html)}
+            </div>
           </div>
+          {contact_img_html}
         </div>
+        {social_section_html}
       </section>
 
     </div>
@@ -939,6 +1050,8 @@ def sync_all():
   </footer>
 
   <script type="module" src="_engine/js/main.js"></script>
+
+{BACK_TO_TOP_HTML}
 </body>
 </html>
 '''
@@ -1103,6 +1216,8 @@ def sync_all():
   </footer>
 
   <script type="module" src="_engine/js/main.js"></script>
+
+{BACK_TO_TOP_HTML}
 </body>
 </html>
 '''
@@ -1268,6 +1383,8 @@ python install.py --onnxruntime cuda</pre>
   </footer>
 
   <script type="module" src="_engine/js/main.js"></script>
+
+{BACK_TO_TOP_HTML}
 </body>
 </html>
 '''
