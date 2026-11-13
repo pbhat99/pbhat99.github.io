@@ -105,7 +105,7 @@ def generate_nav_html(active_page="home"):
         ("vfx.html", "vfx", "VFX"),
         ("ai-comfy.html", "ai-comfy", "AI / Comfy"),
         ("photography.html", "photography", "Photography"),
-        ("about-me.html", "about-me", "About Me"),
+        ("about.html", "about", "About"),
         ("blog.html", "blog", "Blog"),
     ]
 
@@ -528,7 +528,6 @@ def sync_all():
 
             tiles_html.append(f'''
             <article class="project-tile aspect-{p_orientation}" data-category="{p_category}" data-tags="{tags_csv}">
-              <div class="tile-circling-border" aria-hidden="true"></div>
               <div class="tile-inner">
                 <img src="{proj_img_path}" alt="{p_title}" class="tile-img" loading="lazy">
                 <button class="tile-category-pill" data-filter-category="{p_category}" title="Filter by {cat_label}">{cat_label}</button>
@@ -544,6 +543,7 @@ def sync_all():
                   </div>
                 </div>
               </div>
+              <div class="tile-circling-border" aria-hidden="true"><div class="tile-circling-line"></div></div>
             </article>''')
             total_projects_count += 1
 
@@ -623,7 +623,6 @@ def sync_all():
   <main style="padding-block: clamp(24px, 4vw, 56px);">
     <div class="container-wide">
       <div class="section-header">
-        <div class="section-label">Production Archive</div>
         <h1 class="section-title">{vfx_content.get('title', 'Visual Effects & Compositing')}</h1>
         <p class="section-desc">
           {vfx_content.get('description', 'Production shots, feature film breakdowns, and commercials across world-class visual effects studios.')}
@@ -701,7 +700,6 @@ def sync_all():
   <main style="padding-block: clamp(24px, 4vw, 56px);">
     <div class="container-wide">
       <div class="section-header">
-        <div class="section-label">Visual Exploration</div>
         <h1 class="section-title">Photography & 360° Panoramas</h1>
         <p class="section-desc">
           Drop photos into <code>pages/04_photography/gallery/</code> to automatically add new gallery stills.
@@ -711,7 +709,6 @@ def sync_all():
       <div class="panorama-card">
         <div style="padding: 20px 24px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
           <div>
-            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-primary); text-transform: uppercase;">Interactive WebGL Sphere</div>
             <h2 style="font-size: 1.3rem; font-weight: 700; margin-top: 4px;">360° Photosphere Panorama Viewer</h2>
           </div>
           <span style="font-size: 0.8rem; color: var(--text-muted); background: var(--bg-secondary); padding: 4px 10px; border-radius: 4px;">
@@ -752,20 +749,110 @@ def sync_all():
     print("  -> Updated photography.html (Nav: VFX, 360 Viewer, Stills Gallery)")
 
     # --------------------------------------------------------------------------
-    # 4. SYNC ABOUT ME (pages/05_about-me)
+    # 4. SYNC ABOUT PAGE (pages/05_about -> about.html & about-me.html redirect)
     # --------------------------------------------------------------------------
-    about_dir = "pages/05_about-me"
+    about_dir = "pages/05_about" if os.path.exists("pages/05_about") else "pages/05_about-me"
     about_bg_img_html, about_bg_overlay_html, _, _ = get_page_background_and_overlay(about_dir)
 
-    profile_img = f"{about_dir}/profile.jpg" if os.path.exists(f"{about_dir}/profile.jpg") else "_engine/images/logo.png"
-    banner_img = f"{about_dir}/banner.png" if os.path.exists(f"{about_dir}/banner.png") else ""
+    about_data = {
+        "name": "Prasannakumar T Bhat",
+        "designation": "Senior Visual Effects Compositor",
+        "experience": "10+ Years Visual Effects Experience",
+        "info": "For <strong>10+ years</strong>, I've been weaving magic with pixels in the world of visual effects. It's thrilling to take raw footage, images, and 3D elements, and mold them into the final image that graces the big screen or TV. Seeing my work come to life is an unparalleled reward!\n\nI'm a relentless explorer, always pushing the boundaries of what's possible with the latest software in <strong>feature films, commercials, and TV projects</strong>.\n\nMy passion for innovation extends beyond the screen. In my spare time, I delve into research, <strong>crafting tools and automating tasks with scripts</strong>. With deep expertise in compositing, I'm currently bringing my vision to life as a <strong>Compositing Artist at DNEG</strong>.",
+        "resumeLink": f"{about_dir}/resume.pdf",
+        "coverLetterLink": f"{about_dir}/coverLetter.pdf",
+        "vimeoUrl": "https://vimeo.com/835414002",
+        "phone": "+91 9449267068",
+        "email": "pbhat99@gmail.com",
+        "github": "https://github.com/pbhat99",
+        "location": "Karnataka, India - 581337"
+    }
+
+    # Load from aboutMe.json or content.json
+    for cand_json in ["aboutMe.json", "content.json"]:
+        cand_path = os.path.join(about_dir, cand_json)
+        if os.path.exists(cand_path):
+            try:
+                with open(cand_path, "r", encoding="utf-8") as f:
+                    about_data.update(json.load(f))
+            except Exception:
+                pass
+
+    name = about_data.get("name", "Prasannakumar T Bhat")
+    designation = about_data.get("designation", "Senior Visual Effects Compositor")
+    experience = about_data.get("experience", "")
+    info_raw = about_data.get("info", "")
+    resume_link = about_data.get("resumeLink", f"{about_dir}/resume.pdf")
+    cover_letter_link = about_data.get("coverLetterLink", f"{about_dir}/coverLetter.pdf")
+    vimeo_url = about_data.get("vimeoUrl", "").strip()
+    phone = about_data.get("phone", "+91 9449267068")
+    email = about_data.get("email", "pbhat99@gmail.com")
+    github_link = about_data.get("github", "https://github.com/pbhat99")
+    location = about_data.get("location", "Karnataka, India - 581337")
+
+    # Format info paragraphs with line break support (\n\n -> <p>, \n -> <br>)
+    info_paras = [p.strip() for p in info_raw.split("\n\n") if p.strip()]
+    if not info_paras and info_raw:
+        info_paras = [info_raw.strip()]
+    paragraphs_html = "\n".join([f"<p>{p.replace(chr(10), '<br>')}</p>" for p in info_paras])
+
+    # Find profile picture (profilePic.jpg or fallback)
+    profile_img = "_engine/images/logo.png"
+    for cand_img in ["profilePic.jpg", "profilePic.png", "profilePic.webp", "profile.jpg", "profile.png"]:
+        p_path = os.path.join(about_dir, cand_img)
+        if os.path.exists(p_path):
+            profile_img = p_path.replace("\\", "/")
+            break
+
+    # Auto-load known tools from knownTools/ folder (single row fitted to overall width)
+    known_tools_dir = os.path.join(about_dir, "knownTools")
+    tools_cards_html = []
+    if os.path.exists(known_tools_dir):
+        tool_files = sorted([f for f in os.listdir(known_tools_dir) if os.path.splitext(f)[1].lower() in valid_img_exts])
+        for tf in tool_files:
+            tf_path = f"{known_tools_dir}/{tf}".replace("\\", "/")
+            tool_name = os.path.splitext(tf)[0]
+            tool_name = re.sub(r'^\d+[\s_-]*', '', tool_name).replace('_', ' ').replace('-', ' ').title()
+            tools_cards_html.append(f'''
+          <div class="known-tool-card" title="{tool_name}">
+            <img src="{tf_path}" alt="{tool_name}" class="known-tool-img" loading="lazy">
+          </div>''')
+
+    tools_section_html = ""
+    if tools_cards_html:
+        tools_section_html = f'''
+      <section class="known-tools-section">
+        <div class="known-tools-strip">
+          {"".join(tools_cards_html)}
+        </div>
+      </section>'''
+
+    # Vimeo embed
+    vimeo_section_html = ""
+    if vimeo_url:
+        vimeo_id_match = re.search(r'(\d{6,})', vimeo_url)
+        if vimeo_id_match:
+            vimeo_id = vimeo_id_match.group(1)
+            vimeo_section_html = f'''
+      <section class="about-video-card">
+        <div class="about-video-container">
+          <iframe src="https://player.vimeo.com/video/{vimeo_id}?title=0&byline=0&portrait=0"
+                  allow="autoplay; fullscreen; picture-in-picture" allowfullscreen
+                  title="VFX Showreel - {name}"></iframe>
+        </div>
+      </section>'''
+
+    meta_role = f'{designation}'
+    if experience:
+        meta_role += f' &bull; {experience}'
 
     about_html = f'''<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>About Me | Prasannakumar T Bhat</title>
+  <title>About | {name}</title>
+  <meta name="description" content="{name} - {designation}. {experience}.">
   <link rel="icon" type="image/png" href="_engine/images/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,700&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="_engine/css/main.css">
@@ -776,98 +863,62 @@ def sync_all():
   {about_bg_img_html}
   {about_bg_overlay_html}
 
-{generate_nav_html("about-me")}
+{generate_nav_html("about")}
 
-  <main style="padding-block: clamp(24px, 4vw, 56px);">
-    <div class="container">
-      <div class="section-header">
-        <div class="section-label">Biography & Expertise</div>
-        <h1 class="section-title">About Me</h1>
-        <p class="section-desc">
-          Visual Effects Compositor with 10+ years of studio experience across feature films, commercials, and next-generation AI pipelines.
-        </p>
-      </div>
-
-      <div style="display: grid; grid-template-columns: 1fr 2fr; gap: clamp(24px, 5vw, 48px); align-items: start; margin-bottom: 56px;">
-        <div>
-          <div style="border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--border-subtle); background: var(--bg-card); box-shadow: var(--shadow-subtle);">
-            {'<img src="' + banner_img + '" alt="DNEG banner" style="width: 100%; object-fit: cover;">' if banner_img else ''}
-            <div style="padding: 20px; text-align: center;">
-              <img src="{profile_img}" alt="Prasannakumar T Bhat" style="width: 130px; height: 130px; border-radius: 50%; object-fit: cover; margin-inline: auto; margin-top: -65px; border: 4px solid var(--bg-card); box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
-              <h2 style="font-size: 1.25rem; font-weight: 700; margin-top: 12px; color: var(--text-main);">Prasannakumar T Bhat</h2>
-              <p style="font-size: 0.85rem; color: var(--accent-primary); font-weight: 500; margin-top: 4px;">Compositing Artist @ DNEG</p>
-              <div style="margin-top: 14px; font-size: 0.82rem; color: var(--text-subtle);">
-                10+ Years Visual Effects Experience
-              </div>
+  <main style="padding-block: clamp(36px, 5vw, 64px);">
+    <div class="container-wide">
+      
+      <!-- Profile & Bio Grid (No Section Header, Vertical Project-Tile Photo, Paragraphs with Line Breaks) -->
+      <div class="about-grid">
+        <div class="about-profile-col">
+          <div class="project-tile aspect-vertical about-profile-tile">
+            <div class="tile-inner">
+              <img src="{profile_img}" alt="{name}" class="tile-img">
             </div>
+            <div class="tile-circling-border" aria-hidden="true"><div class="tile-circling-line"></div></div>
           </div>
         </div>
 
-        <div>
-          <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 16px;">It's Me! Prasannakumar</h2>
-          <div style="font-size: 1.05rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 18px; line-height: 1.7;">
-            <p>
-              For <strong>10+ years</strong>, I've been weaving magic with pixels in the world of visual effects. It's thrilling to take raw footage, images, and 3D elements, and mold them into the final image that graces the big screen or TV. Seeing my work come to life is an unparalleled reward!
-            </p>
-            <p>
-              I'm a relentless explorer, always pushing the boundaries of what's possible with the latest software in <strong>feature films, commercials, and TV projects</strong>.
-            </p>
-            <p>
-              My passion for innovation extends beyond the screen. In my spare time, I delve into research, <strong>crafting tools and automating tasks with scripts</strong>. With deep expertise in compositing, I'm currently bringing my vision to life as a <strong>Compositing Artist at DNEG</strong>.
-            </p>
+        <div class="about-bio-col">
+          <h1 class="about-name">{name}</h1>
+          <div class="about-role-strip">{meta_role}</div>
+          <div class="about-paragraphs">
+            {paragraphs_html}
+          </div>
+          <div class="about-actions-wrap">
+            <a href="{resume_link}" class="btn btn-primary" download>Download Resume</a>
+            <a href="{cover_letter_link}" class="btn btn-secondary" download>Download Cover Letter</a>
           </div>
         </div>
       </div>
 
-      <section style="margin-bottom: 56px;">
-        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 24px;">Production Software & Toolset</h2>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;">
-          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 20px;">
-            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--accent-primary); margin-bottom: 12px;">Compositing</h3>
-            <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 0.9rem; color: var(--text-muted);">
-              <li>&bull; <strong>Foundry Nuke & Nuke Studio</strong></li>
-              <li>&bull; Autodesk Flame</li>
-              <li>&bull; Deep Compositing & OpenEXR</li>
-            </ul>
-          </div>
-          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 20px;">
-            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--accent-hover); margin-bottom: 12px;">3D & Tracking</h3>
-            <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 0.9rem; color: var(--text-muted);">
-              <li>&bull; <strong>Autodesk Maya</strong></li>
-              <li>&bull; SynthEyes Matchmove</li>
-              <li>&bull; Mocha Pro Planar Tracking</li>
-            </ul>
-          </div>
-          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 20px;">
-            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--accent-primary); margin-bottom: 12px;">AI & Pipelines</h3>
-            <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 0.9rem; color: var(--text-muted);">
-              <li>&bull; <strong>ComfyUI Custom Node Dev</strong></li>
-              <li>&bull; Python Automation Scripting</li>
-              <li>&bull; ControlNet & Inpainting</li>
-            </ul>
+      <!-- Known Tools Strip (Single Row Auto-Fitted Across Full Width) -->
+      {tools_section_html}
+
+      <!-- Vimeo Showreel Video Embed -->
+      {vimeo_section_html}
+
+      <!-- Contact Information Card (Clean, No Unintended Section Labels) -->
+      <section id="contact" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: clamp(24px, 4vw, 36px); margin-bottom: 48px;">
+        <div style="max-width: 600px;">
+          <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 16px;">Contact Information</h2>
+          <div style="display: flex; flex-direction: column; gap: 14px; font-size: 0.92rem;">
+            <div><span style="color: var(--text-subtle); width: 80px; display: inline-block;">Phone:</span> <strong style="color: #fff;">{phone}</strong></div>
+            <div><span style="color: var(--text-subtle); width: 80px; display: inline-block;">Email:</span> <a href="mailto:{email}" style="color: var(--accent-primary); text-decoration: underline;">{email}</a></div>
+            <div><span style="color: var(--text-subtle); width: 80px; display: inline-block;">GitHub:</span> <a href="{github_link}" target="_blank" rel="noopener" style="color: var(--accent-primary); text-decoration: underline;">{github_link.replace('https://', '')}</a></div>
+            <div><span style="color: var(--text-subtle); width: 80px; display: inline-block;">Location:</span> <span style="color: var(--text-muted);">{location}</span></div>
           </div>
         </div>
       </section>
 
-      <section id="contact" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: clamp(24px, 5vw, 40px);">
-        <div style="max-width: 600px;">
-          <div class="section-label">Get in Touch</div>
-          <h2 style="font-size: 1.6rem; font-weight: 700; margin-bottom: 16px;">Contact Information</h2>
-          <div style="display: flex; flex-direction: column; gap: 14px; font-size: 0.92rem;">
-            <div><span style="color: var(--text-subtle); width: 80px; display: inline-block;">Phone:</span> <strong style="color: #fff;">+91 9449267068</strong></div>
-            <div><span style="color: var(--text-subtle); width: 80px; display: inline-block;">GitHub:</span> <a href="https://github.com/pbhat99" target="_blank" rel="noopener" style="color: var(--accent-primary); text-decoration: underline;">github.com/pbhat99</a></div>
-            <div><span style="color: var(--text-subtle); width: 80px; display: inline-block;">Location:</span> <span style="color: var(--text-muted);">Karnataka, India - 581337</span></div>
-          </div>
-        </div>
-      </section>
     </div>
   </main>
 
   <footer class="site-footer">
     <div class="container-wide">
       <div class="footer-bottom">
-        <div>&copy; 2026 Prasannakumar T Bhat (pbhat99). All rights reserved.</div>
-        <div style="font-family: var(--font-mono); font-size: 0.78rem;">Auto-synced from pages/05_about-me/</div>
+        <div>&copy; 2026 {name} (pbhat99). All rights reserved.</div>
+        <div style="font-family: var(--font-mono); font-size: 0.78rem;">Auto-synced from {about_dir}/</div>
       </div>
     </div>
   </footer>
@@ -876,9 +927,26 @@ def sync_all():
 </body>
 </html>
 '''
-    with open("about-me.html", "w", encoding="utf-8") as f:
+    with open("about.html", "w", encoding="utf-8") as f:
         f.write(about_html)
-    print("  -> Updated about-me.html (Nav: VFX, Bio, Toolset, Contact Section)")
+    print("  -> Updated about.html (Nav: About, Vertical Photo Tile, Known Tools Strip, Vimeo Embed)")
+
+    # Also generate about-me.html meta-refresh redirect to about.html
+    about_redirect_html = '''<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="0; url=about.html">
+  <title>Redirecting to About...</title>
+  <link rel="canonical" href="about.html">
+</head>
+<body>
+  <p>Redirecting to <a href="about.html">About</a>...</p>
+</body>
+</html>'''
+    with open("about-me.html", "w", encoding="utf-8") as f:
+        f.write(about_redirect_html)
+    print("  -> Updated about-me.html (Permanent redirect to about.html)")
 
     # --------------------------------------------------------------------------
     # 5. SYNC AI / COMFY (pages/03_ai-comfy)
@@ -914,7 +982,6 @@ def sync_all():
       
       <!-- Page Header -->
       <div class="section-header">
-        <div class="section-label">Generative AI & VFX Automation</div>
         <h1 class="section-title">ComfyUI Pipelines & AI Toolsets</h1>
         <p class="section-desc">
           Bridging the gap between cutting-edge Diffusion models and film-grade visual effects pipelines. Custom ComfyUI node workflows, automated plate inpainting, and depth-guided dynamic relighting.
@@ -1079,7 +1146,6 @@ def sync_all():
       
       <!-- Page Header -->
       <div class="section-header">
-        <div class="section-label">Engineering & AI Notes</div>
         <h1 class="section-title">Technical Blog</h1>
         <p class="section-desc">
           Practical setups, automation scripts, and workflow optimization for visual effects and generative AI pipelines.
