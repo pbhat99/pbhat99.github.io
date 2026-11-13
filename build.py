@@ -811,11 +811,18 @@ def sync_all():
         tool_files = sorted([f for f in os.listdir(known_tools_dir) if os.path.splitext(f)[1].lower() in valid_img_exts])
         for tf in tool_files:
             tf_path = f"{known_tools_dir}/{tf}".replace("\\", "/")
-            tool_name = os.path.splitext(tf)[0]
-            tool_name = re.sub(r'^\d+[\s_-]*', '', tool_name).replace('_', ' ').replace('-', ' ').title()
+            raw_name = os.path.splitext(tf)[0]
+            # Strip numeric prefix like '01_' if present to get clean tool name without extension
+            tool_name = re.sub(r'^\d+[\s_-]*', '', raw_name).replace('_', ' ').replace('-', ' ').title()
             tools_cards_html.append(f'''
           <div class="known-tool-card" title="{tool_name}">
-            <img src="{tf_path}" alt="{tool_name}" class="known-tool-img" loading="lazy">
+            <div class="tile-inner">
+              <img src="{tf_path}" alt="{tool_name}" class="known-tool-img" loading="lazy">
+              <div class="known-tool-hover">
+                <span class="known-tool-name">{tool_name}</span>
+              </div>
+            </div>
+            <div class="tile-circling-border" aria-hidden="true"><div class="tile-circling-line"></div></div>
           </div>''')
 
     tools_section_html = ""
@@ -846,6 +853,11 @@ def sync_all():
     if experience:
         meta_role += f' &bull; {experience}'
 
+    page_title = about_data.get("title", "About Me")
+    page_desc = about_data.get("description", "")
+    title_inner = page_title if page_title else '&nbsp;'
+    desc_inner = page_desc if page_desc else ''
+
     about_html = f'''<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -868,7 +880,13 @@ def sync_all():
   <main style="padding-block: clamp(36px, 5vw, 64px);">
     <div class="container-wide">
       
-      <!-- Profile & Bio Grid (No Section Header, Vertical Project-Tile Photo, Paragraphs with Line Breaks) -->
+      <!-- Page Header (With Title & Description; spacing preserved even if empty) -->
+      <div class="section-header">
+        <h1 class="section-title">{title_inner}</h1>
+        <p class="section-desc">{desc_inner}</p>
+      </div>
+
+      <!-- Profile & Bio Grid (Vertical Project-Tile Photo, Paragraphs with Line Breaks) -->
       <div class="about-grid">
         <div class="about-profile-col">
           <div class="project-tile aspect-vertical about-profile-tile">
@@ -886,8 +904,8 @@ def sync_all():
             {paragraphs_html}
           </div>
           <div class="about-actions-wrap">
-            <a href="{resume_link}" class="btn btn-primary" download>Download Resume</a>
-            <a href="{cover_letter_link}" class="btn btn-secondary" download>Download Cover Letter</a>
+            <a href="{resume_link}" class="btn btn-primary" download>Resume</a>
+            <a href="{cover_letter_link}" class="btn btn-secondary" download>Cover Letter</a>
           </div>
         </div>
       </div>
