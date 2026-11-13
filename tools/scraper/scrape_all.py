@@ -55,3 +55,4 @@ with open('tools/scraper/scraped_pages.json', 'w', encoding='utf-8') as f:
     json.dump(summary, f, indent=2)
 
 print("\nScraped pages summary saved to tools/scraper/scraped_pages.json")
+

@@ -22,3 +22,4 @@ for hf in html_files:
 
 if all_ok:
     print("SUCCESS: All links, scripts, CSS, and images exist and are verified!")
+

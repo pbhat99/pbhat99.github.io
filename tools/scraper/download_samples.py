@@ -27,3 +27,4 @@ for url, dest in imgs_to_download:
         print(f"Downloaded: {dest}")
     except Exception as e:
         print(f"Failed {url}: {e}")
+

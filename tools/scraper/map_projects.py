@@ -21,3 +21,4 @@ vfx_raw = urllib.request.urlopen('https://pramotions.weebly.com/vfx-works.html')
 img_tags = re.findall(r'(<div[^>]*class="[^"]*paragraph[^"]*"[^>]*>.*?</div>.*?<img[^>]+src=[\'"]([^\'"]+)[\'"]|<img[^>]+src=[\'"]([^\'"]+)[\'"].*?<div[^>]*class="[^"]*paragraph[^"]*"[^>]*>(.*?)</div>)', vfx_raw, re.DOTALL | re.I)
 
 print(f"Matched pairs: {len(img_tags)}")
+

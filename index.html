@@ -3,20 +3,123 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pra - Motions | Prasannakumar T Bhat - Senior VFX & CG Artist</title>
-  <meta name="description" content="Portfolio of Prasannakumar T Bhat (pbhat99). Senior Visual Effects Compositor at DNEG with 10+ years experience in feature films, commercials, and AI / ComfyUI pipelines.">
+  <title>Prasannakumar T Bhat | Portfolio</title>
+  <meta name="description" content="Prasannakumar T Bhat - Senior Visual Effects Compositor @ DNEG">
   <link rel="icon" type="image/png" href="assets/images/branding/logo.png">
   
-  <!-- Modern Preload & Stylesheets -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="assets/css/main.css">
-  <link rel="stylesheet" href="assets/css/components.css">
-  <link rel="stylesheet" href="assets/css/responsive.css">
+  <link rel="stylesheet" href="_engine/css/main.css">
+  <link rel="stylesheet" href="_engine/css/components.css">
+  <link rel="stylesheet" href="_engine/css/responsive.css">
+  
+  <style>
+    /* Full-screen Minimalist Home Viewport */
+    .home-hero-fullscreen {
+      position: relative;
+      min-height: calc(100vh - 72px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: clamp(24px, 5vw, 60px) 20px;
+      overflow: hidden;
+      background-size: cover;
+      background-position: center;
+      background-image: linear-gradient(to bottom, rgba(9, 12, 19, 0.82), rgba(9, 12, 19, 0.96)), url('pages/01_home/background.jpg');
+    }
+
+    #bg-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: auto;
+      z-index: 1;
+    }
+
+    .home-content-box {
+      position: relative;
+      z-index: 10;
+      max-width: 860px;
+      margin-inline: auto;
+      pointer-events: none; /* Allows mouse to seamlessly interact with canvas below */
+    }
+
+    .home-content-box * {
+      pointer-events: auto; /* Re-enable buttons and links */
+    }
+
+    .hero-name {
+      font-size: clamp(2.8rem, 7vw, 5.5rem);
+      font-weight: 800;
+      letter-spacing: -0.035em;
+      line-height: 1.05;
+      margin-bottom: 18px;
+      background: linear-gradient(135deg, #ffffff 40%, rgba(255, 255, 255, 0.65) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 50px rgba(56, 189, 248, 0.25);
+    }
+
+    .hero-designation {
+      font-family: var(--font-mono);
+      font-size: clamp(0.9rem, 2vw, 1.25rem);
+      color: var(--accent-cyan);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-weight: 600;
+      margin-bottom: 24px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(56, 189, 248, 0.08);
+      padding: 6px 18px;
+      border-radius: var(--radius-full);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      backdrop-filter: blur(8px);
+    }
+
+    .hero-tagline-clean {
+      font-size: clamp(1.15rem, 2.5vw, 1.55rem);
+      color: var(--text-muted);
+      font-weight: 300;
+      line-height: 1.5;
+      max-width: 720px;
+      margin-inline: auto;
+      margin-bottom: 36px;
+      font-style: italic;
+    }
+
+    .home-quick-actions {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .mouse-hint {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-subtle);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      z-index: 10;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      opacity: 0.75;
+    }
+  </style>
 </head>
-<body>
+<body style="overflow-x: hidden;">
 
   <!-- Site Navigation -->
   <header class="site-header">
@@ -24,7 +127,7 @@
       <a href="index.html" class="brand-logo">
         <img src="assets/images/branding/logo.png" alt="Pra Motions Logo" width="34" height="34" style="border-radius: 6px;">
         <span>Pra - <span class="brand-badge">Motions</span></span>
-        <span class="brand-tag">VFX Artist</span>
+        <span class="brand-tag">VFX</span>
       </a>
 
       <button class="mobile-nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
@@ -45,365 +148,45 @@
     </div>
   </header>
 
-  <!-- Hero Section -->
   <main>
-    <section class="hero-section">
-      <div class="container-wide">
-        <div class="hero-grid">
-          <div class="hero-content">
-            <div class="hero-subtitle">
-              <span>Senior Compositing Artist @ DNEG</span>
-            </div>
-            <h1 class="hero-title">Prasannakumar T Bhat</h1>
-            <p class="hero-tagline">
-              "CG is not just faking, its adding beautiful layers of lie on the ugly truth."
-            </p>
-            <p class="hero-bio">
-              Weaving magic with pixels for <strong>10+ years</strong> in high-end feature films, Super Bowl commercials, and automotive VFX. Combining deep Nuke compositing mastery with next-gen AI / ComfyUI pipeline automation.
-            </p>
-            <div class="hero-cta">
-              <a href="vfx-works.html" class="btn btn-primary">
-                <span>Explore VFX Portfolio</span>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-              </a>
-              <a href="#showcase" class="btn btn-secondary">
-                <span>Interactive Showcase</span>
-              </a>
-            </div>
+    <section class="home-hero-fullscreen">
+      <!-- Interactive Mouse Pointer Background Canvas -->
+      <canvas id="bg-canvas"></canvas>
 
-            <!-- Experience Stats -->
-            <div class="stats-strip">
-              <div class="stat-item">
-                <h4>10+</h4>
-                <p>Years Experience</p>
-              </div>
-              <div class="stat-item">
-                <h4>50+</h4>
-                <p>Commercials & Films</p>
-              </div>
-              <div class="stat-item">
-                <h4>DNEG</h4>
-                <p>Current Studio</p>
-              </div>
-              <div class="stat-item">
-                <h4>ComfyUI</h4>
-                <p>AI Pipeline R&D</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Hero Showreel Video -->
-          <div class="hero-media">
-            <div class="hero-reel-card">
-              <iframe 
-                src="https://player.vimeo.com/video/250507857?badge=0&autopause=0&player_id=0&app_id=58479" 
-                title="VFX Compositing Showreel" 
-                loading="lazy" 
-                allow="autoplay; fullscreen; picture-in-picture" 
-                allowfullscreen>
-              </iframe>
-            </div>
-
-            <!-- Showreel Time Navigator -->
-            <div class="reel-nav-bar">
-              <span style="font-size: 0.78rem; font-weight: 600; color: var(--text-subtle); display: flex; align-items: center; margin-right: 6px;">JUMP TO:</span>
-              <button class="reel-time-badge" data-seconds="5">
-                <span class="time-stamp">0:05</span> DirecTV
-              </button>
-              <button class="reel-time-badge" data-seconds="32">
-                <span class="time-stamp">0:32</span> Hummer EV
-              </button>
-              <button class="reel-time-badge" data-seconds="54">
-                <span class="time-stamp">0:54</span> BuschLight
-              </button>
-              <button class="reel-time-badge" data-seconds="75">
-                <span class="time-stamp">1:15</span> Adidas
-              </button>
-            </div>
-          </div>
+      <!-- Center Minimalist Content: Name, Designation & Tagline -->
+      <div class="home-content-box">
+        <div class="hero-designation">
+          <span>Senior Visual Effects Compositor @ DNEG</span>
         </div>
-      </div>
-    </section>
-
-    <!-- Studio / Brand Trust Strip -->
-    <section style="padding-block: 24px; border-block: 1px solid var(--border-subtle); background: var(--bg-secondary);">
-      <div class="container" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
-        <span style="font-size: 0.8rem; font-family: var(--font-mono); color: var(--text-subtle); text-transform: uppercase; letter-spacing: 0.1em;">
-          Production Expertise Across Leading Studios & Global Brands:
-        </span>
-        <img src="assets/images/branding/studio-logos.png" alt="Client & Studio Logos" style="max-height: 38px; filter: grayscale(1) brightness(1.6); opacity: 0.75;">
-      </div>
-    </section>
-
-    <!-- Interactive Dynamics Showcase (Before/After & Accordion & Lightbox) -->
-    <section id="showcase" style="padding-block: clamp(48px, 8vw, 84px);">
-      <div class="container">
-        <div class="section-header">
-          <div class="section-label">Interactive Demonstrations</div>
-          <h2 class="section-title">Visual Dynamics & Wipe Comparison</h2>
-          <p class="section-desc">
-            Test the live before-and-after wipe slider below. Drag the handle left or right (or touch and swipe on mobile) to inspect the raw plate vs final composited beauty pass.
-          </p>
-        </div>
-
-        <!-- Before & After Wipe Slider -->
-        <div style="max-width: 960px; margin-inline: auto; margin-bottom: 48px;">
-          <div class="before-after-container">
-            <!-- Underneath: Before image (Raw Plate) -->
-            <div class="ba-image-layer ba-before-layer">
-              <img src="assets/images/portfolio/nfa-internal-pr-version-directv-gytt-goatbusters-nooffer-16x9-broadcastmix-60sec-j318755-85334-mp4-snapshot-00-40-2023-12-14-13-12-54_orig.jpg" alt="Raw Production Plate">
-              <span class="ba-badge ba-badge-before">Raw Plate / Rig Tracking</span>
-            </div>
-
-            <!-- Overlaid: After image (Final Comp) -->
-            <div class="ba-image-layer ba-after-layer">
-              <img src="assets/images/portfolio/www-youtube-com-14.png" alt="Final Photoreal Composite">
-              <span class="ba-badge ba-badge-after">Final Photoreal Composite</span>
-            </div>
-
-            <!-- Slider Wipe Handle -->
-            <div class="ba-handle">
-              <div class="ba-handle-circle">
-                <div class="ba-handle-arrows">
-                  <span>&#9664;</span>
-                  <span>&#9654;</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <p style="text-align: center; margin-top: 10px; font-size: 0.82rem; color: var(--text-subtle);">
-            Swipe / drag left and right to compare raw plate vs final composite. Arrow keys also supported.
-          </p>
-        </div>
-
-        <!-- Multi-Pass VFX Layer Switcher Demonstration -->
-        <div class="multipass-container" style="max-width: 960px; margin-inline: auto;">
-          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 12px;">
-            <div>
-              <h3 style="font-size: 1.15rem; font-weight: 700;">Multi-Pass Composite Inspector</h3>
-              <p style="font-size: 0.85rem; color: var(--text-muted);">Switch between composite passes to inspect the breakdown layer by layer:</p>
-            </div>
-          </div>
-
-          <div class="multipass-tabs">
-            <button class="multipass-tab-btn active" data-pass-src="assets/images/portfolio/buschlight.jpg">Pass 1: Live Plate</button>
-            <button class="multipass-tab-btn" data-pass-src="assets/images/portfolio/hummer-ev.jpg">Pass 2: 3D CG Vehicle</button>
-            <button class="multipass-tab-btn" data-pass-src="assets/images/portfolio/pepsi-superbowl.jpg">Pass 3: Lighting & Atmosphere</button>
-            <button class="multipass-tab-btn" data-pass-src="assets/images/portfolio/adidas.jpg">Pass 4: Final Grade</button>
-          </div>
-
-          <div class="multipass-viewport">
-            <img src="assets/images/portfolio/buschlight.jpg" alt="VFX Pass Inspector Viewport">
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- Featured Projects Grid with Accordion Breakdown & Lightbox -->
-    <section style="padding-block: clamp(32px, 6vw, 64px); background: var(--bg-secondary);">
-      <div class="container-wide">
-        <div class="section-header" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 16px;">
-          <div>
-            <div class="section-label">Selected Portfolio</div>
-            <h2 class="section-title">Featured VFX & Commercial Works</h2>
-          </div>
-          <a href="vfx-works.html" class="btn btn-secondary">
-            <span>View All 50+ Projects</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        <h1 class="hero-name">Prasannakumar T Bhat</h1>
+        <p class="hero-tagline-clean">
+          "CG is not just faking, its adding beautiful layers of lie on the ugly truth."
+        </p>
+        <div class="home-quick-actions">
+          <a href="vfx-works.html" class="btn btn-primary" style="padding: 12px 28px; font-size: 1rem;">
+            <span>Explore Works</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+          <a href="about-me.html" class="btn btn-secondary" style="padding: 12px 24px; font-size: 1rem;">
+            <span>About Me</span>
           </a>
         </div>
+      </div>
 
-        <div class="portfolio-grid">
-          <!-- Card 1 -->
-          <article class="project-card" data-category="commercials">
-            <div class="project-thumb-wrapper">
-              <img src="assets/images/portfolio/nfa-internal-pr-version-directv-gytt-goatbusters-nooffer-16x9-broadcastmix-60sec-j318755-85334-mp4-snapshot-00-40-2023-12-14-13-12-54_orig.jpg" alt="DirecTV - GOATbusters" class="project-thumb" loading="lazy" data-lightbox data-caption="DirecTV - GOATbusters: Hologram compositing and CG monster integration.">
-              <span class="card-overlay-badge">Commercial</span>
-            </div>
-            <div class="card-content">
-              <div class="card-meta">
-                <span class="card-client">DirecTV</span>
-                <span>2023</span>
-              </div>
-              <h3 class="card-title">DirecTV - GOATbusters</h3>
-              <p class="card-desc">Complex hologram compositing, particle simulation blending, and intricate camera wire removals.</p>
-              <div class="card-tools">
-                <span class="tool-tag">Nuke</span>
-                <span class="tool-tag">Maya</span>
-                <span class="tool-tag">Python</span>
-              </div>
-
-              <!-- Accordion Breakdown -->
-              <div class="accordion-wrapper">
-                <button class="accordion-trigger" aria-expanded="false">
-                  <span>View Shot Breakdown</span>
-                  <span class="accordion-icon">&#9662;</span>
-                </button>
-                <div class="accordion-content">
-                  <div class="accordion-inner">
-                    <div class="accordion-breakdown-box">
-                      <div class="breakdown-step">
-                        <span class="step-num">01.</span>
-                        <div><strong>Camera Tracking:</strong> 3D matchmove solve with high-frequency handheld motion.</div>
-                      </div>
-                      <div class="breakdown-step">
-                        <span class="step-num">02.</span>
-                        <div><strong>Plate Cleanup:</strong> Roto-paint wire removal across complex actor wardrobe.</div>
-                      </div>
-                      <div class="breakdown-step">
-                        <span class="step-num">03.</span>
-                        <div><strong>Composite:</strong> Integrated CG ghost illumination matching practical anamorphic flare.</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </article>
-
-          <!-- Card 2 -->
-          <article class="project-card" data-category="commercials">
-            <div class="project-thumb-wrapper">
-              <img src="assets/images/portfolio/www-youtube-com-14.png" alt="GMC Hummer EV" class="project-thumb" loading="lazy" data-lightbox data-caption="GMC Hummer EV: Photoreal automotive integration and environmental grading.">
-              <span class="card-overlay-badge">Automotive</span>
-            </div>
-            <div class="card-content">
-              <div class="card-meta">
-                <span class="card-client">GMC</span>
-                <span>2023</span>
-              </div>
-              <h3 class="card-title">GMC Hummer EV - Quiet Revolution</h3>
-              <p class="card-desc">Photoreal CG truck compositing with terrain dust particle interaction and reflective wet road contact passes.</p>
-              <div class="card-tools">
-                <span class="tool-tag">Nuke Studio</span>
-                <span class="tool-tag">Houdini</span>
-                <span class="tool-tag">V-Ray</span>
-              </div>
-
-              <!-- Accordion Breakdown -->
-              <div class="accordion-wrapper">
-                <button class="accordion-trigger" aria-expanded="false">
-                  <span>View Shot Breakdown</span>
-                  <span class="accordion-icon">&#9662;</span>
-                </button>
-                <div class="accordion-content">
-                  <div class="accordion-inner">
-                    <div class="accordion-breakdown-box">
-                      <div class="breakdown-step">
-                        <span class="step-num">01.</span>
-                        <div><strong>Vehicle Integration:</strong> Ambient occlusion, specular car paint reflection passes.</div>
-                      </div>
-                      <div class="breakdown-step">
-                        <span class="step-num">02.</span>
-                        <div><strong>Atmosphere:</strong> Interactive volumetric headlights and terrain kick dust.</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </article>
-
-          <!-- Card 3 -->
-          <article class="project-card" data-category="commercials">
-            <div class="project-thumb-wrapper">
-              <img src="assets/images/portfolio/buschlight-voice-of-the-mountains-longform-aubb2048h-vimeoid83680-mp4-snapshot-00-21-2023-12-14-13-11-03_orig.jpg" alt="BuschLight - Voice of the Mountains" class="project-thumb" loading="lazy" data-lightbox data-caption="BuschLight: Mountain matte painting and dynamic snow atmosphere.">
-              <span class="card-overlay-badge">Super Bowl</span>
-            </div>
-            <div class="card-content">
-              <div class="card-meta">
-                <span class="card-client">Busch Light</span>
-                <span>2023</span>
-              </div>
-              <h3 class="card-title">BuschLight - Voice of the Mountains</h3>
-              <p class="card-desc">Extensive matte painting set extension, icy atmospheric snow simulation, and character integration.</p>
-              <div class="card-tools">
-                <span class="tool-tag">Nuke</span>
-                <span class="tool-tag">Photoshop</span>
-                <span class="tool-tag">SynthEyes</span>
-              </div>
-
-              <!-- Accordion Breakdown -->
-              <div class="accordion-wrapper">
-                <button class="accordion-trigger" aria-expanded="false">
-                  <span>View Shot Breakdown</span>
-                  <span class="accordion-icon">&#9662;</span>
-                </button>
-                <div class="accordion-content">
-                  <div class="accordion-inner">
-                    <div class="accordion-breakdown-box">
-                      <div class="breakdown-step">
-                        <span class="step-num">01.</span>
-                        <div><strong>Matte Extension:</strong> 2.5D projection of photoreal snow-capped mountain ridges.</div>
-                      </div>
-                      <div class="breakdown-step">
-                        <span class="step-num">02.</span>
-                        <div><strong>Atmosphere:</strong> Multi-layered falling snow with z-depth haze gradation.</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </article>
-        </div>
+      <!-- Mouse interaction guide indicator -->
+      <div class="mouse-hint">
+        <span>&#10022;</span> Move cursor to interact with fluid particle field
       </div>
     </section>
-
   </main>
 
-  <!-- Site Footer -->
-  <footer class="site-footer">
-    <div class="container-wide">
-      <div class="footer-grid">
-        <div class="footer-brand">
-          <div class="brand-logo" style="margin-bottom: 8px;">
-            <img src="assets/images/branding/logo.png" alt="Pra Motions Logo" width="28" height="28" style="border-radius: 4px;">
-            <span>Pra - <span class="brand-badge">Motions</span></span>
-          </div>
-          <p>
-            Portfolio and creative engineering showcase of Prasannakumar T Bhat. Specialized in feature film compositing, high-impact commercial visual effects, and AI / ComfyUI pipelines.
-          </p>
-          <div style="margin-top: 16px; font-size: 0.85rem; color: var(--accent-cyan);">
-            Currently Compositing Artist @ <strong>DNEG</strong>
-          </div>
-        </div>
-
-        <div class="footer-col">
-          <h4>Navigation</h4>
-          <ul>
-            <li><a href="index.html">Home</a></li>
-            <li><a href="vfx-works.html">VFX Works</a></li>
-            <li><a href="ai-comfy.html">AI / Comfy</a></li>
-            <li><a href="photography.html">Photography</a></li>
-            <li><a href="about-me.html">About Me</a></li>
-            <li><a href="blog.html">Technical Blog</a></li>
-          </ul>
-        </div>
-
-        <div class="footer-col">
-          <h4>Direct Contact</h4>
-          <ul>
-            <li style="color: var(--text-muted); font-size: 0.88rem;">📍 Karnataka, India</li>
-            <li style="color: var(--text-muted); font-size: 0.88rem;">📞 +91 9449267068</li>
-            <li><a href="https://github.com/pbhat99" target="_blank" rel="noopener">GitHub: @pbhat99</a></li>
-            <li><a href="https://www.linkedin.com" target="_blank" rel="noopener">LinkedIn Profile</a></li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="footer-bottom">
-        <div>&copy; 2026 Prasannakumar T Bhat (pbhat99). All rights reserved.</div>
-        <div style="font-family: var(--font-mono); font-size: 0.78rem;">Hosted on GitHub Pages &bull; pbhat99.github.io</div>
-      </div>
-    </div>
-  </footer>
-
-  <!-- Scripts -->
-  <script type="module" src="assets/js/main.js"></script>
+  <!-- Interactive Background Script -->
+  <script type="module">
+    import { initInteractiveBackground } from './_engine/js/interactive-bg.js';
+    import './_engine/js/main.js';
+    document.addEventListener('DOMContentLoaded', () => {
+      initInteractiveBackground('bg-canvas');
+    });
+  </script>
 </body>
 </html>

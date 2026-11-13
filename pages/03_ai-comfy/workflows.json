@@ -1,0 +1,33 @@
+[
+  {
+    "id": "vfx-plate-cleanup",
+    "title": "Automated Plate Inpainting & Cleanup Node",
+    "subtitle": "ComfyUI + ControlNet Tile + LaMa",
+    "badge": "VFX Production",
+    "description": "High-resolution seamless plate patch generation for wire removal, tracking marker erasure, and background recreation for visual effects compositing.",
+    "inputs": "Raw 4K Plate + Roto Alpha Mask",
+    "outputs": "Clean Background Plate with film grain match",
+    "nodesUsed": ["ControlNet", "LaMa Inpaint", "ComfyUI-KJNodes", "ColorCorrect"],
+    "hasBeforeAfter": true,
+    "beforeImage": "assets/images/portfolio/goatbusters.jpg",
+    "afterImage": "assets/images/portfolio/hummer-ev.jpg",
+    "beforeLabel": "Raw Plate with Rig/Wires",
+    "afterLabel": "Clean Inpainted Plate"
+  },
+  {
+    "id": "relight-depth-pipeline",
+    "title": "Depth-Guided Dynamic Shot Relighting",
+    "subtitle": "ComfyUI + Marigold Depth + IC-Light",
+    "badge": "Lighting / Comp",
+    "description": "Extracts high-precision metric depth and normal maps from single 2D plates to dynamically cast new volumetric light sources into live-action plates.",
+    "inputs": "Live Action Plate",
+    "outputs": "Depth Map, Normal Pass, Relit Beauty Pass",
+    "nodesUsed": ["Marigold Depth", "IC-Light", "VHS Video Helper", "RGThree"],
+    "hasBeforeAfter": true,
+    "beforeImage": "assets/images/portfolio/buschlight.jpg",
+    "afterImage": "assets/images/portfolio/adidas.jpg",
+    "beforeLabel": "Flat Studio Lighting",
+    "afterLabel": "Dramatic Rim & Key Light"
+  }
+]
+

@@ -1,0 +1,51 @@
+[
+  {
+    "id": "photo-1",
+    "title": "Mountain Mist & Atmosphere",
+    "location": "Western Ghats, Karnataka",
+    "image": "assets/images/portfolio/buschlight-voice-of-the-mountains-longform-aubb2048h-vimeoid83680-mp4-snapshot-00-21-2023-12-14-13-11-03_orig.jpg",
+    "category": "Landscape",
+    "is360": false
+  },
+  {
+    "id": "photo-2",
+    "title": "Cinematic Night Lighting Exposure",
+    "location": "Super Bowl Production Plate",
+    "image": "assets/images/portfolio/pepsi-the-call-super-bowl-56-mp4-snapshot-00-21-2023-12-14-13-14-22_orig.jpg",
+    "category": "Lighting Reference",
+    "is360": false
+  },
+  {
+    "id": "photo-3",
+    "title": "High Dynamic Range Automotive Reflections",
+    "location": "Exterior Track Reference",
+    "image": "assets/images/portfolio/xbox-forza-getaway-driver-sxbx8457000h-xbox-woodstock-vimeo-id82545-mp4-snapshot-01-22-2023-12-14-14-08-15_orig.jpg",
+    "category": "Automotive",
+    "is360": false
+  },
+  {
+    "id": "photo-4",
+    "title": "Architectural Geometry & Texture",
+    "location": "Bangalore, India",
+    "image": "assets/images/portfolio/adidas-create-the-answer-mp4-snapshot-01-26-2018-10-12-23-59-42_orig.jpg",
+    "category": "Street",
+    "is360": false
+  },
+  {
+    "id": "photo-5",
+    "title": "On-Set Character & Costume Comp Reference",
+    "location": "Feature Film Production",
+    "image": "assets/images/portfolio/25398209-512861855757791-8935124327440575535-o_orig.jpg",
+    "category": "Production Still",
+    "is360": false
+  },
+  {
+    "id": "pano-360-1",
+    "title": "360° Photosphere - Hilltop Overlook",
+    "location": "Yellapur, Karnataka",
+    "image": "https://pannellum.org/images/alma.jpg",
+    "category": "360 Photosphere",
+    "is360": true,
+    "description": "Interactive spherical 360-degree panorama. Click and drag or touch on mobile to look around in full 360x180 spherical space."
+  }
+]

@@ -85,3 +85,4 @@ export function initBeforeAfter(container) {
 export function initAllBeforeAfter() {
   document.querySelectorAll('.before-after-container').forEach(el => initBeforeAfter(el));
 }
+

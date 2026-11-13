@@ -5,3 +5,4 @@ vfx_raw = urllib.request.urlopen('https://pramotions.weebly.com/vfx-works.html')
 blocks = re.findall(r'<div[^>]*class="[^"]*wsite-image[^"]*"[^>]*>(.*?)</div>\s*</div>', vfx_raw, re.DOTALL | re.I)
 for i, b in enumerate(blocks[:5]):
     print(f"Block {i}: {b[:150]}")
+

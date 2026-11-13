@@ -109,3 +109,4 @@ with open('vfx-works.html', 'w', encoding='utf-8') as f:
     f.write(full_vfx)
 
 print("vfx-works.html populated with all 64 projects and authentic Weebly images!")
+

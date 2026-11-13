@@ -195,3 +195,4 @@ with open('data/projects.json', 'w', encoding='utf-8') as f:
     json.dump(projects_final, f, indent=2)
 
 print("data/projects.json updated successfully!")
+

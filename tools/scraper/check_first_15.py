@@ -14,3 +14,4 @@ for i, div in enumerate(image_divs[:15]):
     alt = img.get('alt', '') if img else ''
     title_text = div.get_text(strip=True)
     print(f"{i}: src={src.split('?')[0].split('/')[-1][:30]} | href={href} | text={title_text}")
+

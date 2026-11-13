@@ -51,3 +51,4 @@ for i, img_url in enumerate(unique_imgs):
         downloaded[img_url] = dest_path
 
 print(f"\nFinished downloading {len(downloaded)} project images!")
+

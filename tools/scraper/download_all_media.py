@@ -92,3 +92,4 @@ for i, h_img in enumerate(home_imgs):
     download_image(h_img, 'assets/images/branding', f'home_hero_{i+1}')
 
 print("Base images downloaded successfully!")
+

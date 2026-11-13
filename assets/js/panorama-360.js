@@ -38,3 +38,4 @@ function createViewer(containerId, imageSrc) {
     });
   }
 }
+

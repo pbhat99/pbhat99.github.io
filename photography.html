@@ -4,34 +4,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Photography & 360 Panoramas | Pra - Motions</title>
-  <meta name="description" content="Landscape, Street Photography, and Interactive 360 Photosphere Panoramas by Prasannakumar T Bhat.">
   <link rel="icon" type="image/png" href="assets/images/branding/logo.png">
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-  
-  <link rel="stylesheet" href="assets/css/main.css">
-  <link rel="stylesheet" href="assets/css/components.css">
-  <link rel="stylesheet" href="assets/css/responsive.css">
+  <link rel="stylesheet" href="_engine/css/main.css">
+  <link rel="stylesheet" href="_engine/css/components.css">
+  <link rel="stylesheet" href="_engine/css/responsive.css">
 </head>
 <body>
-
-  <!-- Site Navigation -->
   <header class="site-header">
     <div class="container-wide nav-wrapper">
       <a href="index.html" class="brand-logo">
         <img src="assets/images/branding/logo.png" alt="Pra Motions Logo" width="34" height="34" style="border-radius: 6px;">
         <span>Pra - <span class="brand-badge">Motions</span></span>
-        <span class="brand-tag">VFX Artist</span>
+        <span class="brand-tag">VFX</span>
       </a>
-
       <button class="mobile-nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
-        <span></span>
-        <span></span>
-        <span></span>
+        <span></span><span></span><span></span>
       </button>
-
       <ul class="nav-links">
         <li><a href="index.html">Home</a></li>
         <li><a href="vfx-works.html">VFX Works</a></li>
@@ -46,93 +35,109 @@
 
   <main style="padding-block: clamp(36px, 6vw, 72px);">
     <div class="container-wide">
-      
-      <!-- Page Header -->
       <div class="section-header">
         <div class="section-label">Visual Exploration</div>
         <h1 class="section-title">Photography & 360° Panoramas</h1>
         <p class="section-desc">
-          Capturing natural vistas, environmental textures, and spherical photospheres used for on-set HDRI lighting references. Click any photograph to open the high-res Lightbox viewer.
+          Drop photos into <code>pages/04_photography/gallery/</code> to automatically add new gallery stills.
         </p>
       </div>
 
-      <!-- Suggested Feature Preview: Interactive 360° Photosphere Viewer -->
+      <!-- Interactive 360° Panorama Viewer -->
       <div class="panorama-card">
         <div style="padding: 20px 24px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
           <div>
-            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-cyan); text-transform: uppercase;">
-              Enhanced Replacement for Slow Google Map Iframes
-            </div>
-            <h2 style="font-size: 1.3rem; font-weight: 700; margin-top: 4px;">Interactive 360° Photosphere Panorama Viewer</h2>
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-cyan); text-transform: uppercase;">Interactive WebGL Sphere</div>
+            <h2 style="font-size: 1.3rem; font-weight: 700; margin-top: 4px;">360° Photosphere Panorama Viewer</h2>
           </div>
           <span style="font-size: 0.8rem; color: var(--text-muted); background: var(--bg-secondary); padding: 4px 10px; border-radius: 4px;">
             Drag to Look Around &bull; Pinch to Zoom
           </span>
         </div>
-
         <div id="panorama-viewer" class="panorama-viewport">
           <div class="panorama-overlay-hint">
             <span>&#10022;</span> Interactive 360° Space: Click & Drag to explore
           </div>
         </div>
-
-        <div style="padding: 16px 24px; font-size: 0.88rem; color: var(--text-muted); background: var(--bg-secondary);">
-          <strong>Spherical Photosphere:</strong> Pure client-side WebGL (via Pannellum). Unlike heavy Weebly Google Map iframes, this loads in milliseconds, supports mobile device gyro rotation, and displays spherical HDRI environment plates.
-        </div>
       </div>
 
-      <!-- Photo Gallery with Lightbox -->
-      <h2 style="font-size: 1.5rem; font-weight: 700; margin-top: 48px; margin-bottom: 24px;">Still Photography Gallery (Lightbox Enabled)</h2>
+      <!-- Photo Gallery Grid -->
+      <h2 style="font-size: 1.5rem; font-weight: 700; margin-top: 48px; margin-bottom: 24px;">Still Photography Gallery (8 Stills)</h2>
       <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 24px;">
-
-        <!-- Photo 1 -->
+        
         <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); overflow: hidden;">
-          <img src="assets/images/portfolio/buschlight.jpg" alt="Misty Western Ghats Ridge" style="width: 100%; aspect-ratio: 4/3; object-fit: cover;" data-lightbox data-caption="Misty Western Ghats Ridge - Atmospheric depth capture, Karnataka.">
+          <img src="pages/04_photography/gallery/25398209-512861855757791-8935124327440575535-o_orig.jpg" alt="512861855757791 8935124327440575535 O" style="width: 100%; aspect-ratio: 4/3; object-fit: cover;" data-lightbox data-caption="512861855757791 8935124327440575535 O">
           <div style="padding: 14px;">
-            <h3 style="font-size: 1rem; font-weight: 700;">Misty Western Ghats Ridge</h3>
-            <span style="font-size: 0.8rem; color: var(--text-subtle);">Landscape &bull; Karnataka</span>
+            <h3 style="font-size: 1rem; font-weight: 700;">512861855757791 8935124327440575535 O</h3>
+            <span style="font-size: 0.8rem; color: var(--text-subtle);">Photography Still</span>
           </div>
         </div>
-
-        <!-- Photo 2 -->
         <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); overflow: hidden;">
-          <img src="assets/images/portfolio/pepsi-superbowl.jpg" alt="Coastal Twilight Horizon" style="width: 100%; aspect-ratio: 4/3; object-fit: cover;" data-lightbox data-caption="Coastal Twilight Horizon - High dynamic range sky exposure.">
+          <img src="pages/04_photography/gallery/adidas-create-the-answer-mp4-snapshot-01-26-2018-10-12-23-59-42_orig.jpg" alt="Adidas Create The Answer Mp4 Snapshot 01 26 2018 10 12 23 59 42" style="width: 100%; aspect-ratio: 4/3; object-fit: cover;" data-lightbox data-caption="Adidas Create The Answer Mp4 Snapshot 01 26 2018 10 12 23 59 42">
           <div style="padding: 14px;">
-            <h3 style="font-size: 1rem; font-weight: 700;">Coastal Twilight Horizon</h3>
-            <span style="font-size: 0.8rem; color: var(--text-subtle);">Street / Travel &bull; Gokarna</span>
+            <h3 style="font-size: 1rem; font-weight: 700;">Adidas Create The Answer Mp4 Snapshot 01 26 2018 10 12 23 59 42</h3>
+            <span style="font-size: 0.8rem; color: var(--text-subtle);">Photography Still</span>
           </div>
         </div>
-
-        <!-- Photo 3 -->
         <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); overflow: hidden;">
-          <img src="assets/images/portfolio/adidas.jpg" alt="Urban Architectural Perspectives" style="width: 100%; aspect-ratio: 4/3; object-fit: cover;" data-lightbox data-caption="Urban Architectural Perspectives - Texture and lighting reference.">
+          <img src="pages/04_photography/gallery/adidas.jpg" alt="Adidas" style="width: 100%; aspect-ratio: 4/3; object-fit: cover;" data-lightbox data-caption="Adidas">
           <div style="padding: 14px;">
-            <h3 style="font-size: 1rem; font-weight: 700;">Urban Perspectives</h3>
-            <span style="font-size: 0.8rem; color: var(--text-subtle);">Architecture &bull; Bangalore</span>
+            <h3 style="font-size: 1rem; font-weight: 700;">Adidas</h3>
+            <span style="font-size: 0.8rem; color: var(--text-subtle);">Photography Still</span>
           </div>
         </div>
-
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); overflow: hidden;">
+          <img src="pages/04_photography/gallery/buschlight-voice-of-the-mountains-longform-aubb2048h-vimeoid83680-mp4-snapshot-00-21-2023-12-14-13-11-03_orig.jpg" alt="Buschlight Voice Of The Mountains Longform Aubb2048H Vimeoid83680 Mp4 Snapshot 00 21 2023 12 14 13 11 03" style="width: 100%; aspect-ratio: 4/3; object-fit: cover;" data-lightbox data-caption="Buschlight Voice Of The Mountains Longform Aubb2048H Vimeoid83680 Mp4 Snapshot 00 21 2023 12 14 13 11 03">
+          <div style="padding: 14px;">
+            <h3 style="font-size: 1rem; font-weight: 700;">Buschlight Voice Of The Mountains Longform Aubb2048H Vimeoid83680 Mp4 Snapshot 00 21 2023 12 14 13 11 03</h3>
+            <span style="font-size: 0.8rem; color: var(--text-subtle);">Photography Still</span>
+          </div>
+        </div>
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); overflow: hidden;">
+          <img src="pages/04_photography/gallery/buschlight.jpg" alt="Buschlight" style="width: 100%; aspect-ratio: 4/3; object-fit: cover;" data-lightbox data-caption="Buschlight">
+          <div style="padding: 14px;">
+            <h3 style="font-size: 1rem; font-weight: 700;">Buschlight</h3>
+            <span style="font-size: 0.8rem; color: var(--text-subtle);">Photography Still</span>
+          </div>
+        </div>
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); overflow: hidden;">
+          <img src="pages/04_photography/gallery/pepsi-superbowl.jpg" alt="Pepsi Superbowl" style="width: 100%; aspect-ratio: 4/3; object-fit: cover;" data-lightbox data-caption="Pepsi Superbowl">
+          <div style="padding: 14px;">
+            <h3 style="font-size: 1rem; font-weight: 700;">Pepsi Superbowl</h3>
+            <span style="font-size: 0.8rem; color: var(--text-subtle);">Photography Still</span>
+          </div>
+        </div>
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); overflow: hidden;">
+          <img src="pages/04_photography/gallery/pepsi-the-call-super-bowl-56-mp4-snapshot-00-21-2023-12-14-13-14-22_orig.jpg" alt="Pepsi The Call Super Bowl 56 Mp4 Snapshot 00 21 2023 12 14 13 14 22" style="width: 100%; aspect-ratio: 4/3; object-fit: cover;" data-lightbox data-caption="Pepsi The Call Super Bowl 56 Mp4 Snapshot 00 21 2023 12 14 13 14 22">
+          <div style="padding: 14px;">
+            <h3 style="font-size: 1rem; font-weight: 700;">Pepsi The Call Super Bowl 56 Mp4 Snapshot 00 21 2023 12 14 13 14 22</h3>
+            <span style="font-size: 0.8rem; color: var(--text-subtle);">Photography Still</span>
+          </div>
+        </div>
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); overflow: hidden;">
+          <img src="pages/04_photography/gallery/xbox-forza-getaway-driver-sxbx8457000h-xbox-woodstock-vimeo-id82545-mp4-snapshot-01-22-2023-12-14-14-08-15_orig.jpg" alt="Xbox Forza Getaway Driver Sxbx8457000H Xbox Woodstock Vimeo Id82545 Mp4 Snapshot 01 22 2023 12 14 14 08 15" style="width: 100%; aspect-ratio: 4/3; object-fit: cover;" data-lightbox data-caption="Xbox Forza Getaway Driver Sxbx8457000H Xbox Woodstock Vimeo Id82545 Mp4 Snapshot 01 22 2023 12 14 14 08 15">
+          <div style="padding: 14px;">
+            <h3 style="font-size: 1rem; font-weight: 700;">Xbox Forza Getaway Driver Sxbx8457000H Xbox Woodstock Vimeo Id82545 Mp4 Snapshot 01 22 2023 12 14 14 08 15</h3>
+            <span style="font-size: 0.8rem; color: var(--text-subtle);">Photography Still</span>
+          </div>
+        </div>
       </div>
-
     </div>
   </main>
 
-  <!-- Site Footer -->
   <footer class="site-footer">
     <div class="container-wide">
       <div class="footer-bottom">
         <div>&copy; 2026 Prasannakumar T Bhat (pbhat99). All rights reserved.</div>
-        <div style="font-family: var(--font-mono); font-size: 0.78rem;">Hosted on GitHub Pages &bull; pbhat99.github.io</div>
+        <div style="font-family: var(--font-mono); font-size: 0.78rem;">Auto-synced from pages/04_photography/</div>
       </div>
     </div>
   </footer>
 
   <script type="module">
-    import { initPanoramaViewer } from './assets/js/panorama-360.js';
-    import './assets/js/main.js';
-
+    import { initPanoramaViewer } from './_engine/js/panorama-360.js';
+    import './_engine/js/main.js';
     document.addEventListener('DOMContentLoaded', () => {
-      // Initialize 360 viewer with sample photosphere
       initPanoramaViewer('panorama-viewer', 'https://pannellum.org/images/alma.jpg');
     });
   </script>

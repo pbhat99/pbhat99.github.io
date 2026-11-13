@@ -48,3 +48,4 @@ for b in blocks:
 print(f"\nSuccessfully parsed {len(parsed_projects)} projects with authentic titles and images!")
 with open('data/weebly_extracted_projects.json', 'w', encoding='utf-8') as f:
     json.dump(parsed_projects, f, indent=2)
+

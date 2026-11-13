@@ -1,3 +1,7 @@
+# Python
+__pycache__/
+*.pyc
+
 # Dependencies
 node_modules/
 .pnp
@@ -23,3 +27,4 @@ Thumbs.db
 # Temporary scrape files
 weebly_home.html
 site_analysis.json
+

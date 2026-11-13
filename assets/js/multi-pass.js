@@ -27,3 +27,4 @@ export function initMultiPass(container) {
 export function initAllMultiPass() {
   document.querySelectorAll('.multipass-container').forEach(el => initMultiPass(el));
 }
+

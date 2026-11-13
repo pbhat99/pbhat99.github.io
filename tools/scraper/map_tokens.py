@@ -118,3 +118,4 @@ for p in project_map[:20]:
 
 with open('tools/scraper/mapped_projects.json', 'w', encoding='utf-8') as f:
     json.dump(project_map, f, indent=2)
+

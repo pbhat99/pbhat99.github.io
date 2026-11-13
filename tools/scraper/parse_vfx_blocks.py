@@ -48,3 +48,4 @@ for p in projects[:15]:
     print(f"  Title: {p['title']}")
     print(f"  Caption: {p['caption']}")
     print("---")
+
