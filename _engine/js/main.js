@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Portfolio Tag Filtering
   const filterBtns = document.querySelectorAll('.filter-btn');
   const projectCards = document.querySelectorAll('.project-card');
+  const companySections = document.querySelectorAll('.company-section');
 
   filterBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -34,9 +35,20 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.classList.add('active');
 
       const filter = btn.getAttribute('data-filter');
+      const companyFilter = btn.getAttribute('data-company');
+
       projectCards.forEach(card => {
         const category = card.getAttribute('data-category');
-        if (filter === 'all' || category === filter) {
+        const cardCompany = card.getAttribute('data-company');
+
+        let match = false;
+        if (companyFilter) {
+          match = (cardCompany === companyFilter);
+        } else if (filter === 'all' || category === filter) {
+          match = true;
+        }
+
+        if (match) {
           card.style.display = 'flex';
           setTimeout(() => { card.style.opacity = '1'; }, 10);
         } else {
@@ -44,6 +56,19 @@ document.addEventListener('DOMContentLoaded', () => {
           setTimeout(() => { card.style.display = 'none'; }, 200);
         }
       });
+
+      // Update company sections visibility based on visible project cards
+      setTimeout(() => {
+        companySections.forEach(section => {
+          const visibleCards = section.querySelectorAll('.project-card:not([style*="display: none"])');
+          if (visibleCards.length === 0) {
+            section.style.display = 'none';
+          } else {
+            section.style.display = 'block';
+            section.style.opacity = '1';
+          }
+        });
+      }, 220);
     });
   });
 

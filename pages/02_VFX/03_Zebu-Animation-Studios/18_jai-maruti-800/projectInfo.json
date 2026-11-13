@@ -1,0 +1,13 @@
+{
+  "title": "Jai Maruti 800",
+  "client": "Production",
+  "category": "films",
+  "year": "2018 - 2023",
+  "role": "Compositing Artist",
+  "description": "Visual effects compositing, clean plate reconstruction, and integration for Jai Maruti 800.",
+  "tools": [
+    "Nuke",
+    "Maya"
+  ],
+  "hasBeforeAfter": false
+}

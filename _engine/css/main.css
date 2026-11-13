@@ -435,3 +435,107 @@ button {
   font-size: 0.82rem;
   color: var(--text-subtle);
 }
+
+/* ==========================================================================
+   VFX COMPANY SHOWCASE BANNERS & SECTIONS
+   ========================================================================== */
+.company-section {
+  margin-bottom: 64px;
+  transition: opacity 0.25s ease;
+}
+
+.company-banner-card {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-subtle);
+  margin-bottom: 28px;
+}
+
+.company-banner-media {
+  position: relative;
+  width: 100%;
+  height: clamp(140px, 20vw, 240px);
+  overflow: hidden;
+  background: var(--bg-secondary);
+}
+
+.company-banner-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.company-banner-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(14, 23, 51, 0.95) 0%, rgba(14, 23, 51, 0.45) 55%, rgba(14, 23, 51, 0.1) 100%);
+  pointer-events: none;
+}
+
+.company-banner-content {
+  padding: 24px 28px;
+  position: relative;
+  z-index: 2;
+  margin-top: -30px;
+  background: linear-gradient(to bottom, rgba(19, 30, 66, 0.88), var(--bg-card));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.company-meta-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.company-badge {
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--accent-primary);
+  background: rgba(249, 134, 3, 0.12);
+  padding: 3px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(249, 134, 3, 0.25);
+  letter-spacing: 0.02em;
+}
+
+.company-period {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.company-location {
+  font-size: 0.82rem;
+  color: var(--text-subtle);
+}
+
+.company-name {
+  font-size: clamp(1.4rem, 2.8vw, 2rem);
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 6px;
+  letter-spacing: -0.01em;
+}
+
+.company-desc {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  max-width: 800px;
+  line-height: 1.6;
+}
+
+.company-separator {
+  border: none;
+  border-top: 1px solid var(--border-subtle);
+  margin-block: 56px 48px;
+}

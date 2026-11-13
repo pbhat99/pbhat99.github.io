@@ -1,0 +1,13 @@
+{
+  "title": "The Disney Wish - Cruise Line",
+  "client": "Disney",
+  "category": "commercials",
+  "year": "2022",
+  "role": "Compositor",
+  "description": "Magical particle effects, fairy dust simulation compositing, water plate extension, and photoreal CG Disney ship.",
+  "tools": [
+    "Nuke",
+    "Houdini"
+  ],
+  "hasBeforeAfter": false
+}

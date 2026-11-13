@@ -2,6 +2,11 @@ import os
 import re
 import json
 
+def slugify(text):
+    text = text.lower()
+    text = re.sub(r'[^a-z0-9]+', '-', text).strip('-')
+    return text
+
 def format_title_from_filename(filename):
     name = os.path.splitext(filename)[0]
     name = re.sub(r'^[0-9]+[-_]', '', name)
@@ -71,11 +76,11 @@ def get_page_background_and_overlay(page_dir):
 
 def generate_nav_html(active_page="home"):
     """
-    Renders the unified transparent header with NO contact button.
+    Renders the unified transparent header with clean 6-item navigation (VFX instead of VFX Works, NO contact button).
     """
     nav_items = [
         ("index.html", "home", "Home"),
-        ("vfx-works.html", "vfx-works", "VFX Works"),
+        ("vfx.html", "vfx", "VFX"),
         ("ai-comfy.html", "ai-comfy", "AI / Comfy"),
         ("photography.html", "photography", "Photography"),
         ("about-me.html", "about-me", "About Me"),
@@ -105,7 +110,7 @@ def generate_nav_html(active_page="home"):
   </header>'''
 
 def sync_all():
-    print("=== Syncing site (seamless background fallback, no stretch/squeeze, no contact in nav) ===")
+    print("=== Syncing site (02_VFX company structure, vfx.html, proportional background fallback) ===")
 
     # --------------------------------------------------------------------------
     # 1. SYNC HOME PAGE (pages/01_home)
@@ -352,136 +357,215 @@ def sync_all():
 '''
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(index_html)
-    print("  -> Updated index.html (Clean Nav, No Contact Button, Proportional Background)")
+    print("  -> Updated index.html (Nav: VFX, Proportional Background)")
 
     # --------------------------------------------------------------------------
-    # 2. SYNC VFX WORKS (pages/02_vfx-works)
+    # 2. SYNC VFX PAGE (pages/02_VFX -> vfx.html)
     # --------------------------------------------------------------------------
-    vfx_dir = "pages/02_vfx-works"
-    projects_dir = os.path.join(vfx_dir, "projects")
-    projects_json_path = os.path.join(vfx_dir, "projects.json")
+    vfx_dir = "pages/02_VFX"
+    content_file = os.path.join(vfx_dir, "content.json")
 
-    vfx_bg_img_html, vfx_bg_overlay_html, _, _ = get_page_background_and_overlay(vfx_dir)
-
-    existing_meta = {}
-    if os.path.exists(projects_json_path):
+    vfx_content = {
+        "title": "Visual Effects & Compositing",
+        "description": "Production shots, feature film breakdowns, and commercials across world-class visual effects studios."
+    }
+    if os.path.exists(content_file):
         try:
-            with open(projects_json_path, "r", encoding="utf-8") as f:
-                for item in json.load(f):
-                    existing_meta[os.path.basename(item.get('thumbnail', ''))] = item
-                    existing_meta[item['id']] = item
+            with open(content_file, "r", encoding="utf-8") as f:
+                vfx_content.update(json.load(f))
         except Exception:
             pass
 
-    valid_exts = {'.jpg', '.jpeg', '.png', '.webp', '.avif', '.gif'}
-    project_files = sorted([f for f in os.listdir(projects_dir) if os.path.splitext(f)[1].lower() in valid_exts]) if os.path.exists(projects_dir) else []
+    vfx_bg_img_html, vfx_bg_overlay_html, _, _ = get_page_background_and_overlay(vfx_dir)
+
+    company_subdirs = sorted([d for d in os.listdir(vfx_dir) if os.path.isdir(os.path.join(vfx_dir, d)) and not d.startswith('.')]) if os.path.exists(vfx_dir) else []
     
-    updated_projects = []
-    film_keywords = ['film', 'sandalwood', 'movie', 'anjani', 'kataka', 'samhara', 'ricky', 'badmaash', 'sihir', 'bengaluru', 'maruti', 'eradu', 'ajaramara', 'java', 'uddishya', 'mantram', 'double engine', 'patibeku', 'samyuktha', 'kamarottu', 'shankanaada', 'abhisaarike']
-    music_keywords = ['chemical brothers', 'jay prince', 'music']
+    company_sections_html = []
+    total_projects_count = 0
+    all_categories = set()
+    company_filter_pills = []
+    valid_img_exts = {'.jpg', '.jpeg', '.png', '.webp', '.avif', '.gif'}
 
-    for p_file in project_files:
-        clean_name = format_title_from_filename(p_file)
-        file_path = f"{projects_dir}/{p_file}".replace("\\", "/")
-        meta = existing_meta.get(p_file) or existing_meta.get(clean_name.lower().replace(' ', '-'))
+    for comp_folder in company_subdirs:
+        comp_path = os.path.join(vfx_dir, comp_folder)
+        comp_slug = slugify(comp_folder)
+
+        # 1. Company Info
+        comp_info = {
+            "companyName": format_title_from_filename(comp_folder),
+            "role": "Visual Effects Artist",
+            "period": "Production",
+            "location": "Global",
+            "description": "",
+            "sortOrder": "desc"
+        }
+        comp_info_file = os.path.join(comp_path, "companyInfo.json")
+        if not os.path.exists(comp_info_file):
+            comp_info_file = os.path.join(comp_path, "company.json")
+        if os.path.exists(comp_info_file):
+            try:
+                with open(comp_info_file, "r", encoding="utf-8") as f:
+                    comp_info.update(json.load(f))
+            except Exception:
+                pass
+
+        company_name = comp_info.get("companyName") or comp_info.get("name") or format_title_from_filename(comp_folder)
+        company_filter_pills.append(f'<button class="filter-btn" data-company="{comp_slug}">{company_name}</button>')
+
+        # 2. Company Banner
+        banner_path = None
+        for f in os.listdir(comp_path):
+            if os.path.isfile(os.path.join(comp_path, f)) and os.path.splitext(f)[1].lower() in valid_img_exts:
+                if 'banner' in f.lower():
+                    banner_path = f"{comp_path}/{f}".replace("\\", "/")
+                    break
+
+        # 3. Project Folders inside Company
+        proj_subdirs = [d for d in os.listdir(comp_path) if os.path.isdir(os.path.join(comp_path, d)) and not d.startswith('.')]
         
-        category = "commercials"
-        name_lower = clean_name.lower()
-        if any(k in name_lower for k in film_keywords):
-            category = "films"
-        elif any(k in name_lower for k in music_keywords):
-            category = "music-videos"
+        # Sort project folders in descending order as requested (or by sortOrder)
+        sort_order = comp_info.get("sortOrder", "desc").lower()
+        proj_subdirs.sort(reverse=(sort_order == "desc"))
 
-        if meta:
-            item = {
-                "id": meta.get("id", clean_name.lower().replace(' ', '-')),
-                "title": meta.get("title", clean_name),
-                "client": meta.get("client", "Production"),
-                "category": meta.get("category", category),
-                "year": meta.get("year", "2023"),
-                "role": meta.get("role", "Compositor"),
-                "thumbnail": file_path,
-                "description": meta.get("description", f"Visual effects compositing and shot integration for {clean_name}."),
-                "tools": meta.get("tools", ["Nuke", "Maya"]),
-                "hasBeforeAfter": meta.get("hasBeforeAfter", False)
-            }
-        else:
-            item = {
-                "id": clean_name.lower().replace(' ', '-'),
-                "title": clean_name,
-                "client": "Production",
-                "category": category,
+        cards_html = []
+        for p_folder in proj_subdirs:
+            p_folder_path = os.path.join(comp_path, p_folder)
+            
+            # Find project image (projectImage.jpg / thumb.* / first image)
+            proj_img_path = None
+            for f in os.listdir(p_folder_path):
+                if os.path.splitext(f)[1].lower() in valid_img_exts:
+                    if 'projectimage' in f.lower() or 'thumb' in f.lower() or 'image' in f.lower():
+                        proj_img_path = f"{p_folder_path}/{f}".replace("\\", "/")
+                        break
+            if not proj_img_path:
+                for f in os.listdir(p_folder_path):
+                    if os.path.splitext(f)[1].lower() in valid_img_exts:
+                        proj_img_path = f"{p_folder_path}/{f}".replace("\\", "/")
+                        break
+
+            if not proj_img_path:
+                continue
+
+            # Read projectInfo.json
+            proj_info = {
+                "title": format_title_from_filename(p_folder),
+                "client": company_name,
+                "category": "commercials",
                 "year": "2023",
-                "role": "Compositing Artist",
-                "thumbnail": file_path,
-                "description": f"Visual effects compositing and shot integration for {clean_name}.",
+                "role": comp_info.get("role", "Compositor"),
+                "description": "",
                 "tools": ["Nuke", "Maya"],
                 "hasBeforeAfter": False
             }
-        updated_projects.append(item)
+            proj_info_file = os.path.join(p_folder_path, "projectInfo.json")
+            if not os.path.exists(proj_info_file):
+                proj_info_file = os.path.join(p_folder_path, "info.json")
+            if os.path.exists(proj_info_file):
+                try:
+                    with open(proj_info_file, "r", encoding="utf-8") as f:
+                        proj_info.update(json.load(f))
+                except Exception:
+                    pass
 
-    with open(projects_json_path, "w", encoding="utf-8") as f:
-        json.dump(updated_projects, f, indent=2)
+            p_title = proj_info.get("title", format_title_from_filename(p_folder))
+            p_category = proj_info.get("category", "commercials")
+            all_categories.add(p_category)
+            cat_label = "Commercial"
+            if p_category == "films": cat_label = "Feature Film"
+            elif p_category == "music-videos": cat_label = "Music Video"
 
-    cards_html = []
-    for p in updated_projects:
-        cat_label = "Commercial"
-        if p["category"] == "films": cat_label = "Feature Film"
-        elif p["category"] == "music-videos": cat_label = "Music Video"
-        
-        tools_html = "".join([f'<span class="tool-tag">{t}</span>' for t in p.get('tools', ['Nuke', 'Maya'])])
+            tools_html = "".join([f'<span class="tool-tag">{t}</span>' for t in proj_info.get('tools', ['Nuke'])])
 
-        ba_html = ""
-        if p.get("hasBeforeAfter", False):
-            ba_html = f'''
-            <div class="accordion-wrapper">
-              <button class="accordion-trigger" aria-expanded="false">
-                <span>Interactive Wipe Comparison</span>
-                <span class="accordion-icon">&#9662;</span>
-              </button>
-              <div class="accordion-content">
-                <div class="accordion-inner">
-                  <div class="accordion-breakdown-box">
-                    <div class="before-after-container" style="aspect-ratio: 16/9;">
-                      <div class="ba-image-layer ba-before-layer">
-                        <img src="{p['thumbnail']}" alt="Raw Plate">
-                        <span class="ba-badge ba-badge-before">Raw Plate</span>
+            ba_html = ""
+            if proj_info.get("hasBeforeAfter", False):
+                before_img = proj_img_path
+                after_img = proj_img_path
+                if proj_info.get("beforeImage"):
+                    b_cand = os.path.join(p_folder_path, proj_info["beforeImage"])
+                    if os.path.exists(b_cand): before_img = b_cand.replace("\\", "/")
+                if proj_info.get("afterImage"):
+                    a_cand = os.path.join(p_folder_path, proj_info["afterImage"])
+                    if os.path.exists(a_cand): after_img = a_cand.replace("\\", "/")
+
+                ba_html = f'''
+                <div class="accordion-wrapper">
+                  <button class="accordion-trigger" aria-expanded="false">
+                    <span>Interactive Wipe Comparison</span>
+                    <span class="accordion-icon">&#9662;</span>
+                  </button>
+                  <div class="accordion-content">
+                    <div class="accordion-inner">
+                      <div class="accordion-breakdown-box">
+                        <div class="before-after-container" style="aspect-ratio: 16/9;">
+                          <div class="ba-image-layer ba-before-layer">
+                            <img src="{before_img}" alt="Raw Plate">
+                            <span class="ba-badge ba-badge-before">Raw Plate</span>
+                          </div>
+                          <div class="ba-image-layer ba-after-layer">
+                            <img src="{after_img}" alt="Final Comp">
+                            <span class="ba-badge ba-badge-after">Final Comp</span>
+                          </div>
+                          <div class="ba-handle"><div class="ba-handle-circle"><div class="ba-handle-arrows"><span>&#9664;</span><span>&#9654;</span></div></div></div>
+                        </div>
                       </div>
-                      <div class="ba-image-layer ba-after-layer">
-                        <img src="{p['thumbnail']}" alt="Final Comp">
-                        <span class="ba-badge ba-badge-after">Final Comp</span>
-                      </div>
-                      <div class="ba-handle"><div class="ba-handle-circle"><div class="ba-handle-arrows"><span>&#9664;</span><span>&#9654;</span></div></div></div>
                     </div>
                   </div>
-                </div>
-              </div>
-            </div>'''
+                </div>'''
 
-        cards_html.append(f'''
-        <article class="project-card" data-category="{p['category']}">
-          <div class="project-thumb-wrapper">
-            <img src="{p['thumbnail']}" alt="{p['title']}" class="project-thumb" loading="lazy" data-lightbox data-caption="{p['title']} - {p.get('role', 'Compositor')}">
-            <span class="card-overlay-badge">{cat_label}</span>
-          </div>
-          <div class="card-content">
-            <div class="card-meta">
-              <span class="card-client">{p.get('client', 'Production')}</span>
-              <span>{p.get('year', '2023')}</span>
+            cards_html.append(f'''
+            <article class="project-card" data-category="{p_category}" data-company="{comp_slug}">
+              <div class="project-thumb-wrapper">
+                <img src="{proj_img_path}" alt="{p_title}" class="project-thumb" loading="lazy" data-lightbox data-caption="{p_title} - {proj_info.get('role', 'Compositor')}">
+                <span class="card-overlay-badge">{cat_label}</span>
+              </div>
+              <div class="card-content">
+                <div class="card-meta">
+                  <span class="card-client">{proj_info.get('client', company_name)}</span>
+                  <span>{proj_info.get('year', '')}</span>
+                </div>
+                <h3 class="card-title">{p_title}</h3>
+                <p class="card-desc">{proj_info.get('description', '')}</p>
+                <div class="card-tools">{tools_html}</div>
+                {ba_html}
+              </div>
+            </article>''')
+            total_projects_count += 1
+
+        # Assemble company section
+        banner_media_html = f'''
+        <div class="company-banner-media">
+          <img src="{banner_path}" alt="{company_name} Banner" class="company-banner-img">
+          <div class="company-banner-overlay"></div>
+        </div>''' if banner_path else ''
+
+        company_sections_html.append(f'''
+        <section class="company-section" id="{comp_slug}" data-company="{comp_slug}">
+          <div class="company-banner-card">
+            {banner_media_html}
+            <div class="company-banner-content">
+              <div class="company-meta-strip">
+                <span class="company-badge">{comp_info.get('role', 'Visual Effects')}</span>
+                <span class="company-period">{comp_info.get('period', '')}</span>
+                <span class="company-location">{comp_info.get('location', '')}</span>
+              </div>
+              <h2 class="company-name">{company_name}</h2>
+              <p class="company-desc">{comp_info.get('description', '')}</p>
             </div>
-            <h3 class="card-title">{p['title']}</h3>
-            <p class="card-desc">{p.get('description', '')}</p>
-            <div class="card-tools">{tools_html}</div>
-            {ba_html}
           </div>
-        </article>''')
+
+          <div class="portfolio-grid company-project-grid">
+            {"".join(cards_html)}
+          </div>
+        </section>''')
 
     vfx_html = f'''<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VFX Works | Pra - Motions</title>
+  <title>VFX | Pra - Motions</title>
+  <meta name="description" content="Visual Effects & Compositing portfolio of Prasannakumar T Bhat across DNEG, The Mill, and feature film productions.">
   <link rel="icon" type="image/png" href="_engine/images/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,700&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="_engine/css/main.css">
@@ -492,27 +576,30 @@ def sync_all():
   {vfx_bg_img_html}
   {vfx_bg_overlay_html}
 
-{generate_nav_html("vfx-works")}
+{generate_nav_html("vfx")}
 
   <main style="padding-block: clamp(24px, 4vw, 56px);">
     <div class="container-wide">
       <div class="section-header">
         <div class="section-label">Production Archive</div>
-        <h1 class="section-title">Visual Effects & Compositing Works</h1>
+        <h1 class="section-title">{vfx_content.get('title', 'Visual Effects & Compositing')}</h1>
         <p class="section-desc">
-          Total of {len(updated_projects)} projects synced from <code>pages/02_vfx-works/projects/</code>.
+          {vfx_content.get('description', 'Production shots, feature film breakdowns, and commercials across world-class visual effects studios.')}
         </p>
       </div>
 
+      <!-- Filter Controls: Categories & Company Jump Pills -->
       <div class="filter-bar">
-        <button class="filter-btn active" data-filter="all">All ({len(updated_projects)})</button>
+        <button class="filter-btn active" data-filter="all">All Projects ({total_projects_count})</button>
         <button class="filter-btn" data-filter="commercials">Commercials</button>
         <button class="filter-btn" data-filter="films">Feature Films</button>
         <button class="filter-btn" data-filter="music-videos">Music Videos</button>
+        {"".join(company_filter_pills)}
       </div>
 
-      <div class="portfolio-grid">
-        {"".join(cards_html)}
+      <!-- Company Sections with Banners & Project Grids -->
+      <div class="vfx-companies-container">
+        {"".join(company_sections_html)}
       </div>
     </div>
   </main>
@@ -521,7 +608,7 @@ def sync_all():
     <div class="container-wide">
       <div class="footer-bottom">
         <div>&copy; 2026 Prasannakumar T Bhat (pbhat99). All rights reserved.</div>
-        <div style="font-family: var(--font-mono); font-size: 0.78rem;">Auto-synced from pages/02_vfx-works/</div>
+        <div style="font-family: var(--font-mono); font-size: 0.78rem;">Auto-synced from pages/02_VFX/</div>
       </div>
     </div>
   </footer>
@@ -530,9 +617,9 @@ def sync_all():
 </body>
 </html>
 '''
-    with open("vfx-works.html", "w", encoding="utf-8") as f:
+    with open("vfx.html", "w", encoding="utf-8") as f:
         f.write(vfx_html)
-    print(f"  -> Updated vfx-works.html ({len(updated_projects)} projects, seamless fallback background)")
+    print(f"  -> Updated vfx.html ({len(company_subdirs)} companies, {total_projects_count} projects, auto-sorted descending)")
 
     # --------------------------------------------------------------------------
     # 3. SYNC PHOTOGRAPHY (pages/04_photography)
@@ -541,7 +628,7 @@ def sync_all():
     gallery_dir = os.path.join(photo_dir, "gallery")
     photo_bg_img_html, photo_bg_overlay_html, _, _ = get_page_background_and_overlay(photo_dir)
 
-    photo_files = sorted([f for f in os.listdir(gallery_dir) if os.path.splitext(f)[1].lower() in valid_exts]) if os.path.exists(gallery_dir) else []
+    photo_files = sorted([f for f in os.listdir(gallery_dir) if os.path.splitext(f)[1].lower() in valid_img_exts]) if os.path.exists(gallery_dir) else []
     photo_cards_html = []
     for pf in photo_files:
         title = format_title_from_filename(pf)
@@ -623,7 +710,7 @@ def sync_all():
 '''
     with open("photography.html", "w", encoding="utf-8") as f:
         f.write(photography_html)
-    print("  -> Updated photography.html (360 Viewer, Stills Gallery, fallback background)")
+    print("  -> Updated photography.html (Nav: VFX, 360 Viewer, Stills Gallery)")
 
     # --------------------------------------------------------------------------
     # 4. SYNC ABOUT ME (pages/05_about-me)
@@ -745,7 +832,7 @@ def sync_all():
 '''
     with open("about-me.html", "w", encoding="utf-8") as f:
         f.write(about_html)
-    print("  -> Updated about-me.html (Bio, Toolset, Contact Section, fallback background)")
+    print("  -> Updated about-me.html (Nav: VFX, Bio, Toolset, Contact Section)")
 
     # --------------------------------------------------------------------------
     # 5. SYNC AI / COMFY (pages/03_ai-comfy)
@@ -815,11 +902,11 @@ def sync_all():
         <div style="max-width: 900px; margin-inline: auto;">
           <div class="before-after-container">
             <div class="ba-image-layer ba-before-layer">
-              <img src="pages/02_vfx-works/projects/goatbusters.jpg" alt="Raw Live Plate with Markers">
+              <img src="pages/02_VFX/01_DNEG/02_goatbusters/projectImage.jpg" alt="Raw Live Plate with Markers">
               <span class="ba-badge ba-badge-before">Raw Plate + Tracking Markers</span>
             </div>
             <div class="ba-image-layer ba-after-layer">
-              <img src="pages/02_vfx-works/projects/hummer-ev.jpg" alt="AI Inpainted Clean Plate">
+              <img src="pages/02_VFX/01_DNEG/03_gmc-hummer-ev-quiet-revolution/projectImage.jpg" alt="AI Inpainted Clean Plate">
               <span class="ba-badge ba-badge-after">AI Inpainted Clean Plate</span>
             </div>
             <div class="ba-handle">
@@ -893,7 +980,7 @@ def sync_all():
 '''
     with open("ai-comfy.html", "w", encoding="utf-8") as f:
         f.write(ai_html)
-    print("  -> Updated ai-comfy.html (ComfyUI Workflows, Inpaint Wipe Demo, fallback background)")
+    print("  -> Updated ai-comfy.html (Nav: VFX, ComfyUI Workflows, Inpaint Wipe Demo)")
 
     # --------------------------------------------------------------------------
     # 6. SYNC BLOG (pages/06_blog)
@@ -1059,9 +1146,9 @@ python install.py --onnxruntime cuda</pre>
 '''
     with open("blog.html", "w", encoding="utf-8") as f:
         f.write(blog_html)
-    print("  -> Updated blog.html (Technical Guides, fallback background)")
+    print("  -> Updated blog.html (Nav: VFX, Technical Guides)")
 
-    print("\nSUCCESS: All 6 pages synchronized cleanly!")
+    print("\nSUCCESS: All pages synchronized cleanly!")
 
 if __name__ == "__main__":
     sync_all()

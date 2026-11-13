@@ -1,0 +1,13 @@
+{
+  "title": "The Chemical Brothers - Free Yourself",
+  "client": "Virgin EMI",
+  "category": "music-videos",
+  "year": "2018",
+  "role": "VFX Compositor",
+  "description": "Award-winning music video featuring dancing robots, photoreal chrome/metal shading comp, and mocap alignment.",
+  "tools": [
+    "Nuke",
+    "Maya"
+  ],
+  "hasBeforeAfter": false
+}

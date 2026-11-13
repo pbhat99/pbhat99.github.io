@@ -1,0 +1,13 @@
+{
+  "title": "Double Engine",
+  "client": "Production",
+  "category": "films",
+  "year": "2018 - 2023",
+  "role": "Compositing Artist",
+  "description": "Visual effects compositing, clean plate reconstruction, and integration for Double Engine.",
+  "tools": [
+    "Nuke",
+    "Maya"
+  ],
+  "hasBeforeAfter": false
+}

@@ -1,0 +1,13 @@
+{
+  "title": "Adidas",
+  "client": "Production",
+  "category": "commercials",
+  "year": "2023",
+  "role": "Compositing Artist",
+  "description": "Visual effects compositing and shot integration for Adidas.",
+  "tools": [
+    "Nuke",
+    "Maya"
+  ],
+  "hasBeforeAfter": false
+}

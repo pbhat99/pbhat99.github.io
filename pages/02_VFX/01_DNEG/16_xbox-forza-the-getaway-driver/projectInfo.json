@@ -1,0 +1,13 @@
+{
+  "title": "Xbox Forza - The Getaway Driver",
+  "client": "Microsoft / Xbox",
+  "category": "commercials",
+  "year": "2021",
+  "role": "VFX Compositor",
+  "description": "High-octane car chase sequences blending live-action stunt driving with CG sports cars and motion blur.",
+  "tools": [
+    "Nuke",
+    "Maya"
+  ],
+  "hasBeforeAfter": false
+}

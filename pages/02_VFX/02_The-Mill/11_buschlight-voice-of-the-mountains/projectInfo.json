@@ -1,0 +1,14 @@
+{
+  "title": "BuschLight - Voice of the Mountains",
+  "client": "Busch Light",
+  "category": "commercials",
+  "year": "2023",
+  "role": "Compositor",
+  "description": "Extensive matte painting set extension, icy atmospheric snow simulation, and character integration.",
+  "tools": [
+    "Nuke",
+    "Photoshop",
+    "SynthEyes"
+  ],
+  "hasBeforeAfter": true
+}
