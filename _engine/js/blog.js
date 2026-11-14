@@ -43,36 +43,36 @@
     window.addEventListener('keydown', function (e) {
       const overlay = document.getElementById('blogReaderOverlay');
       if (overlay && overlay.classList.contains('active')) {
+        // If GLightbox is currently open, let GLightbox handle Escape and arrows
+        const isLightboxOpen = document.body.classList.contains('glightbox-open') ||
+                               document.querySelector('.glightbox-container:not(.inactive)');
+        if (isLightboxOpen) return;
+
         if (e.key === 'Escape') {
-          // If a lightbox is currently open, let the lightbox handle Escape
-          const lightbox = document.querySelector('.lightbox-overlay.active');
-          if (!lightbox) {
-            closePostModal();
-          }
+          closePostModal();
         } else if (e.key === 'ArrowLeft') {
-          const lightbox = document.querySelector('.lightbox-overlay.active');
-          if (!lightbox) navigatePost(-1);
+          navigatePost(-1);
         } else if (e.key === 'ArrowRight') {
-          const lightbox = document.querySelector('.lightbox-overlay.active');
-          if (!lightbox) navigatePost(1);
+          navigatePost(1);
         }
       }
     });
 
     // Close on overlay backdrop click & scroll listener for floating top button
     const overlay = document.getElementById('blogReaderOverlay');
+    const scrollContainer = document.getElementById('blogReaderScroll');
 
-    if (overlay) {
-      overlay.addEventListener('click', function (e) {
-        if (e.target === overlay) {
+    if (scrollContainer) {
+      scrollContainer.addEventListener('click', function (e) {
+        if (e.target === scrollContainer) {
           closePostModal();
         }
       });
 
-      overlay.addEventListener('scroll', function () {
+      scrollContainer.addEventListener('scroll', function () {
         const topBtn = document.getElementById('readerBackToTop');
         if (topBtn) {
-          if (overlay.scrollTop > 240) {
+          if (scrollContainer.scrollTop > 240) {
             topBtn.classList.add('visible');
           } else {
             topBtn.classList.remove('visible');
@@ -379,18 +379,21 @@
     document.body.style.overflow = 'hidden';
     window.location.hash = '#' + (post.slug || post.id);
 
-    // Scroll reader overlay to top immediately
-    overlay.scrollTop = 0;
-    overlay.scrollTo({ top: 0, behavior: 'auto' });
+    // Scroll reader container to top immediately
+    const scrollContainer = document.getElementById('blogReaderScroll');
+    if (scrollContainer) {
+      scrollContainer.scrollTop = 0;
+      scrollContainer.scrollTo({ top: 0, behavior: 'auto' });
+    }
 
     const readerBackToTop = document.getElementById('readerBackToTop');
     if (readerBackToTop) readerBackToTop.classList.remove('visible');
   };
 
   window.scrollReaderToTop = function () {
-    const overlay = document.getElementById('blogReaderOverlay');
-    if (overlay) {
-      overlay.scrollTo({ top: 0, behavior: 'smooth' });
+    const scrollContainer = document.getElementById('blogReaderScroll');
+    if (scrollContainer) {
+      scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -411,10 +414,10 @@
     const newIdx = currentActivePostIndex + delta;
     if (newIdx >= 0 && newIdx < allPosts.length) {
       openPostModal(allPosts[newIdx].id);
-      const overlay = document.getElementById('blogReaderOverlay');
-      if (overlay) {
-        overlay.scrollTop = 0;
-        overlay.scrollTo({ top: 0, behavior: 'auto' });
+      const scrollContainer = document.getElementById('blogReaderScroll');
+      if (scrollContainer) {
+        scrollContainer.scrollTop = 0;
+        scrollContainer.scrollTo({ top: 0, behavior: 'auto' });
       }
     }
   };
@@ -449,12 +452,19 @@
     // Make each image clickable with zoom-in cursor
     postImages.forEach((item, idx) => {
       item.el.style.cursor = 'zoom-in';
-      item.el.title = 'Click to open in 100% zoomable lightbox';
+      item.el.title = 'Click to open in zoomable lightbox';
       item.el.onclick = function (e) {
         e.preventDefault();
         e.stopPropagation();
-        if (window.openLightbox) {
+        if (typeof window.openLightbox === 'function') {
           window.openLightbox(postImages.map(p => ({ src: p.src, caption: p.caption })), idx);
+        } else if (typeof GLightbox !== 'undefined') {
+          GLightbox({
+            elements: postImages.map(p => ({ href: p.src, type: 'image', title: p.caption })),
+            startAt: idx,
+            zoomable: true,
+            touchNavigation: true
+          }).openAt(idx);
         }
       };
     });
@@ -472,21 +482,31 @@
     // Bottom Footer Prev Button
     if (currentActivePostIndex > 0) {
       const prevPost = allPosts[currentActivePostIndex - 1];
-      if (prevBtn) prevBtn.disabled = false;
+      if (prevBtn) {
+        prevBtn.style.display = 'flex';
+        prevBtn.disabled = false;
+      }
       if (prevTitle) prevTitle.textContent = prevPost.title;
     } else {
-      if (prevBtn) prevBtn.disabled = true;
-      if (prevTitle) prevTitle.textContent = 'None (First Post)';
+      if (prevBtn) {
+        prevBtn.style.display = 'none';
+        prevBtn.disabled = true;
+      }
     }
 
     // Bottom Footer Next Button
     if (currentActivePostIndex < allPosts.length - 1) {
       const nextPost = allPosts[currentActivePostIndex + 1];
-      if (nextBtn) nextBtn.disabled = false;
+      if (nextBtn) {
+        nextBtn.style.display = 'flex';
+        nextBtn.disabled = false;
+      }
       if (nextTitle) nextTitle.textContent = nextPost.title;
     } else {
-      if (nextBtn) nextBtn.disabled = true;
-      if (nextTitle) nextTitle.textContent = 'None (Latest Post)';
+      if (nextBtn) {
+        nextBtn.style.display = 'none';
+        nextBtn.disabled = true;
+      }
     }
   }
 

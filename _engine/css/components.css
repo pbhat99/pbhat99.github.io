@@ -191,6 +191,63 @@
 }
 
 /* ==========================================================================
+   GLIGHTBOX THEME OVERRIDES
+   ========================================================================== */
+.goverlay {
+  background: rgba(8, 14, 32, 0.96) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+}
+
+.glightbox-clean .gclose,
+.glightbox-clean .gprev,
+.glightbox-clean .gnext {
+  background-color: rgba(14, 23, 51, 0.9) !important;
+  border: 1px solid rgba(249, 134, 3, 0.45) !important;
+  color: #ffffff !important;
+  border-radius: 50% !important;
+  width: 46px !important;
+  height: 46px !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6) !important;
+}
+
+.glightbox-clean .gclose:hover,
+.glightbox-clean .gprev:hover,
+.glightbox-clean .gnext:hover {
+  background-color: var(--accent-primary) !important;
+  border-color: var(--accent-hover) !important;
+  color: #ffffff !important;
+  transform: scale(1.08) !important;
+  box-shadow: 0 6px 24px rgba(249, 134, 3, 0.5) !important;
+}
+
+.glightbox-clean .gprev {
+  left: 24px !important;
+}
+
+.glightbox-clean .gnext {
+  right: 24px !important;
+}
+
+.glightbox-clean .gclose {
+  top: 24px !important;
+  right: 24px !important;
+}
+
+.gslide-title {
+  color: #ffffff !important;
+  font-family: 'Ubuntu', sans-serif !important;
+  font-size: 1.05rem !important;
+  font-weight: 700 !important;
+}
+
+.gslide-desc {
+  color: var(--text-muted) !important;
+  font-size: 0.9rem !important;
+}
+
+/* ==========================================================================
    LIGHTBOX MODAL
    ========================================================================== */
 .lightbox-overlay {

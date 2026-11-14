@@ -191,6 +191,7 @@ def sync_all():
   
   <link rel="stylesheet" href="_engine/css/main.css">
   <link rel="stylesheet" href="_engine/css/components.css">
+  <link rel="stylesheet" href="_engine/css/glightbox.min.css">
   <link rel="stylesheet" href="_engine/css/responsive.css">
   
   <style>
@@ -418,7 +419,7 @@ def sync_all():
 
     vfx_bg_img_html, vfx_bg_overlay_html, _, _ = get_page_background_and_overlay(vfx_dir)
 
-    company_subdirs = sorted([d for d in os.listdir(vfx_dir) if os.path.isdir(os.path.join(vfx_dir, d)) and not d.startswith('.')]) if os.path.exists(vfx_dir) else []
+    company_subdirs = sorted([d for d in os.listdir(vfx_dir) if os.path.isdir(os.path.join(vfx_dir, d)) and not d.startswith('.')], reverse=True) if os.path.exists(vfx_dir) else []
     
     company_sections_html = []
     total_projects_count = 0
@@ -630,6 +631,7 @@ def sync_all():
   <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,700&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="_engine/css/main.css">
   <link rel="stylesheet" href="_engine/css/components.css">
+  <link rel="stylesheet" href="_engine/css/glightbox.min.css">
   <link rel="stylesheet" href="_engine/css/responsive.css">
 </head>
 <body>
@@ -667,6 +669,8 @@ def sync_all():
     </div>
   </footer>
 
+  <script src="_engine/js/glightbox.min.js"></script>
+  <script src="_engine/js/lightbox.js"></script>
   <script type="module" src="_engine/js/main.js"></script>
 
 {BACK_TO_TOP_HTML}
@@ -725,6 +729,7 @@ def sync_all():
   <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,700&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="_engine/css/main.css">
   <link rel="stylesheet" href="_engine/css/components.css">
+  <link rel="stylesheet" href="_engine/css/glightbox.min.css">
   <link rel="stylesheet" href="_engine/css/responsive.css">
 </head>
 <body>
@@ -768,6 +773,8 @@ def sync_all():
     </div>
   </footer>
 
+  <script src="_engine/js/glightbox.min.js"></script>
+  <script src="_engine/js/lightbox.js"></script>
   <script type="module">
     import {{ initPanoramaViewer }} from './_engine/js/panorama-360.js';
     import './_engine/js/main.js';
@@ -1023,6 +1030,7 @@ def sync_all():
   <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,700&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="_engine/css/main.css">
   <link rel="stylesheet" href="_engine/css/components.css">
+  <link rel="stylesheet" href="_engine/css/glightbox.min.css">
   <link rel="stylesheet" href="_engine/css/responsive.css">
 </head>
 <body>
@@ -1096,6 +1104,8 @@ def sync_all():
     </div>
   </footer>
 
+  <script src="_engine/js/glightbox.min.js"></script>
+  <script src="_engine/js/lightbox.js"></script>
   <script type="module" src="_engine/js/main.js"></script>
 
 {BACK_TO_TOP_HTML}
@@ -1176,6 +1186,7 @@ def sync_all():
   
   <link rel="stylesheet" href="_engine/css/main.css">
   <link rel="stylesheet" href="_engine/css/components.css">
+  <link rel="stylesheet" href="_engine/css/glightbox.min.css">
   <link rel="stylesheet" href="_engine/css/responsive.css">
 </head>
 <body>
@@ -1292,6 +1303,8 @@ def sync_all():
     </div>
   </footer>
 
+  <script src="_engine/js/glightbox.min.js"></script>
+  <script src="_engine/js/lightbox.js"></script>
   <script type="module" src="_engine/js/main.js"></script>
 
 {BACK_TO_TOP_HTML}
@@ -1565,6 +1578,7 @@ def sync_all():
   
   <link rel="stylesheet" href="_engine/css/main.css">
   <link rel="stylesheet" href="_engine/css/components.css">
+  <link rel="stylesheet" href="_engine/css/glightbox.min.css">
   <link rel="stylesheet" href="_engine/css/responsive.css">
   <link rel="stylesheet" href="_engine/css/prism.css">
   <link rel="stylesheet" href="_engine/css/blog.css">
@@ -1649,7 +1663,7 @@ def sync_all():
   <!-- Full Post Reader Modal (Expanded Reading View) -->
   <div id="blogReaderOverlay" class="blog-reader-overlay" aria-hidden="true">
 
-    <!-- Floating Close Button (Fixed at far screen right, always visible) -->
+    <!-- Pinned Floating Close Button (Viewport top-right, always visible) -->
     <button type="button" class="reader-floating-close" onclick="closePostModal()" aria-label="Close article" title="Close article (Esc)">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -1657,50 +1671,53 @@ def sync_all():
       </svg>
     </button>
 
-    <!-- Floating Move-to-Top Button (Fixed at far screen right, bottom) -->
-    <button type="button" class="reader-floating-top" id="readerBackToTop" onclick="scrollReaderToTop()" aria-label="Move to top" title="Move to top">
+    <!-- Pinned Floating Move-to-Top Button (Viewport bottom-right, matches VFX page) -->
+    <button type="button" class="back-to-top reader-back-to-top" id="readerBackToTop" onclick="scrollReaderToTop()" aria-label="Scroll to top" title="Scroll to top">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="18 15 12 9 6 15"></polyline>
       </svg>
     </button>
 
-    <div class="blog-reader-dialog" role="dialog" aria-modal="true">
-      
-      <article class="blog-reader-content">
-        <header class="reader-header">
-          <h1 class="reader-title" id="readerTitle">Title</h1>
-          <p class="reader-subheading" id="readerSubheading">Subheading</p>
-          <div class="reader-meta">
-            <span id="readerDate">Date</span>
-            <span>&bull;</span>
-            <span id="readerReadTime">Read Time</span>
-            <span>&bull;</span>
-            <span id="readerAuthor">Author</span>
+    <!-- Full-page scrolling viewport container -->
+    <div class="blog-reader-scroll" id="blogReaderScroll">
+      <div class="blog-reader-dialog" role="dialog" aria-modal="true">
+        
+        <article class="blog-reader-content">
+          <header class="reader-header">
+            <h1 class="reader-title" id="readerTitle">Title</h1>
+            <p class="reader-subheading" id="readerSubheading">Subheading</p>
+            <div class="reader-meta">
+              <span id="readerDate">Date</span>
+              <span>&bull;</span>
+              <span id="readerReadTime">Read Time</span>
+              <span>&bull;</span>
+              <span id="readerAuthor">Author</span>
+            </div>
+            <div class="reader-tags" id="readerTags"></div>
+          </header>
+
+          <div class="reader-hero-image-wrap" id="readerHeroWrap">
+            <img id="readerHeroImg" src="" alt="Hero Image" class="reader-hero-img">
           </div>
-          <div class="reader-tags" id="readerTags"></div>
-        </header>
 
-        <div class="reader-hero-image-wrap" id="readerHeroWrap">
-          <img id="readerHeroImg" src="" alt="Hero Image" class="reader-hero-img">
-        </div>
+          <div class="reader-body" id="readerBody"></div>
 
-        <div class="reader-body" id="readerBody"></div>
+          <!-- Bottom Post Navigation: Move to Previous & Next Post (50/50 full area, 2 lines with arrow) -->
+          <nav class="reader-footer-nav">
+            <button type="button" class="reader-nav-btn prev-post-btn" id="readerPrevBtn" onclick="navigatePost(-1)" title="Previous Post">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+              <span class="nav-title" id="readerPrevTitle">Previous Post</span>
+            </button>
 
-        <!-- Bottom Post Navigation: Move to Previous & Next Post (50/50 full area, 2 lines with arrow) -->
-        <nav class="reader-footer-nav">
-          <button type="button" class="reader-nav-btn prev-post-btn" id="readerPrevBtn" onclick="navigatePost(-1)" title="Previous Post">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
-            <span class="nav-title" id="readerPrevTitle">Previous Post</span>
-          </button>
+            <button type="button" class="reader-nav-btn next-post-btn" id="readerNextBtn" onclick="navigatePost(1)" title="Next Post">
+              <span class="nav-title" id="readerNextTitle">Next Post</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          </nav>
 
-          <button type="button" class="reader-nav-btn next-post-btn" id="readerNextBtn" onclick="navigatePost(1)" title="Next Post">
-            <span class="nav-title" id="readerNextTitle">Next Post</span>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </button>
-        </nav>
+        </article>
 
-      </article>
-
+      </div>
     </div>
 
   </div>
@@ -1710,6 +1727,8 @@ def sync_all():
   </script>
 
   <script src="_engine/js/prism.js"></script>
+  <script src="_engine/js/glightbox.min.js"></script>
+  <script src="_engine/js/lightbox.js"></script>
   <script src="_engine/js/blog.js"></script>
   <script type="module" src="_engine/js/main.js"></script>
 
