@@ -142,8 +142,79 @@ BACK_TO_TOP_HTML = '''  <!-- Jump to Top Floating Button (Visible past 1 screen 
     </svg>
   </button>'''
 
+def convert_all_pages_images_to_webp(root_dir="pages"):
+    """
+    Site-wide WebP conversion:
+    Scans root_dir (default 'pages/').
+    Converts any non-webp source image (.jpg, .jpeg, .png, .avif, .gif, .bmp, .tiff)
+    to optimized .webp:
+    - Maintains original dimensions.
+    - Preserves alpha transparency for RGBA/palette images.
+    - Quality: 90 for alpha, 85 for RGB.
+    - Replaces the original image file (removes source file).
+    - Automatically updates references in .json and .md files under root_dir.
+    """
+    if not os.path.exists(root_dir):
+        return
+
+    from PIL import Image
+    valid_exts = {'.jpg', '.jpeg', '.png', '.avif', '.gif', '.bmp', '.tiff'}
+    replacements = {}
+
+    # 1. Walk root_dir and convert non-webp images
+    for current_root, dirs, files in os.walk(root_dir):
+        for f in files:
+            if f.startswith('.'):
+                continue
+            base, ext = os.path.splitext(f)
+            ext_lower = ext.lower()
+            if ext_lower in valid_exts:
+                src_path = os.path.join(current_root, f)
+                webp_path = os.path.join(current_root, f"{base}.webp")
+                try:
+                    with Image.open(src_path) as im:
+                        if im.mode in ('RGBA', 'LA') or (im.mode == 'P' and 'transparency' in im.info):
+                            im_conv = im.convert('RGBA')
+                            im_conv.save(webp_path, 'WEBP', quality=90, method=6)
+                        else:
+                            im_conv = im.convert('RGB')
+                            im_conv.save(webp_path, 'WEBP', quality=85, method=6)
+                    
+                    if os.path.exists(src_path):
+                        try:
+                            os.remove(src_path)
+                        except OSError as rm_err:
+                            if os.path.exists(src_path):
+                                print(f"  [Warning] Could not remove {src_path}: {rm_err}")
+                    
+                    replacements[f] = f"{base}.webp"
+                    print(f"  [Site WebP] Converted & replaced: {src_path} -> {base}.webp")
+                except Exception as err:
+                    print(f"  [WebP Error] {src_path}: {err}")
+
+    # 2. Update references in .json and .md files under root_dir
+    if replacements:
+        for current_root, dirs, files in os.walk(root_dir):
+            for f in files:
+                if f.lower().endswith(('.json', '.md')):
+                    file_path = os.path.join(current_root, f)
+                    try:
+                        with open(file_path, "r", encoding="utf-8") as rf:
+                            content = rf.read()
+                        new_content = content
+                        for old_name, new_name in replacements.items():
+                            if old_name in new_content:
+                                new_content = new_content.replace(old_name, new_name)
+                        if new_content != content:
+                            with open(file_path, "w", encoding="utf-8") as wf:
+                                wf.write(new_content)
+                            print(f"  [Ref Update] Updated references in {file_path}")
+                    except Exception as ref_err:
+                        print(f"  [Ref Update Error] {file_path}: {ref_err}")
+
 def sync_all():
-    print("=== Syncing site (02_VFX company structure, vfx.html, proportional background fallback) ===")
+    print("=== Syncing site (Site-wide WebP, VFX company structure, Proportional Backgrounds) ===")
+    convert_all_pages_images_to_webp("pages")
 
     # --------------------------------------------------------------------------
     # 1. SYNC HOME PAGE (pages/01_home)
@@ -1081,9 +1152,9 @@ def sync_all():
         info_paras = [info_raw.strip()]
     paragraphs_html = "\n".join([f"<p>{p.replace(chr(10), '<br>')}</p>" for p in info_paras])
 
-    # Find profile picture (profilePic.jpg or fallback)
+    # Find profile picture (profilePic.webp or fallback)
     profile_img = "_engine/images/logo.png"
-    for cand_img in ["profilePic.jpg", "profilePic.png", "profilePic.webp", "profile.jpg", "profile.png"]:
+    for cand_img in ["profilePic.webp", "profilePic.jpg", "profilePic.png", "profile.webp", "profile.jpg", "profile.png"]:
         p_path = os.path.join(about_dir, cand_img)
         if os.path.exists(p_path):
             profile_img = p_path.replace("\\", "/")
@@ -1199,7 +1270,7 @@ def sync_all():
     # 2. Right-Aligned Contact Image (Auto-detected from folder: contact.jpg, contact.png, etc.; no JSON key needed)
     contact_img_html = ""
     contact_img_path = None
-    for cand in ["contact.jpg", "contact.png", "contact.webp", "contact.jpeg"]:
+    for cand in ["contact.webp", "contact.jpg", "contact.png", "contact.jpeg"]:
         p = os.path.join(about_dir, cand)
         if os.path.exists(p):
             contact_img_path = p.replace("\\", "/")
@@ -1238,8 +1309,16 @@ def sync_all():
                             s_link = s_item.get("link") or s_item.get("url") or "#"
                             s_name = s_item.get("name") or s_item.get("title") or os.path.splitext(img_name)[0].title()
                             
-                            s_img_path = f"{social_folder}/{img_name}".replace("\\", "/")
-                            if os.path.exists(os.path.join(social_folder, img_name)):
+                            # Prefer .webp if converted
+                            img_base = os.path.splitext(img_name)[0]
+                            resolved_img = img_name
+                            for cand_ext in [".webp", ".png", ".jpg", ".jpeg"]:
+                                if os.path.exists(os.path.join(social_folder, f"{img_base}{cand_ext}")):
+                                    resolved_img = f"{img_base}{cand_ext}"
+                                    break
+
+                            s_img_path = f"{social_folder}/{resolved_img}".replace("\\", "/")
+                            if os.path.exists(os.path.join(social_folder, resolved_img)):
                                 social_tiles_html.append(f'''
             <a href="{s_link}" target="_blank" rel="noopener noreferrer" class="social-tile" title="{s_name}">
               <div class="tile-circling-border" aria-hidden="true"></div>
@@ -1396,18 +1475,25 @@ def sync_all():
     ai_desc_inner = ai_desc.strip() if ai_desc else '&nbsp;'
 
     # Resolve Before/After Inpaint Demo images
-    ba_before_img = "pages/02_VFX/02_The-Mill/02_goatbusters/projectImage.jpg"
-    ba_after_img = "pages/02_VFX/02_The-Mill/03_gmc-hummer-ev-quiet-revolution/projectImage.jpg"
+    ba_before_img = "pages/02_VFX/02_The-Mill/02_goatbusters/projectImage.webp"
+    ba_after_img = "pages/02_VFX/02_The-Mill/03_gmc-hummer-ev-quiet-revolution/projectImage.webp"
     for vfx_comp in glob.glob("pages/02_VFX/*"):
-        cand_before = os.path.join(vfx_comp, "02_goatbusters", "projectImage.jpg").replace("\\", "/")
-        if os.path.exists(cand_before):
-            ba_before_img = cand_before
-            break
+        for cand_ext in [".webp", ".jpg", ".jpeg", ".png"]:
+            cand_before = os.path.join(vfx_comp, "02_goatbusters", f"projectImage{cand_ext}").replace("\\", "/")
+            if os.path.exists(cand_before):
+                ba_before_img = cand_before
+                break
     for vfx_comp in glob.glob("pages/02_VFX/*"):
-        cand_after = os.path.join(vfx_comp, "03_gmc-hummer-ev-quiet-revolution", "projectImage.jpg").replace("\\", "/")
-        if os.path.exists(cand_after):
-            ba_after_img = cand_after
-            break
+        for cand_ext in [".webp", ".jpg", ".jpeg", ".png"]:
+            cand_after = os.path.join(vfx_comp, "03_gmc-hummer-ev-quiet-revolution", f"projectImage{cand_ext}").replace("\\", "/")
+            if os.path.exists(cand_after):
+                ba_after_img = cand_after
+                break
+
+    # Resolve Workflow Architecture image
+    workflow_img = "pages/03_ai-comfy/workflows/comfyui-production-pipeline.webp"
+    if not os.path.exists(workflow_img):
+        workflow_img = "pages/03_ai-comfy/workflows/comfyui-production-pipeline.png"
 
     ai_html = f'''<!DOCTYPE html>
 <html lang="en">
@@ -1452,7 +1538,7 @@ def sync_all():
           </p>
         </div>
         <div style="border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border-subtle); background: #000;">
-          <img src="pages/03_ai-comfy/workflows/comfyui-production-pipeline.png" alt="ComfyUI Production Pipeline Architecture" style="width: 100%; object-fit: contain; cursor: zoom-in;" data-lightbox data-caption="ComfyUI Master VFX Production Workflow Architecture">
+          <img src="{workflow_img}" alt="ComfyUI Production Pipeline Architecture" style="width: 100%; object-fit: contain; cursor: zoom-in;" data-lightbox data-caption="ComfyUI Master VFX Production Workflow Architecture">
         </div>
       </div>
 
@@ -1654,7 +1740,7 @@ def sync_all():
                     thumbnail_path = post_meta["thumbnail"].replace("\\", "/")
 
             if not thumbnail_path:
-                for img_cand in ["cover.jpg", "cover.png", "cover.webp", "thumbnail.jpg", "thumbnail.png"]:
+                for img_cand in ["cover.webp", "cover.jpg", "cover.png", "thumbnail.webp", "thumbnail.jpg", "thumbnail.png"]:
                     p = os.path.join(folder_path, img_cand)
                     if os.path.exists(p):
                         thumbnail_path = p.replace("\\", "/")
@@ -1677,11 +1763,15 @@ def sync_all():
             # Render Markdown into HTML
             rendered_html = ""
             if md_content:
-                # 1. Process relative image paths: e.g. src="image.png" -> src="pages/06_blog/posts/.../image.png"
+                # 1. Process relative image paths: e.g. src="image.png" -> src="pages/06_blog/posts/.../image.webp"
                 def fix_md_img(m):
                     alt, src = m.group(1), m.group(2)
                     if not src.startswith("http") and not src.startswith("/") and not src.startswith("pages/"):
-                        src = f"{folder_path}/{src}".replace("\\", "/")
+                        base_s, _ = os.path.splitext(src)
+                        if os.path.exists(os.path.join(folder_path, f"{base_s}.webp")):
+                            src = f"{folder_path}/{base_s}.webp".replace("\\", "/")
+                        else:
+                            src = f"{folder_path}/{src}".replace("\\", "/")
                     return f'![{alt}]({src})'
                 fixed_md = re.sub(r'!\[([^\]]*)\]\(([^)]+)\)', fix_md_img, md_content)
 
@@ -1725,7 +1815,11 @@ def sync_all():
                 def fix_html_img(m):
                     pfx, src, sfx = m.group(1), m.group(2), m.group(3)
                     if not src.startswith("http") and not src.startswith("/") and not src.startswith("pages/"):
-                        src = f"{folder_path}/{src}".replace("\\", "/")
+                        base_s, _ = os.path.splitext(src)
+                        if os.path.exists(os.path.join(folder_path, f"{base_s}.webp")):
+                            src = f"{folder_path}/{base_s}.webp".replace("\\", "/")
+                        else:
+                            src = f"{folder_path}/{src}".replace("\\", "/")
                     return f'{pfx}{src}{sfx}'
                 rendered_html = re.sub(r'(<img[^>]+src=[\'"])([^\'"]+)([\'"][^>]*>)', fix_html_img, compiled_html)
 

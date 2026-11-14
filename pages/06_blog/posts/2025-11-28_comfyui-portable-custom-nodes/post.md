@@ -34,7 +34,7 @@ git clone https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git
     <p>Using RGThree context nodes and VHS batch loaders allows VFX compositors to feed native 4K image sequences directly through ControlNet inpainting passes without manual frame extraction.</p>
   </div>
   <div class="col-media">
-    <img src="cover.png" alt="ComfyUI Node Graph Execution">
+    <img src="cover.webp" alt="ComfyUI Node Graph Execution">
   </div>
 </div>
 

@@ -68,7 +68,7 @@ create_projection_rig()
     <p>For matte painting horizons and sky domes, spherical mapping onto a <code>Sphere</code> node provides seamless 360-degree panning. For building facades and ground planes, planar projection cards aligned with surveyed tracking points offer zero distortion.</p>
   </div>
   <div class="col-media">
-    <img src="cover.jpg" alt="Projection Diagram Overview">
+    <img src="cover.webp" alt="Projection Diagram Overview">
   </div>
 </div>
 

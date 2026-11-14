@@ -9,8 +9,8 @@
     "outputs": "Clean Background Plate with film grain match",
     "nodesUsed": ["ControlNet", "LaMa Inpaint", "ComfyUI-KJNodes", "ColorCorrect"],
     "hasBeforeAfter": true,
-    "beforeImage": "pages/02_VFX/01_DNEG/02_goatbusters/projectImage.jpg",
-    "afterImage": "pages/02_VFX/01_DNEG/03_gmc-hummer-ev-quiet-revolution/projectImage.jpg",
+    "beforeImage": "pages/02_VFX/01_DNEG/02_goatbusters/projectImage.webp",
+    "afterImage": "pages/02_VFX/01_DNEG/03_gmc-hummer-ev-quiet-revolution/projectImage.webp",
     "beforeLabel": "Raw Plate with Rig/Wires",
     "afterLabel": "Clean Inpainted Plate"
   },
@@ -24,8 +24,8 @@
     "outputs": "Depth Map, Normal Pass, Relit Beauty Pass",
     "nodesUsed": ["Marigold Depth", "IC-Light", "VHS Video Helper", "RGThree"],
     "hasBeforeAfter": true,
-    "beforeImage": "pages/02_VFX/02_The-Mill/12_buschlight/projectImage.jpg",
-    "afterImage": "pages/02_VFX/02_The-Mill/10_adidas/projectImage.jpg",
+    "beforeImage": "pages/02_VFX/02_The-Mill/12_buschlight/projectImage.webp",
+    "afterImage": "pages/02_VFX/02_The-Mill/10_adidas/projectImage.webp",
     "beforeLabel": "Flat Studio Lighting",
     "afterLabel": "Dramatic Rim & Key Light"
   }

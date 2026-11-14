@@ -48,7 +48,7 @@ python install.py --onnxruntime cuda
     <p>By specifying <code>--onnxruntime cuda</code>, the installer configures TensorRT and CUDA execution providers for real-time inference on NVIDIA GPUs. If using DirectML on AMD GPUs, pass <code>--onnxruntime directml</code>.</p>
   </div>
   <div class="col-media">
-    <img src="cover.png" alt="FaceFusion Terminal Launch">
+    <img src="cover.webp" alt="FaceFusion Terminal Launch">
   </div>
 </div>
 

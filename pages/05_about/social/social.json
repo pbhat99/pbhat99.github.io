@@ -1,7 +1,7 @@
 [
   {
     "name": "LinkedIn",
-    "image": "linkedin.png",
+    "image": "linkedin.webp",
     "link": "https://www.linkedin.com/in/prasannakumar-t-bhat"
   },
   {
@@ -11,12 +11,12 @@
   },
   {
     "name": "Vimeo",
-    "image": "vimeo.png",
+    "image": "vimeo.webp",
     "link": "https://vimeo.com/835414002"
   },
   {
     "name": "IMDb",
-    "image": "imdb.png",
+    "image": "imdb.webp",
     "link": "https://www.imdb.com"
   },
   {
@@ -26,7 +26,8 @@
   },
   {
     "name": "Instagram",
-    "image": "instagram.png",
+    "image": "instagram.webp",
     "link": "https://www.instagram.com"
   }
 ]
+

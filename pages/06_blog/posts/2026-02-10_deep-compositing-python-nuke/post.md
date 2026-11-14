@@ -59,7 +59,7 @@ build_deep_holdout_rig()
     <p>Always combine multiple deep volumes using <code>DeepMerge</code> before converting down to flat 2D raster images. Keeping data in Deep space until the final beauty integration preserves sub-pixel optical thickness.</p>
   </div>
   <div class="col-media">
-    <img src="cover.jpg" alt="Deep Sample Breakdown">
+    <img src="cover.webp" alt="Deep Sample Breakdown">
   </div>
 </div>
 
