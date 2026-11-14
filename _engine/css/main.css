@@ -669,7 +669,8 @@ button {
   100% { transform: rotate(360deg); }
 }
 
-.project-tile:hover .tile-circling-border {
+.project-tile:hover .tile-circling-border,
+.blog-card:hover .tile-circling-border {
   opacity: 1;
 }
 

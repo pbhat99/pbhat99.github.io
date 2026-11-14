@@ -1,0 +1,16 @@
+{
+  "title": "Camera Projections in Nuke: The Technical Guide",
+  "date": "2026-03-15",
+  "category": "Nuke & VFX",
+  "tags": [
+    "Nuke",
+    "Camera Projection",
+    "Matte Painting",
+    "Compositing",
+    "3D"
+  ],
+  "subheading": "Comprehensive breakdown of camera projections in Nuke, handling lens distortion, overscan matrices, and spherical UV unwrapping.",
+  "thumbnail": "cover.jpg",
+  "author": "Prasannakumar T Bhat",
+  "readTime": "8 min read"
+}

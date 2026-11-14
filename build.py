@@ -1,6 +1,9 @@
 import os
 import re
 import json
+import html
+import yaml
+import markdown
 
 def slugify(text):
     text = text.lower()
@@ -677,6 +680,24 @@ def sync_all():
     gallery_dir = os.path.join(photo_dir, "gallery")
     photo_bg_img_html, photo_bg_overlay_html, _, _ = get_page_background_and_overlay(photo_dir)
 
+    # Read Photography content.json if present
+    photo_page_info = {
+        "title": "Photography & 360° Panoramas",
+        "description": "Drop photos into <code>pages/04_photography/gallery/</code> to automatically add new gallery stills."
+    }
+    photo_content_json = os.path.join(photo_dir, "content.json")
+    if os.path.exists(photo_content_json):
+        try:
+            with open(photo_content_json, "r", encoding="utf-8") as f:
+                photo_page_info.update(json.load(f))
+        except Exception:
+            pass
+
+    photo_title = photo_page_info.get("title", "Photography & 360° Panoramas")
+    photo_desc = photo_page_info.get("description", "")
+    photo_title_inner = photo_title if photo_title else '&nbsp;'
+    photo_desc_inner = photo_desc if photo_desc else ''
+
     photo_files = sorted([f for f in os.listdir(gallery_dir) if os.path.splitext(f)[1].lower() in valid_img_exts]) if os.path.exists(gallery_dir) else []
     photo_cards_html = []
     for pf in photo_files:
@@ -695,7 +716,7 @@ def sync_all():
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Photography & 360 Panoramas | Pra - Motions</title>
+  <title>{photo_title} | Pra - Motions</title>
   <link rel="icon" type="image/png" href="_engine/images/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,700&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="_engine/css/main.css">
@@ -711,10 +732,8 @@ def sync_all():
   <main style="padding-block: clamp(24px, 4vw, 56px);">
     <div class="container-wide">
       <div class="section-header">
-        <h1 class="section-title">Photography & 360° Panoramas</h1>
-        <p class="section-desc">
-          Drop photos into <code>pages/04_photography/gallery/</code> to automatically add new gallery stills.
-        </p>
+        <h1 class="section-title">{photo_title_inner}</h1>
+        <p class="section-desc">{photo_desc_inner}</p>
       </div>
 
       <div class="panorama-card">
@@ -1106,13 +1125,31 @@ def sync_all():
     ai_dir = "pages/03_ai-comfy"
     ai_bg_img_html, ai_bg_overlay_html, _, _ = get_page_background_and_overlay(ai_dir)
 
+    # Read AI / Comfy content.json if present
+    ai_page_info = {
+        "title": "ComfyUI Pipelines & AI Toolsets",
+        "description": "Bridging the gap between cutting-edge Diffusion models and film-grade visual effects pipelines. Custom ComfyUI node workflows, automated plate inpainting, and depth-guided dynamic relighting."
+    }
+    ai_content_json = os.path.join(ai_dir, "content.json")
+    if os.path.exists(ai_content_json):
+        try:
+            with open(ai_content_json, "r", encoding="utf-8") as f:
+                ai_page_info.update(json.load(f))
+        except Exception:
+            pass
+
+    ai_title = ai_page_info.get("title", "ComfyUI Pipelines & AI Toolsets")
+    ai_desc = ai_page_info.get("description", "")
+    ai_title_inner = ai_title if ai_title else '&nbsp;'
+    ai_desc_inner = ai_desc if ai_desc else ''
+
     ai_html = f'''<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI & ComfyUI Pipelines | Pra - Motions</title>
-  <meta name="description" content="AI Generative Pipelines, Custom ComfyUI Nodes, and VFX Inpainting Toolsets by Prasannakumar T Bhat.">
+  <title>{ai_title} | Pra - Motions</title>
+  <meta name="description" content="{ai_desc}">
   <link rel="icon" type="image/png" href="_engine/images/logo.png">
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1134,10 +1171,8 @@ def sync_all():
       
       <!-- Page Header -->
       <div class="section-header">
-        <h1 class="section-title">ComfyUI Pipelines & AI Toolsets</h1>
-        <p class="section-desc">
-          Bridging the gap between cutting-edge Diffusion models and film-grade visual effects pipelines. Custom ComfyUI node workflows, automated plate inpainting, and depth-guided dynamic relighting.
-        </p>
+        <h1 class="section-title">{ai_title_inner}</h1>
+        <p class="section-desc">{ai_desc_inner}</p>
       </div>
 
       <!-- Production ComfyUI Workflow Architecture -->
@@ -1255,13 +1290,233 @@ def sync_all():
     blog_dir = "pages/06_blog"
     blog_bg_img_html, blog_bg_overlay_html, _, _ = get_page_background_and_overlay(blog_dir)
 
+    # 1. Read Blog content.json (title, description, overlayOpacity)
+    blog_page_info = {
+        "title": "Technical Blog & Guides",
+        "description": "Practical setups, automation scripts, compositing breakdowns, and workflow optimization for VFX & AI artists."
+    }
+    blog_content_json = os.path.join(blog_dir, "content.json")
+    if os.path.exists(blog_content_json):
+        try:
+            with open(blog_content_json, "r", encoding="utf-8") as f:
+                blog_page_info.update(json.load(f))
+        except Exception:
+            pass
+
+    blog_title = blog_page_info.get("title", "Technical Blog & Guides")
+    blog_desc = blog_page_info.get("description", "")
+    blog_title_inner = blog_title if blog_title else '&nbsp;'
+    blog_desc_inner = blog_desc if blog_desc else ''
+
+    # 2. Discover and Parse all Dated Post Folders in pages/06_blog/posts/
+    posts_base_dir = os.path.join(blog_dir, "posts")
+    parsed_posts = []
+
+    month_names = ["January", "February", "March", "April", "May", "June",
+                   "July", "August", "September", "October", "November", "December"]
+
+    if os.path.exists(posts_base_dir):
+        post_subdirs = sorted([d for d in os.listdir(posts_base_dir) if os.path.isdir(os.path.join(posts_base_dir, d))], reverse=True)
+        for folder_name in post_subdirs:
+            folder_path = os.path.join(posts_base_dir, folder_name)
+            
+            # Post Metadata
+            post_meta = {
+                "title": format_title_from_filename(folder_name),
+                "date": "2026-01-01",
+                "category": "General",
+                "tags": [],
+                "subheading": "",
+                "thumbnail": "",
+                "author": "Prasannakumar T Bhat",
+                "readTime": "5 min read"
+            }
+
+            # Date extraction from folder name: YYYY-MM-DD...
+            date_match = re.match(r'^(\d{4})-(\d{2})-(\d{2})', folder_name)
+            if date_match:
+                post_meta["date"] = f"{date_match.group(1)}-{date_match.group(2)}-{date_match.group(3)}"
+
+            # Load post.json if present
+            post_json_path = os.path.join(folder_path, "post.json")
+            if os.path.exists(post_json_path):
+                try:
+                    with open(post_json_path, "r", encoding="utf-8") as f:
+                        post_meta.update(json.load(f))
+                except Exception:
+                    pass
+
+            # Read post.md content
+            md_content = ""
+            for md_cand in ["post.md", "index.md", "article.md", "README.md"]:
+                md_p = os.path.join(folder_path, md_cand)
+                if os.path.exists(md_p):
+                    with open(md_p, "r", encoding="utf-8") as f:
+                        md_content = f.read()
+                    break
+
+            # If metadata was in YAML frontmatter in post.md
+            if md_content.startswith("---"):
+                parts = md_content.split("---", 2)
+                if len(parts) >= 3:
+                    try:
+                        frontmatter = yaml.safe_load(parts[1])
+                        if isinstance(frontmatter, dict):
+                            post_meta.update(frontmatter)
+                            md_content = parts[2].strip()
+                    except Exception:
+                        pass
+
+            # Resolve thumbnail image
+            thumbnail_path = ""
+            if post_meta.get("thumbnail"):
+                cand_thumb = os.path.join(folder_path, post_meta["thumbnail"])
+                if os.path.exists(cand_thumb):
+                    thumbnail_path = cand_thumb.replace("\\", "/")
+                elif os.path.exists(post_meta["thumbnail"]):
+                    thumbnail_path = post_meta["thumbnail"].replace("\\", "/")
+
+            if not thumbnail_path:
+                for img_cand in ["cover.jpg", "cover.png", "cover.webp", "thumbnail.jpg", "thumbnail.png"]:
+                    p = os.path.join(folder_path, img_cand)
+                    if os.path.exists(p):
+                        thumbnail_path = p.replace("\\", "/")
+                        break
+
+            if not thumbnail_path:
+                # Fallback to any image in post folder
+                for f in sorted(os.listdir(folder_path)):
+                    if os.path.splitext(f)[1].lower() in valid_img_exts:
+                        thumbnail_path = f"{folder_path}/{f}".replace("\\", "/")
+                        break
+
+            # Parse date for Year and Month
+            post_date = post_meta.get("date", "2026-01-01")
+            d_parts = post_date.split("-")
+            year_str = d_parts[0] if len(d_parts) > 0 else "2026"
+            month_idx = int(d_parts[1]) - 1 if len(d_parts) > 1 and d_parts[1].isdigit() else 0
+            month_name = month_names[month_idx] if 0 <= month_idx < 12 else "January"
+
+            # Render Markdown into HTML
+            rendered_html = ""
+            if md_content:
+                # 1. Process relative image paths: e.g. src="image.png" -> src="pages/06_blog/posts/.../image.png"
+                def fix_md_img(m):
+                    alt, src = m.group(1), m.group(2)
+                    if not src.startswith("http") and not src.startswith("/") and not src.startswith("pages/"):
+                        src = f"{folder_path}/{src}".replace("\\", "/")
+                    return f'![{alt}]({src})'
+                fixed_md = re.sub(r'!\[([^\]]*)\]\(([^)]+)\)', fix_md_img, md_content)
+
+                # Process code blocks into collapsible cards with copy button
+                def process_markdown_code_blocks(md_text):
+                    code_pattern = re.compile(r'```([a-zA-Z0-9_-]*)\r?\n(.*?)```', re.DOTALL)
+                    def code_repl(m):
+                        lang = m.group(1).strip() or 'text'
+                        code_esc = html.escape(m.group(2).rstrip())
+                        return f'''<div class="code-block-card">
+  <div class="code-block-header">
+    <span class="code-lang-badge">{lang}</span>
+    <div class="code-actions">
+      <button type="button" class="btn-code-toggle" onclick="toggleCodeBlock(this)">Collapse</button>
+      <button type="button" class="btn-code-copy" onclick="copyCodeBlock(this)">Copy</button>
+    </div>
+  </div>
+  <pre><code class="language-{lang}">{code_esc}</code></pre>
+</div>'''
+                    return code_pattern.sub(code_repl, md_text)
+
+                md_with_code = process_markdown_code_blocks(fixed_md)
+                compiled_html = markdown.markdown(md_with_code, extensions=['tables'])
+
+                # Also fix any <img src="relative"> in html:
+                def fix_html_img(m):
+                    pfx, src, sfx = m.group(1), m.group(2), m.group(3)
+                    if not src.startswith("http") and not src.startswith("/") and not src.startswith("pages/"):
+                        src = f"{folder_path}/{src}".replace("\\", "/")
+                    return f'{pfx}{src}{sfx}'
+                rendered_html = re.sub(r'(<img[^>]+src=[\'"])([^\'"]+)([\'"][^>]*>)', fix_html_img, compiled_html)
+
+            # Generate Post ID / slug
+            post_id = slugify(folder_name)
+            slug = re.sub(r'^\d{4}-\d{2}-\d{2}[-_]*', '', folder_name) or post_id
+
+            parsed_posts.append({
+                "id": post_id,
+                "slug": slug,
+                "folder": folder_path.replace("\\", "/"),
+                "title": post_meta.get("title", ""),
+                "date": post_date,
+                "year": year_str,
+                "month_name": month_name,
+                "category": post_meta.get("category", "General"),
+                "tags": post_meta.get("tags", []),
+                "subheading": post_meta.get("subheading", ""),
+                "thumbnail": thumbnail_path,
+                "author": post_meta.get("author", "Prasannakumar T Bhat"),
+                "readTime": post_meta.get("readTime", "5 min read"),
+                "rendered_html": rendered_html
+            })
+
+    # Sort parsed posts descending by date
+    parsed_posts.sort(key=lambda x: x["date"], reverse=True)
+
+    # 3. Build Tree Data: Year -> Month -> Posts
+    tree_hierarchy = {}
+    categories_set = set()
+    for p in parsed_posts:
+        y = p["year"]
+        m = p["month_name"]
+        if y not in tree_hierarchy:
+            tree_hierarchy[y] = {}
+        if m not in tree_hierarchy[y]:
+            tree_hierarchy[y][m] = []
+        tree_hierarchy[y][m].append(p)
+        if p.get("category"):
+            categories_set.add(p["category"])
+
+    tree_items_html = []
+    for y in sorted(tree_hierarchy.keys(), reverse=True):
+        year_total = sum(len(tree_hierarchy[y][m]) for m in tree_hierarchy[y])
+        months_html = []
+        for m in sorted(tree_hierarchy[y].keys()):
+            m_count = len(tree_hierarchy[y][m])
+            months_html.append(f'''
+              <li class="tree-item tree-month" data-year="{y}" data-month="{m}" onclick="filterByMonth('{y}', '{m}')">
+                <span class="tree-left-wrap">
+                  <span class="tree-bullet">&bull;</span>
+                  <span class="tree-label">{m}</span>
+                </span>
+                <span class="tree-count">{m_count}</span>
+              </li>''')
+
+        tree_items_html.append(f'''
+          <li class="tree-item tree-year open" data-year="{y}">
+            <div class="tree-node" onclick="toggleTreeNode(this, '{y}')">
+              <span class="tree-left-wrap">
+                <span class="tree-arrow">&#9660;</span>
+                <span class="tree-label">{y}</span>
+              </span>
+              <span class="tree-count">{year_total}</span>
+            </div>
+            <ul class="tree-children">
+              {"".join(months_html)}
+            </ul>
+          </li>''')
+
+    categories_pills = ['<button type="button" class="filter-pill active" onclick="filterByCategory(\'all\')">All</button>']
+    for cat in sorted(categories_set):
+        categories_pills.append(f'<button type="button" class="filter-pill" onclick="filterByCategory(\'{cat}\')">{cat}</button>')
+
+    posts_json_str = json.dumps(parsed_posts)
+
     blog_html = f'''<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Technical Blog & Guides | Pra - Motions</title>
-  <meta name="description" content="Technical Guides on ComfyUI portable setup, custom nodes, FaceFusion, and VFX scripting by Prasannakumar T Bhat.">
+  <title>{blog_title} | Pra - Motions</title>
+  <meta name="description" content="{blog_desc}">
   <link rel="icon" type="image/png" href="_engine/images/logo.png">
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1271,23 +1526,8 @@ def sync_all():
   <link rel="stylesheet" href="_engine/css/main.css">
   <link rel="stylesheet" href="_engine/css/components.css">
   <link rel="stylesheet" href="_engine/css/responsive.css">
-  <style>
-    pre {{
-      background: var(--bg-secondary);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-sm);
-      padding: 16px;
-      overflow-x: auto;
-      font-family: var(--font-mono);
-      font-size: 0.85rem;
-      color: var(--accent-primary);
-      margin-block: 12px;
-    }}
-    code {{
-      font-family: var(--font-mono);
-      color: var(--accent-hover);
-    }}
-  </style>
+  <link rel="stylesheet" href="_engine/css/prism.css">
+  <link rel="stylesheet" href="_engine/css/blog.css">
 </head>
 <body>
   {blog_bg_img_html}
@@ -1295,117 +1535,142 @@ def sync_all():
 
 {generate_nav_html("blog")}
 
-  <main style="padding-block: clamp(36px, 6vw, 72px);">
-    <div class="container" style="max-width: 860px;">
+  <main style="padding-block: clamp(36px, 5vw, 64px);">
+    <div class="container-wide">
       
       <!-- Page Header -->
       <div class="section-header">
-        <h1 class="section-title">Technical Blog</h1>
-        <p class="section-desc">
-          Practical setups, automation scripts, and workflow optimization for visual effects and generative AI pipelines.
-        </p>
+        <h1 class="section-title">{blog_title_inner}</h1>
+        <p class="section-desc">{blog_desc_inner}</p>
       </div>
 
-      <!-- Article 1: ComfyUI Portable -->
-      <article id="comfyui-portable-custom-nodes" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: clamp(24px, 4vw, 36px); margin-bottom: 40px;">
-        <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px;">
-          <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent-primary);">28 NOV 2025</span>
-          <span style="color: var(--text-subtle);">&bull;</span>
-          <span style="font-size: 0.8rem; color: var(--text-muted);">ComfyUI / Pipeline</span>
-        </div>
-        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 16px;">ComfyUI Portable with Production Custom Nodes</h2>
+      <!-- Blog Layout: Sidebar Tree + 3-Tile Grid -->
+      <div class="blog-layout">
         
-        <div style="margin-bottom: 20px; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border-subtle);">
-          <img src="pages/06_blog/posts/blog_img_2.png" alt="ComfyUI Node Graph Screenshot" style="width: 100%; object-fit: contain; background: #000;" data-lightbox data-caption="ComfyUI Production Node Graph Pipeline">
-        </div>
+        <!-- Left Tree View Archive Sidebar -->
+        <aside class="blog-sidebar">
+          <div class="blog-tree-card">
+            <div class="tree-header">
+              <h3 class="tree-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                Archive
+              </h3>
+              <button type="button" class="tree-reset-btn" onclick="resetBlogFilter()">Reset</button>
+            </div>
 
-        <div style="font-size: 0.95rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 14px; line-height: 1.7;">
-          <p>
-            Download and extract the latest standalone portable release from GitHub:
-            <br>
-            <a href="https://github.com/comfyanonymous/ComfyUI/releases" target="_blank" rel="noopener" style="color: var(--accent-primary); text-decoration: underline;">
-              https://github.com/comfyanonymous/ComfyUI/releases
-            </a>
-          </p>
+            <ul class="tree-root">
+              <li class="tree-item tree-all active" onclick="filterByTree('all')">
+                <span class="tree-left-wrap">
+                  <span class="tree-label">All Posts</span>
+                </span>
+                <span class="tree-count">{len(parsed_posts)}</span>
+              </li>
+              {"".join(tree_items_html)}
+            </ul>
 
-          <h3 style="font-size: 1.15rem; color: #fff; margin-top: 10px;">Essential Production Custom Nodes:</h3>
-          
-          <p>Navigate to <code>ComfyUI/custom_nodes/</code> and clone the essential toolsets:</p>
+            <div class="tree-section-divider"></div>
 
-          <div>
-            <strong>1. ComfyUI Manager:</strong>
-            <pre>git clone https://github.com/ltdrdata/ComfyUI-Manager comfyui-manager</pre>
+            <div class="tree-categories-wrap">
+              <h4 class="tree-subtitle">Categories</h4>
+              <div class="tree-pill-list">
+                {"".join(categories_pills)}
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Main Blog Area: Post Grid & Pagination -->
+        <section class="blog-content-area">
+          <div class="blog-grid" id="blogGrid">
+            <!-- Populated dynamically by blog.js with initial server-side fallback -->
           </div>
 
-          <div>
-            <strong>2. RGThree (Workflow Routing & Mute Bypasses):</strong>
-            <pre>git clone https://github.com/rgthree/rgthree-comfy.git</pre>
+          <!-- Pagination Controls -->
+          <div class="blog-pagination" id="blogPagination">
+            <button type="button" class="page-nav-btn prev-btn" id="prevPageBtn" onclick="changePage(-1)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+              <span>Previous</span>
+            </button>
+            
+            <div class="page-numbers-wrap" id="pageNumbers"></div>
+
+            <button type="button" class="page-nav-btn next-btn" id="nextPageBtn" onclick="changePage(1)">
+              <span>Next</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
           </div>
+        </section>
 
-          <div>
-            <strong>3. Video Helper Suite (VHS):</strong>
-            <pre>git clone https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git</pre>
-          </div>
-
-          <div>
-            <strong>4. CrysTools (Resource Monitor HUD):</strong>
-            <pre>git clone https://github.com/crystian/comfyui-crystools.git</pre>
-          </div>
-
-          <div>
-            <strong>5. Procedural & Advanced Math Nodes:</strong>
-            <pre>git clone https://github.com/melMass/comfy_mtb.git
-git clone https://github.com/kijai/ComfyUI-KJNodes.git</pre>
-          </div>
-
-          <div>
-            <strong>6. Use Everywhere (Wireless Node Execution):</strong>
-            <pre>git clone https://github.com/chrisgoringe/cg-use-everywhere</pre>
-          </div>
-        </div>
-      </article>
-
-      <!-- Article 2: FaceFusion -->
-      <article id="facefusion-windows-portable" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: clamp(24px, 4vw, 36px);">
-        <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px;">
-          <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent-primary);">18 JUN 2025</span>
-          <span style="color: var(--text-subtle);">&bull;</span>
-          <span style="font-size: 0.8rem; color: var(--text-muted);">Deep Learning / Tools</span>
-        </div>
-        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 16px;">Steps to Install FaceFusion 3 on Windows (Portable)</h2>
-        
-        <div style="margin-bottom: 20px; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border-subtle);">
-          <img src="pages/06_blog/posts/blog_img_5.png" alt="FaceFusion Installation UI" style="width: 100%; object-fit: contain; background: #000;" data-lightbox data-caption="FaceFusion Portable Interface">
-        </div>
-
-        <div style="font-size: 0.95rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 14px; line-height: 1.7;">
-          <p>
-            Clean portable setup using isolated Python virtual environments:
-          </p>
-          <pre>git clone https://github.com/FaceFusion/FaceFusion.git
-cd FaceFusion
-python -m venv myenv
-myenv\\Scripts\\activate
-python install.py --onnxruntime cuda</pre>
-          <p>
-            Launch the interactive GUI:
-          </p>
-          <pre>python facefusion.py run</pre>
-        </div>
-      </article>
+      </div>
 
     </div>
   </main>
 
-  <footer class="site-footer">
-    <div class="container-wide">
-      <div class="footer-bottom">
-        <div>&copy; 2026 Prasannakumar T Bhat (pbhat99). All rights reserved.</div>
-        <div style="font-family: var(--font-mono); font-size: 0.78rem;">Hosted on GitHub Pages &bull; pbhat99.github.io</div>
+  <!-- Full Post Reader Modal (Expanded Reading View) -->
+  <div id="blogReaderOverlay" class="blog-reader-overlay" aria-hidden="true">
+    <div class="blog-reader-dialog" role="dialog" aria-modal="true">
+      
+      <div class="blog-reader-topbar">
+        <span class="reader-category-pill" id="readerCategory">Category</span>
+        <button type="button" class="reader-close-btn" onclick="closePostModal()" title="Close (Esc)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
       </div>
-    </div>
-  </footer>
 
+      <article class="blog-reader-content">
+        <header class="reader-header">
+          <h1 class="reader-title" id="readerTitle">Title</h1>
+          <p class="reader-subheading" id="readerSubheading">Subheading</p>
+          <div class="reader-meta">
+            <span id="readerDate">Date</span>
+            <span>&bull;</span>
+            <span id="readerReadTime">Read Time</span>
+            <span>&bull;</span>
+            <span id="readerAuthor">Author</span>
+          </div>
+          <div class="reader-tags" id="readerTags"></div>
+        </header>
+
+        <div class="reader-hero-image-wrap" id="readerHeroWrap">
+          <img id="readerHeroImg" src="" alt="Hero Image" class="reader-hero-img">
+        </div>
+
+        <div class="reader-body" id="readerBody"></div>
+
+        <!-- Bottom Post Navigation: Move to Previous & Next Post -->
+        <nav class="reader-footer-nav">
+          <button type="button" class="reader-nav-btn prev-post-btn" id="readerPrevBtn" onclick="navigatePost(-1)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            <div class="btn-text-wrap">
+              <span class="nav-sub">Previous Post</span>
+              <span class="nav-title" id="readerPrevTitle">Prev Title</span>
+            </div>
+          </button>
+
+          <button type="button" class="reader-close-bottom-btn" onclick="closePostModal()">
+            Back to All Posts
+          </button>
+
+          <button type="button" class="reader-nav-btn next-post-btn" id="readerNextBtn" onclick="navigatePost(1)">
+            <div class="btn-text-wrap">
+              <span class="nav-sub">Next Post</span>
+              <span class="nav-title" id="readerNextTitle">Next Title</span>
+            </div>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+        </nav>
+
+      </article>
+
+    </div>
+  </div>
+
+  <script id="blogPostsData" type="application/json">
+{posts_json_str}
+  </script>
+
+  <script src="_engine/js/prism.js"></script>
+  <script src="_engine/js/blog.js"></script>
   <script type="module" src="_engine/js/main.js"></script>
 
 {BACK_TO_TOP_HTML}
@@ -1414,7 +1679,7 @@ python install.py --onnxruntime cuda</pre>
 '''
     with open("blog.html", "w", encoding="utf-8") as f:
         f.write(blog_html)
-    print("  -> Updated blog.html (Nav: VFX, Technical Guides)")
+    print("  -> Updated blog.html (Nav: Blog, 3-Tile Grid, Archive Tree, Modal Reader, Code Highlights)")
 
     print("\nSUCCESS: All pages synchronized cleanly!")
 

@@ -1,0 +1,15 @@
+{
+  "title": "ComfyUI Portable Setup & Production Custom Nodes Guide",
+  "date": "2025-11-28",
+  "category": "AI / Generative",
+  "tags": [
+    "ComfyUI",
+    "Custom Nodes",
+    "VFX Pipeline",
+    "Python"
+  ],
+  "subheading": "A battle-tested production guide to setting up a zero-bloat portable ComfyUI installation with essential custom nodes for VFX artists.",
+  "thumbnail": "cover.png",
+  "author": "Prasannakumar T Bhat",
+  "readTime": "6 min read"
+}
