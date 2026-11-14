@@ -1,6 +1,7 @@
 /**
  * Photography & 360 Panorama Interactive Controller
- * Fullscreen Photo Viewer & Fullscreen 360 WebGL Panorama Viewer with Bottom Filmstrips
+ * Tab Switching (Panos / Photos), Fullscreen Photo Viewer & Fullscreen 360 WebGL Panorama Viewer
+ * with Bottom Filmstrips and Bulletproof Close Triggers
  */
 
 (function () {
@@ -36,9 +37,50 @@
     buildPhotoFilmstrip();
     buildPanoFilmstrip();
 
-    // 3. Attach Global Keyboard Navigation
+    // 3. Attach Direct Close Button Click Handlers
+    const photoCloseBtn = document.getElementById('photoViewerCloseBtn');
+    if (photoCloseBtn) {
+      photoCloseBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        closePhotoViewer();
+      });
+    }
+
+    const panoCloseBtn = document.getElementById('panoViewerCloseBtn');
+    if (panoCloseBtn) {
+      panoCloseBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        closePanoViewer();
+      });
+    }
+
+    // 4. Attach Global Keyboard Navigation (Esc, Left, Right)
     document.addEventListener('keydown', handleKeyNavigation);
   }
+
+  // --------------------------------------------------------------------------
+  // Tab Switching Controller (Pano 1st Tab, Photos 2nd Tab)
+  // --------------------------------------------------------------------------
+  window.switchGalleryTab = function (tab) {
+    const panosSec = document.getElementById('panos-section');
+    const photosSec = document.getElementById('photos-section');
+    const tabPanos = document.getElementById('tabBtnPanos');
+    const tabPhotos = document.getElementById('tabBtnPhotos');
+
+    if (tab === 'panos') {
+      if (panosSec) panosSec.style.display = 'block';
+      if (photosSec) photosSec.style.display = 'none';
+      if (tabPanos) tabPanos.classList.add('active');
+      if (tabPhotos) tabPhotos.classList.remove('active');
+    } else {
+      if (panosSec) panosSec.style.display = 'none';
+      if (photosSec) photosSec.style.display = 'block';
+      if (tabPanos) tabPanos.classList.remove('active');
+      if (tabPhotos) tabPhotos.classList.add('active');
+    }
+  };
 
   // --------------------------------------------------------------------------
   // Filmstrip Builders
@@ -75,7 +117,10 @@
 
     const modal = document.getElementById('photoViewerModal');
     if (modal) {
-      modal.classList.add('active');
+      modal.style.display = 'flex';
+      requestAnimationFrame(() => {
+        modal.classList.add('active');
+      });
       document.body.style.overflow = 'hidden';
     }
   };
@@ -84,6 +129,9 @@
     const modal = document.getElementById('photoViewerModal');
     if (modal) {
       modal.classList.remove('active');
+      setTimeout(() => {
+        modal.style.display = 'none';
+      }, 200);
       document.body.style.overflow = '';
     }
   };
@@ -152,7 +200,10 @@
 
     const modal = document.getElementById('panoViewerModal');
     if (modal) {
-      modal.classList.add('active');
+      modal.style.display = 'flex';
+      requestAnimationFrame(() => {
+        modal.classList.add('active');
+      });
       document.body.style.overflow = 'hidden';
     }
 
@@ -163,6 +214,9 @@
     const modal = document.getElementById('panoViewerModal');
     if (modal) {
       modal.classList.remove('active');
+      setTimeout(() => {
+        modal.style.display = 'none';
+      }, 200);
       document.body.style.overflow = '';
     }
 
@@ -219,7 +273,7 @@
       });
     }
 
-    // Load Pannellum Viewer
+    // Load Pannellum Scene
     loadPannellumScene(pano.webp);
   }
 

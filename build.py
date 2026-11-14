@@ -23,7 +23,7 @@ def get_page_background_and_overlay(page_dir):
     Finds the background image for a page folder, falling back to pages/01_home/background.jpg.
     Also resolves overlayOpacity (0 = full image display, 100 = solid dark #0e1733), falling back to home's setting.
     """
-    bg_candidates = ["background.jpg", "background.jpeg", "background.png", "background.webp"]
+    bg_candidates = ["background.webp", "background.jpg", "background.jpeg", "background.png"]
     resolved_bg = None
     
     # 1. Look in page_dir first
@@ -720,31 +720,18 @@ def sync_all():
     def process_photo_collection(dir_path):
         if not os.path.exists(dir_path):
             return []
-        valid_src_exts = {'.jpg', '.jpeg', '.png', '.webp', '.avif', '.gif'}
-        files = sorted([f for f in os.listdir(dir_path) if os.path.splitext(f)[1].lower() in valid_src_exts and not f.startswith('.')])
 
-        items = []
-        processed_bases = set()
-        for f in files:
-            base, ext = os.path.splitext(f)
-            if base in processed_bases:
+        # 1. Convert any non-webp source image to webp and replace original file
+        from PIL import Image
+        for fname in os.listdir(dir_path):
+            if fname.startswith('.'):
                 continue
-
-            # Prefer original source format over generated webp if present
-            source_f = f
-            if ext.lower() == '.webp':
-                for cand_ext in ['.jpg', '.jpeg', '.png', '.avif']:
-                    if f'{base}{cand_ext}' in files:
-                        source_f = f'{base}{cand_ext}'
-                        break
-            processed_bases.add(base)
-            src_path = os.path.join(dir_path, source_f)
-            webp_path = os.path.join(dir_path, f'{base}.webp')
-
-            # Convert to WebP if missing or source file modified
-            if not os.path.exists(webp_path) or os.path.getmtime(src_path) > os.path.getmtime(webp_path):
+            base, ext = os.path.splitext(fname)
+            ext_lower = ext.lower()
+            if ext_lower in ('.jpg', '.jpeg', '.png', '.avif', '.gif', '.bmp', '.tiff'):
+                src_path = os.path.join(dir_path, fname)
+                webp_path = os.path.join(dir_path, f"{base}.webp")
                 try:
-                    from PIL import Image
                     with Image.open(src_path) as im:
                         if im.mode in ('RGBA', 'LA') or (im.mode == 'P' and 'transparency' in im.info):
                             im_conv = im.convert('RGBA')
@@ -752,15 +739,22 @@ def sync_all():
                         else:
                             im_conv = im.convert('RGB')
                             im_conv.save(webp_path, 'WEBP', quality=85, method=6)
-                    print(f"  [WebP] Converted {source_f} -> {base}.webp")
+                    print(f"  [WebP Conversion] Replaced {fname} -> {base}.webp")
+                    try:
+                        os.remove(src_path)
+                    except OSError as rm_err:
+                        print(f"  [Warning] Could not remove original {src_path}: {rm_err}")
                 except Exception as err:
                     print(f"  [WebP Error] {src_path}: {err}")
-                    webp_path = src_path
 
-            # Read dimensions
+        # 2. Read and index all .webp files
+        webp_files = sorted([f for f in os.listdir(dir_path) if f.lower().endswith('.webp') and not f.startswith('.')])
+        items = []
+        for f in webp_files:
+            base, _ = os.path.splitext(f)
+            webp_path = os.path.join(dir_path, f)
             w, h, aspect = 1920, 1080, 1.778
             try:
-                from PIL import Image
                 with Image.open(webp_path) as im:
                     w, h = im.size
                     aspect = round(w / h, 3)
@@ -769,8 +763,8 @@ def sync_all():
 
             items.append({
                 "id": slugify(base),
-                "filename": source_f,
-                "title": clean_photo_title(source_f),
+                "filename": f,
+                "title": clean_photo_title(f),
                 "webp": webp_path.replace("\\", "/"),
                 "width": w,
                 "height": h,
@@ -778,17 +772,41 @@ def sync_all():
             })
         return items
 
+    # Convert photography background.jpg to background.webp if present and delete original
+    photo_bg_jpg = os.path.join(photo_dir, "background.jpg")
+    photo_bg_webp = os.path.join(photo_dir, "background.webp")
+    if os.path.exists(photo_bg_jpg):
+        try:
+            from PIL import Image
+            with Image.open(photo_bg_jpg) as im:
+                im.convert('RGB').save(photo_bg_webp, 'WEBP', quality=85, method=6)
+            os.remove(photo_bg_jpg)
+            print("  [WebP] Converted & replaced photography background.jpg -> background.webp")
+        except Exception as bg_err:
+            print(f"  [WebP Error] {photo_bg_jpg}: {bg_err}")
+
     photos_list = process_photo_collection(photos_dir)
     panos_list = process_photo_collection(panos_dir)
 
     photos_json_str = json.dumps(photos_list)
     panos_json_str = json.dumps(panos_list)
 
-    # 1. Normal Photos HTML (Masonry with mixed aspect support)
+    def get_mondrian_class(idx, aspect):
+        if aspect <= 0.82:
+            return "mondrian-tall"
+        elif aspect >= 1.6 and (idx % 2 == 1 or idx == 0):
+            return "mondrian-wide"
+        elif aspect >= 1.9:
+            return "mondrian-wide"
+        else:
+            return "mondrian-standard"
+
+    # 1. Normal Photos HTML (Mondrian Style Mosaic Grid with 3-5 images horizontally)
     photo_tiles_html = []
     for idx, p in enumerate(photos_list):
+        m_class = get_mondrian_class(idx, p['aspect'])
         photo_tiles_html.append(f'''
-        <div class="photo-masonry-item">
+        <div class="photo-mondrian-item {m_class}">
           <article class="project-tile photo-tile" onclick="openPhotoViewer({idx})" title="{p['title']}">
             <div class="tile-circling-border" aria-hidden="true"></div>
             <div class="tile-inner">
@@ -856,33 +874,46 @@ def sync_all():
         <p class="section-desc">{photo_desc_inner}</p>
       </div>
 
-      <!-- SECTION 1: STILLS GALLERY (All-Aspect Support Mixed Masonry Layout) -->
-      <section class="photo-gallery-section" id="photos-section">
-        <div class="gallery-section-heading">
-          <h2 class="gallery-section-title">
-            <span>Stills & Photography Gallery</span>
-            <span class="gallery-section-count">{len(photos_list)}</span>
-          </h2>
-          <p class="gallery-section-subtitle">Mixed aspect ratio photography & cinematic plate captures</p>
-        </div>
+      <!-- Gallery Filter Tabs (1st: 360 Panos, 2nd: Photos) -->
+      <div class="gallery-tab-bar">
+        <button type="button" class="gallery-tab-btn active" id="tabBtnPanos" data-tab="panos" onclick="switchGalleryTab('panos')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
+          <span>360° Panoramas</span>
+          <span class="tab-pill-count">{len(panos_list)}</span>
+        </button>
 
-        <div class="photo-masonry-grid">
-          {"".join(photo_tiles_html)}
-        </div>
-      </section>
+        <button type="button" class="gallery-tab-btn" id="tabBtnPhotos" data-tab="photos" onclick="switchGalleryTab('photos')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Photos</span>
+          <span class="tab-pill-count">{len(photos_list)}</span>
+        </button>
+      </div>
 
-      <!-- SECTION 2: 360° PANORAMA ENVIRONMENTS (All 2:1 Images, 2 per Row) -->
+      <!-- TAB 1: 360° PANORAMA ENVIRONMENTS (Active by default, 2:1 Grid 2 per Row) -->
       <section class="photo-gallery-section" id="panos-section">
         <div class="gallery-section-heading">
           <h2 class="gallery-section-title">
             <span>360° Panoramic Environments</span>
             <span class="gallery-section-count">{len(panos_list)}</span>
           </h2>
-          <p class="gallery-section-subtitle">High-resolution equirectangular photospheres & HDRI probes (2:1 aspect)</p>
         </div>
 
         <div class="pano-grid">
           {"".join(pano_tiles_html)}
+        </div>
+      </section>
+
+      <!-- TAB 2: STILLS & PHOTOS (Mondrian Grid 3-5 Horizontally) -->
+      <section class="photo-gallery-section" id="photos-section" style="display: none;">
+        <div class="gallery-section-heading">
+          <h2 class="gallery-section-title">
+            <span>Stills & Photography</span>
+            <span class="gallery-section-count">{len(photos_list)}</span>
+          </h2>
+        </div>
+
+        <div class="photo-mondrian-grid">
+          {"".join(photo_tiles_html)}
         </div>
       </section>
 
@@ -897,7 +928,7 @@ def sync_all():
         <span class="viewer-counter" id="photoViewerCounter">1 / 1</span>
       </div>
       <div class="viewer-top-actions">
-        <button type="button" class="viewer-close-btn" onclick="closePhotoViewer()" aria-label="Close viewer" title="Close (Esc)">
+        <button type="button" class="viewer-close-btn" id="photoViewerCloseBtn" onclick="closePhotoViewer()" aria-label="Close viewer" title="Close (Esc)">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -941,7 +972,7 @@ def sync_all():
         <span class="viewer-counter" id="panoViewerCounter">1 / 1</span>
       </div>
       <div class="viewer-top-actions">
-        <button type="button" class="viewer-close-btn" onclick="closePanoViewer()" aria-label="Close viewer" title="Close (Esc)">
+        <button type="button" class="viewer-close-btn" id="panoViewerCloseBtn" onclick="closePanoViewer()" aria-label="Close viewer" title="Close (Esc)">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
