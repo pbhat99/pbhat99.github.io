@@ -572,8 +572,8 @@ button {
   padding: 0;
   z-index: 1;
   overflow: hidden;
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 20%);
-  mask-image: linear-gradient(to right, transparent 0%, black 20%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 40%);
+  mask-image: linear-gradient(to right, transparent 0%, black 40%);
 }
 
 .company-banner-logo-img {
