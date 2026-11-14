@@ -164,8 +164,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function handleScroll() {
     const scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-    const screenHeight = window.innerHeight || document.documentElement.clientHeight || 600;
-    if (scrollY > screenHeight) {
+    const threshold = Math.min(280, (window.innerHeight || 600) * 0.5);
+    if (scrollY > threshold) {
       backToTopBtn.classList.add('visible');
     } else {
       backToTopBtn.classList.remove('visible');

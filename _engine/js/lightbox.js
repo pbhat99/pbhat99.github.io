@@ -254,8 +254,34 @@ export function initLightbox() {
 
 export function openLightboxItems(items, startIndex = 0) {
   if (!lightboxOverlay) initLightbox();
-  if (window.openLightbox) {
-    window.openLightbox(items, startIndex);
+  if (!items || items.length === 0) return;
+  currentItems = items.map(it => {
+    if (typeof it === 'string') return { src: it, caption: '' };
+    return { src: it.src || it.url, caption: it.caption || it.alt || '' };
+  });
+  if (typeof open === 'function') {
+    open(startIndex);
+  }
+}
+
+// Immediate global exposure
+if (typeof window !== 'undefined') {
+  window.openLightbox = function (items, startIndex = 0) {
+    if (!lightboxOverlay) initLightbox();
+    openLightboxItems(items, startIndex);
+  };
+  window.scanLightboxTriggers = function () {
+    if (!lightboxOverlay) initLightbox();
+    scanLightboxTriggers(open);
+  };
+}
+
+// Auto-init on script load
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => initLightbox());
+  } else {
+    initLightbox();
   }
 }
 

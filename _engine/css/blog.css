@@ -511,15 +511,15 @@
 .blog-reader-overlay {
   position: fixed;
   inset: 0;
-  z-index: 9999;
+  z-index: 10000;
   background: rgba(10, 16, 36, 0.88);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   display: flex;
   justify-content: center;
-  align-items: flex-start;
-  overflow-y: auto;
-  padding: clamp(16px, 3vw, 48px) 16px;
+  align-items: center;
+  overflow: hidden; /* Overlay does NOT scroll, keeping flank cards rock-solid fixed vertically centered */
+  padding: 20px 16px;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease;
@@ -536,10 +536,27 @@
   border-radius: var(--radius-lg);
   max-width: 920px;
   width: 100%;
+  max-height: 92vh;
+  overflow-y: auto; /* Internal smooth scroll inside dialog */
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.85);
-  overflow: hidden;
   position: relative;
   animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.blog-reader-dialog::-webkit-scrollbar {
+  width: 8px;
+}
+.blog-reader-dialog::-webkit-scrollbar-track {
+  background: rgba(14, 23, 51, 0.6);
+}
+.blog-reader-dialog::-webkit-scrollbar-thumb {
+  background: rgba(249, 134, 3, 0.4);
+  border-radius: 4px;
+}
+.blog-reader-dialog::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-primary);
 }
 
 @keyframes modalSlideUp {
@@ -547,64 +564,41 @@
   to { transform: translateY(0) scale(1); opacity: 1; }
 }
 
-.blog-reader-topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 14px 24px;
-  border-bottom: 1px solid var(--border-subtle);
-  background: rgba(14, 23, 51, 0.96);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.reader-category-pill {
-  background: rgba(249, 134, 3, 0.15);
-  border: 1px solid var(--accent-primary);
-  color: var(--accent-primary);
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  padding: 4px 12px;
-  border-radius: 999px;
-  letter-spacing: 0.4px;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.reader-category-pill:hover {
-  background: var(--accent-primary);
-  color: #ffffff;
-  transform: scale(1.05);
-}
-
+/* Close button pinned to top-right of reader dialog */
 .reader-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 18px;
   background: rgba(255, 255, 255, 0.08);
-  border: none;
+  border: 1px solid var(--border-subtle);
   color: var(--text-main);
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all var(--transition-fast);
+  z-index: 25;
 }
 
 .reader-close-btn:hover {
   background: var(--accent-primary);
+  border-color: var(--accent-primary);
   color: #fff;
   transform: rotate(90deg);
 }
 
 .blog-reader-content {
-  padding: clamp(24px, 5vw, 48px);
+  padding: 24px clamp(20px, 4.5vw, 48px) 48px;
 }
 
 .reader-header {
-  margin-bottom: 28px;
+  margin-top: 0;
+  margin-bottom: 24px;
+  padding-right: 48px; /* Room for close button */
+}
 }
 
 .reader-title {
@@ -816,12 +810,13 @@
 
 .code-block-card pre {
   margin: 0;
-  padding: 16px 20px;
+  padding: 14px 18px;
   overflow-x: auto;
   font-family: var(--font-mono);
   font-size: 0.88rem;
   line-height: 1.6;
   background: transparent !important;
+  transition: max-height 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .code-block-card pre code {
@@ -830,13 +825,27 @@
   color: inherit;
 }
 
+/* Default Collapsed State: Shows ONLY 3 lines of code */
 .code-block-card.is-collapsed pre {
-  display: none;
+  max-height: 96px; /* Exactly 3 lines (3 * 1.6 * 14px ≈ 67px + 28px padding) */
+  overflow: hidden;
+  position: relative;
+}
+
+.code-block-card.is-collapsed pre::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 38px;
+  background: linear-gradient(to bottom, transparent, #070d1e);
+  pointer-events: none;
 }
 
 /* --------------------------------------------------------------------------
    Reader Footer Navigation (Move to Next and Previous Post)
-   Full area split 50/50 across previous and next post buttons
+   Full area split 50/50, 2 lines of post title with directional arrow
    -------------------------------------------------------------------------- */
 .reader-footer-nav {
   margin-top: 48px;
@@ -860,16 +869,40 @@
   background: var(--bg-secondary);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  padding: 16px 20px;
+  padding: 14px 20px;
   color: var(--text-main);
   display: flex;
   align-items: center;
   gap: 14px;
   cursor: pointer;
-  text-align: left;
   transition: all var(--transition-fast);
   min-width: 0;
   width: 100%;
+  min-height: 64px;
+}
+
+.prev-post-btn {
+  text-align: left;
+  justify-content: flex-start;
+}
+
+.next-post-btn {
+  text-align: right;
+  justify-content: flex-end;
+}
+
+.reader-nav-btn svg {
+  flex-shrink: 0;
+  color: var(--accent-primary);
+  transition: transform var(--transition-fast);
+}
+
+.prev-post-btn:hover:not(:disabled) svg {
+  transform: translateX(-4px);
+}
+
+.next-post-btn:hover:not(:disabled) svg {
+  transform: translateX(4px);
 }
 
 .reader-nav-btn:hover:not(:disabled) {
@@ -884,30 +917,60 @@
   cursor: not-allowed;
 }
 
-.next-post-btn {
-  text-align: right;
-  justify-content: flex-end;
-}
-
-.nav-sub {
-  font-size: 0.72rem;
-  color: var(--accent-primary);
-  text-transform: uppercase;
-  font-weight: 700;
-  display: block;
-  letter-spacing: 0.5px;
-}
-
 .nav-title {
   font-size: 0.95rem;
-  font-weight: 700;
+  font-weight: 600;
   color: #ffffff;
-  display: block;
-  white-space: nowrap;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* 2 lines of text */
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
+  word-break: break-word;
+  white-space: normal;
   max-width: 100%;
-  margin-top: 3px;
+}
+
+/* Floating Scroll-to-Top Button inside Reader Modal */
+.reader-back-to-top {
+  position: fixed;
+  bottom: 28px;
+  right: max(24px, calc(50vw - 440px));
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background: rgba(14, 23, 51, 0.95);
+  border: 1px solid var(--accent-primary);
+  color: var(--accent-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10020;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: opacity 0.25s ease, transform 0.25s ease, background 0.2s ease, border-color 0.2s ease;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 10px rgba(249, 134, 3, 0.3);
+}
+
+.reader-back-to-top.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.reader-back-to-top:hover {
+  background: var(--accent-primary);
+  color: #ffffff;
+  transform: translateY(-2px);
+}
+
+.reader-back-to-top svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  stroke-width: 2.5;
 }
 
 /* --------------------------------------------------------------------------

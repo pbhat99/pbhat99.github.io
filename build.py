@@ -1146,6 +1146,18 @@ def sync_all():
     ai_title_inner = ai_title.strip() if ai_title else '&nbsp;'
     ai_desc_inner = ai_desc.strip() if ai_desc else '&nbsp;'
 
+    # Resolve Before/After Inpaint Demo images
+    ba_before_img = "pages/02_VFX/01_PixelFrames/02_goatbusters/projectImage.jpg"
+    ba_after_img = "pages/02_VFX/01_PixelFrames/03_gmc-hummer-ev-quiet-revolution/projectImage.jpg"
+    for cand in ["pages/02_VFX/01_PixelFrames/02_goatbusters/projectImage.jpg", "pages/02_VFX/01_DNEG/02_goatbusters/projectImage.jpg"]:
+        if os.path.exists(cand):
+            ba_before_img = cand
+            break
+    for cand in ["pages/02_VFX/01_PixelFrames/03_gmc-hummer-ev-quiet-revolution/projectImage.jpg", "pages/02_VFX/01_DNEG/03_gmc-hummer-ev-quiet-revolution/projectImage.jpg"]:
+        if os.path.exists(cand):
+            ba_after_img = cand
+            break
+
     ai_html = f'''<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1205,11 +1217,11 @@ def sync_all():
         <div style="max-width: 900px; margin-inline: auto;">
           <div class="before-after-container">
             <div class="ba-image-layer ba-before-layer">
-              <img src="pages/02_VFX/01_DNEG/02_goatbusters/projectImage.jpg" alt="Raw Live Plate with Markers">
+              <img src="{ba_before_img}" alt="Raw Live Plate with Markers">
               <span class="ba-badge ba-badge-before">Raw Plate + Tracking Markers</span>
             </div>
             <div class="ba-image-layer ba-after-layer">
-              <img src="pages/02_VFX/01_DNEG/03_gmc-hummer-ev-quiet-revolution/projectImage.jpg" alt="AI Inpainted Clean Plate">
+              <img src="{ba_after_img}" alt="AI Inpainted Clean Plate">
               <span class="ba-badge ba-badge-after">AI Inpainted Clean Plate</span>
             </div>
             <div class="ba-handle">
@@ -1424,11 +1436,11 @@ def sync_all():
                     def code_repl(m):
                         lang = m.group(1).strip() or 'text'
                         code_esc = html.escape(m.group(2).rstrip())
-                        return f'''<div class="code-block-card">
+                        return f'''<div class="code-block-card is-collapsed">
   <div class="code-block-header">
     <span class="code-lang-badge">{lang}</span>
     <div class="code-actions">
-      <button type="button" class="btn-code-toggle" onclick="toggleCodeBlock(this)">Collapse</button>
+      <button type="button" class="btn-code-toggle" onclick="toggleCodeBlock(this)">Expand</button>
       <button type="button" class="btn-code-copy" onclick="copyCodeBlock(this)">Copy</button>
     </div>
   </div>
@@ -1637,12 +1649,17 @@ def sync_all():
 
     <div class="blog-reader-dialog" role="dialog" aria-modal="true">
       
-      <div class="blog-reader-topbar">
-        <span class="reader-category-pill" id="readerCategory" title="Filter by category">Category</span>
-        <button type="button" class="reader-close-btn" onclick="closePostModal()" title="Close (Esc)">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
-      </div>
+      <!-- Pinned Close Button (Topbar & Category pill removed, reduced top padding) -->
+      <button type="button" class="reader-close-btn" onclick="closePostModal()" title="Close (Esc)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+
+      <!-- Floating Scroll-to-Top Button inside Reader Modal -->
+      <button type="button" class="reader-back-to-top" id="readerBackToTop" onclick="scrollReaderToTop()" aria-label="Scroll to top" title="Scroll to top">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="18 15 12 9 6 15"></polyline>
+        </svg>
+      </button>
 
       <article class="blog-reader-content">
         <header class="reader-header">
@@ -1664,22 +1681,16 @@ def sync_all():
 
         <div class="reader-body" id="readerBody"></div>
 
-        <!-- Bottom Post Navigation: Move to Previous & Next Post (50/50 full area) -->
+        <!-- Bottom Post Navigation: Move to Previous & Next Post (50/50 full area, 2 lines with arrow) -->
         <nav class="reader-footer-nav">
-          <button type="button" class="reader-nav-btn prev-post-btn" id="readerPrevBtn" onclick="navigatePost(-1)">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
-            <div class="btn-text-wrap">
-              <span class="nav-sub">Previous Post</span>
-              <span class="nav-title" id="readerPrevTitle">Prev Title</span>
-            </div>
+          <button type="button" class="reader-nav-btn prev-post-btn" id="readerPrevBtn" onclick="navigatePost(-1)" title="Previous Post">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            <span class="nav-title" id="readerPrevTitle">Previous Post</span>
           </button>
 
-          <button type="button" class="reader-nav-btn next-post-btn" id="readerNextBtn" onclick="navigatePost(1)">
-            <div class="btn-text-wrap">
-              <span class="nav-sub">Next Post</span>
-              <span class="nav-title" id="readerNextTitle">Next Title</span>
-            </div>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          <button type="button" class="reader-nav-btn next-post-btn" id="readerNextBtn" onclick="navigatePost(1)" title="Next Post">
+            <span class="nav-title" id="readerNextTitle">Next Post</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </button>
         </nav>
 

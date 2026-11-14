@@ -59,14 +59,36 @@
       }
     });
 
-    // Close on overlay backdrop click
+    // Close on overlay backdrop click & mousewheel forward to dialog
     const overlay = document.getElementById('blogReaderOverlay');
+    const readerDialog = document.querySelector('.blog-reader-dialog');
+
     if (overlay) {
       overlay.addEventListener('click', function (e) {
         if (e.target === overlay) {
           closePostModal();
         }
       });
+
+      overlay.addEventListener('wheel', function (e) {
+        if (e.target === overlay && readerDialog) {
+          readerDialog.scrollTop += e.deltaY;
+        }
+      }, { passive: true });
+    }
+
+    // Scroll-to-top floating button inside post reader
+    if (readerDialog) {
+      readerDialog.addEventListener('scroll', function () {
+        const topBtn = document.getElementById('readerBackToTop');
+        if (topBtn) {
+          if (readerDialog.scrollTop > 220) {
+            topBtn.classList.add('visible');
+          } else {
+            topBtn.classList.remove('visible');
+          }
+        }
+      }, { passive: true });
     }
   }
 
@@ -367,9 +389,21 @@
     document.body.style.overflow = 'hidden';
     window.location.hash = '#' + (post.slug || post.id);
 
-    // Scroll reader dialog to top
+    // Scroll reader dialog to top immediately
     const dialog = overlay.querySelector('.blog-reader-dialog');
-    if (dialog) dialog.scrollTop = 0;
+    if (dialog) {
+      dialog.scrollTop = 0;
+      dialog.scrollTo({ top: 0, behavior: 'auto' });
+    }
+    const readerBackToTop = document.getElementById('readerBackToTop');
+    if (readerBackToTop) readerBackToTop.classList.remove('visible');
+  };
+
+  window.scrollReaderToTop = function () {
+    const dialog = document.querySelector('.blog-reader-dialog');
+    if (dialog) {
+      dialog.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   window.closePostModal = function () {
