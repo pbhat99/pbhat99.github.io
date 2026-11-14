@@ -682,16 +682,19 @@ def sync_all():
     print(f"  -> Updated vfx.html ({len(company_subdirs)} companies, {total_projects_count} projects, auto-sorted descending)")
 
     # --------------------------------------------------------------------------
-    # 3. SYNC PHOTOGRAPHY (pages/04_photography)
+    # 3. SYNC PHOTOGRAPHY (pages/04_photography -> photos/ and panos/)
     # --------------------------------------------------------------------------
     photo_dir = "pages/04_photography"
-    gallery_dir = os.path.join(photo_dir, "gallery")
+    photos_dir = os.path.join(photo_dir, "photos")
+    panos_dir = os.path.join(photo_dir, "panos")
+    os.makedirs(photos_dir, exist_ok=True)
+    os.makedirs(panos_dir, exist_ok=True)
     photo_bg_img_html, photo_bg_overlay_html, _, _ = get_page_background_and_overlay(photo_dir)
 
     # Read Photography content.json if present
     photo_page_info = {
-        "title": "Photography & 360° Panoramas",
-        "description": "Drop photos into <code>pages/04_photography/gallery/</code> to automatically add new gallery stills."
+        "title": "Photography & Panoramas",
+        "description": "High-resolution 360° environment captures, HDRI light probes, and cinematic stills gallery."
     }
     photo_content_json = os.path.join(photo_dir, "content.json")
     if os.path.exists(photo_content_json):
@@ -701,23 +704,130 @@ def sync_all():
         except Exception:
             pass
 
-    photo_title = photo_page_info.get("title", "Photography & 360° Panoramas")
+    photo_title = photo_page_info.get("title", "Photography & Panoramas")
     photo_desc = photo_page_info.get("description", "")
     photo_title_inner = photo_title.strip() if photo_title else '&nbsp;'
     photo_desc_inner = photo_desc.strip() if photo_desc else '&nbsp;'
 
-    photo_files = sorted([f for f in os.listdir(gallery_dir) if os.path.splitext(f)[1].lower() in valid_img_exts]) if os.path.exists(gallery_dir) else []
-    photo_cards_html = []
-    for pf in photo_files:
-        title = format_title_from_filename(pf)
-        photo_cards_html.append(f'''
-        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); overflow: hidden;">
-          <img src="{gallery_dir}/{pf}" alt="{title}" style="width: 100%; aspect-ratio: 4/3; object-fit: cover;" data-lightbox data-caption="{title}">
-          <div style="padding: 14px;">
-            <h3 style="font-size: 1rem; font-weight: 700;">{title}</h3>
-            <span style="font-size: 0.8rem; color: var(--text-subtle);">Photography Still</span>
-          </div>
+    def clean_photo_title(filename):
+        name_no_ext = os.path.splitext(filename)[0]
+        # Remove leading numbers and separators e.g. 001_, 01 -, etc.
+        clean = re.sub(r'^\d+[\s_-]*', '', name_no_ext)
+        clean = clean.replace('_', ' ').replace('-', ' ')
+        clean = ' '.join(clean.split())
+        return clean.strip() or name_no_ext
+
+    def process_photo_collection(dir_path):
+        if not os.path.exists(dir_path):
+            return []
+        valid_src_exts = {'.jpg', '.jpeg', '.png', '.webp', '.avif', '.gif'}
+        files = sorted([f for f in os.listdir(dir_path) if os.path.splitext(f)[1].lower() in valid_src_exts and not f.startswith('.')])
+
+        items = []
+        processed_bases = set()
+        for f in files:
+            base, ext = os.path.splitext(f)
+            if base in processed_bases:
+                continue
+
+            # Prefer original source format over generated webp if present
+            source_f = f
+            if ext.lower() == '.webp':
+                for cand_ext in ['.jpg', '.jpeg', '.png', '.avif']:
+                    if f'{base}{cand_ext}' in files:
+                        source_f = f'{base}{cand_ext}'
+                        break
+            processed_bases.add(base)
+            src_path = os.path.join(dir_path, source_f)
+            webp_path = os.path.join(dir_path, f'{base}.webp')
+
+            # Convert to WebP if missing or source file modified
+            if not os.path.exists(webp_path) or os.path.getmtime(src_path) > os.path.getmtime(webp_path):
+                try:
+                    from PIL import Image
+                    with Image.open(src_path) as im:
+                        if im.mode in ('RGBA', 'LA') or (im.mode == 'P' and 'transparency' in im.info):
+                            im_conv = im.convert('RGBA')
+                            im_conv.save(webp_path, 'WEBP', quality=90, method=6)
+                        else:
+                            im_conv = im.convert('RGB')
+                            im_conv.save(webp_path, 'WEBP', quality=85, method=6)
+                    print(f"  [WebP] Converted {source_f} -> {base}.webp")
+                except Exception as err:
+                    print(f"  [WebP Error] {src_path}: {err}")
+                    webp_path = src_path
+
+            # Read dimensions
+            w, h, aspect = 1920, 1080, 1.778
+            try:
+                from PIL import Image
+                with Image.open(webp_path) as im:
+                    w, h = im.size
+                    aspect = round(w / h, 3)
+            except Exception:
+                pass
+
+            items.append({
+                "id": slugify(base),
+                "filename": source_f,
+                "title": clean_photo_title(source_f),
+                "webp": webp_path.replace("\\", "/"),
+                "width": w,
+                "height": h,
+                "aspect": aspect
+            })
+        return items
+
+    photos_list = process_photo_collection(photos_dir)
+    panos_list = process_photo_collection(panos_dir)
+
+    photos_json_str = json.dumps(photos_list)
+    panos_json_str = json.dumps(panos_list)
+
+    # 1. Normal Photos HTML (Masonry with mixed aspect support)
+    photo_tiles_html = []
+    for idx, p in enumerate(photos_list):
+        photo_tiles_html.append(f'''
+        <div class="photo-masonry-item">
+          <article class="project-tile photo-tile" onclick="openPhotoViewer({idx})" title="{p['title']}">
+            <div class="tile-circling-border" aria-hidden="true"></div>
+            <div class="tile-inner">
+              <img src="{p['webp']}" alt="{p['title']}" class="tile-img" loading="lazy">
+              <div class="tile-hover-overlay">
+                <div class="tile-hover-content">
+                  <h3 class="tile-title">
+                    <span>{p['title']}</span>
+                  </h3>
+                </div>
+              </div>
+            </div>
+          </article>
         </div>''')
+
+    # 2. 360 Panoramas HTML (2:1 images 2 per row)
+    pano_tiles_html = []
+    for idx, p in enumerate(panos_list):
+        pano_tiles_html.append(f'''
+        <article class="project-tile pano-tile" onclick="openPanoViewer({idx})" title="{p['title']}">
+          <div class="tile-circling-border" aria-hidden="true"></div>
+          <div class="tile-inner">
+            <img src="{p['webp']}" alt="{p['title']}" class="tile-img" loading="lazy">
+            <span class="pano-badge">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
+              360° Panorama
+            </span>
+            <div class="pano-center-indicator" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+            </div>
+            <div class="tile-hover-overlay">
+              <div class="tile-hover-content">
+                <h3 class="tile-title">
+                  <span>{p['title']}</span>
+                </h3>
+              </div>
+            </div>
+          </div>
+        </article>''')
 
     photography_html = f'''<!DOCTYPE html>
 <html lang="en">
@@ -729,7 +839,8 @@ def sync_all():
   <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,700&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="_engine/css/main.css">
   <link rel="stylesheet" href="_engine/css/components.css">
-  <link rel="stylesheet" href="_engine/css/glightbox.min.css">
+  <link rel="stylesheet" href="_engine/css/pannellum.css">
+  <link rel="stylesheet" href="_engine/css/photography.css">
   <link rel="stylesheet" href="_engine/css/responsive.css">
 </head>
 <body>
@@ -745,43 +856,139 @@ def sync_all():
         <p class="section-desc">{photo_desc_inner}</p>
       </div>
 
-      <div class="panorama-card">
-        <div style="padding: 20px 24px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-          <div>
-            <h2 style="font-size: 1.3rem; font-weight: 700; margin-top: 4px;">360° Photosphere Panorama Viewer</h2>
-          </div>
-          <span style="font-size: 0.8rem; color: var(--text-muted); background: var(--bg-secondary); padding: 4px 10px; border-radius: 4px;">
-            Drag to Look Around &bull; Pinch to Zoom
-          </span>
+      <!-- SECTION 1: STILLS GALLERY (All-Aspect Support Mixed Masonry Layout) -->
+      <section class="photo-gallery-section" id="photos-section">
+        <div class="gallery-section-heading">
+          <h2 class="gallery-section-title">
+            <span>Stills & Photography Gallery</span>
+            <span class="gallery-section-count">{len(photos_list)}</span>
+          </h2>
+          <p class="gallery-section-subtitle">Mixed aspect ratio photography & cinematic plate captures</p>
         </div>
-        <div id="panorama-viewer" class="panorama-viewport"></div>
-      </div>
 
-      <h2 style="font-size: 1.5rem; font-weight: 700; margin-top: 48px; margin-bottom: 24px;">Still Photography Gallery ({len(photo_files)} Stills)</h2>
-      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 24px;">
-        {"".join(photo_cards_html)}
-      </div>
+        <div class="photo-masonry-grid">
+          {"".join(photo_tiles_html)}
+        </div>
+      </section>
+
+      <!-- SECTION 2: 360° PANORAMA ENVIRONMENTS (All 2:1 Images, 2 per Row) -->
+      <section class="photo-gallery-section" id="panos-section">
+        <div class="gallery-section-heading">
+          <h2 class="gallery-section-title">
+            <span>360° Panoramic Environments</span>
+            <span class="gallery-section-count">{len(panos_list)}</span>
+          </h2>
+          <p class="gallery-section-subtitle">High-resolution equirectangular photospheres & HDRI probes (2:1 aspect)</p>
+        </div>
+
+        <div class="pano-grid">
+          {"".join(pano_tiles_html)}
+        </div>
+      </section>
+
     </div>
   </main>
+
+  <!-- Fullscreen Photo Viewer Modal with Bottom Filmstrip -->
+  <div id="photoViewerModal" class="fullscreen-viewer-modal" aria-hidden="true" role="dialog">
+    <div class="viewer-top-bar">
+      <div class="viewer-title-wrap">
+        <h3 class="viewer-title" id="photoViewerTitle">Photo</h3>
+        <span class="viewer-counter" id="photoViewerCounter">1 / 1</span>
+      </div>
+      <div class="viewer-top-actions">
+        <button type="button" class="viewer-close-btn" onclick="closePhotoViewer()" aria-label="Close viewer" title="Close (Esc)">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="viewer-stage" id="photoViewerStage">
+      <button type="button" class="viewer-side-arrow viewer-prev-arrow" onclick="navPhotoViewer(-1)" aria-label="Previous photo" title="Previous photo (←)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+
+      <div class="viewer-img-container">
+        <img id="photoViewerImg" src="" alt="Photo" class="viewer-main-img">
+      </div>
+
+      <button type="button" class="viewer-side-arrow viewer-next-arrow" onclick="navPhotoViewer(1)" aria-label="Next photo" title="Next photo (→)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+    </div>
+
+    <div class="viewer-filmstrip-bar">
+      <div class="filmstrip-track" id="photoFilmstripTrack"></div>
+    </div>
+  </div>
+
+  <!-- Fullscreen 360 Panorama Viewer Modal with Bottom Filmstrip -->
+  <div id="panoViewerModal" class="fullscreen-viewer-modal" aria-hidden="true" role="dialog">
+    <div class="viewer-top-bar">
+      <div class="viewer-title-wrap">
+        <span class="pano-modal-tag">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
+          360° Photosphere
+        </span>
+        <h3 class="viewer-title" id="panoViewerTitle">Panorama</h3>
+        <span class="viewer-counter" id="panoViewerCounter">1 / 1</span>
+      </div>
+      <div class="viewer-top-actions">
+        <button type="button" class="viewer-close-btn" onclick="closePanoViewer()" aria-label="Close viewer" title="Close (Esc)">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="pano-stage">
+      <div id="fullscreenPanoContainer" class="pano-webgl-viewport"></div>
+
+      <button type="button" class="viewer-side-arrow viewer-prev-arrow" onclick="navPanoViewer(-1)" aria-label="Previous panorama" title="Previous panorama (←)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+
+      <button type="button" class="viewer-side-arrow viewer-next-arrow" onclick="navPanoViewer(1)" aria-label="Next panorama" title="Next panorama (→)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+    </div>
+
+    <div class="viewer-filmstrip-bar">
+      <div class="filmstrip-track" id="panoFilmstripTrack"></div>
+    </div>
+  </div>
 
   <footer class="site-footer">
     <div class="container-wide">
       <div class="footer-bottom">
         <div>&copy; 2026 Prasannakumar T Bhat (pbhat99). All rights reserved.</div>
-        <div style="font-family: var(--font-mono); font-size: 0.78rem;">Auto-synced from pages/04_photography/</div>
+        <div style="font-family: var(--font-mono); font-size: 0.78rem;">Auto-synced from pages/04_photography/ (photos & panos)</div>
       </div>
     </div>
   </footer>
 
-  <script src="_engine/js/glightbox.min.js"></script>
-  <script type="module" src="_engine/js/lightbox.js"></script>
-  <script type="module">
-    import {{ initPanoramaViewer }} from './_engine/js/panorama-360.js';
-    import './_engine/js/main.js';
-    document.addEventListener('DOMContentLoaded', () => {{
-      initPanoramaViewer('panorama-viewer', 'https://pannellum.org/images/alma.jpg');
-    }});
+  <script id="photosData" type="application/json">
+{photos_json_str}
   </script>
+  <script id="panosData" type="application/json">
+{panos_json_str}
+  </script>
+  <script src="_engine/js/pannellum.js"></script>
+  <script src="_engine/js/photography.js"></script>
+  <script type="module" src="_engine/js/main.js"></script>
 
 {BACK_TO_TOP_HTML}
 </body>
@@ -789,7 +996,7 @@ def sync_all():
 '''
     with open("photography.html", "w", encoding="utf-8") as f:
         f.write(photography_html)
-    print("  -> Updated photography.html (Nav: VFX, 360 Viewer, Stills Gallery)")
+    print(f"  -> Updated photography.html (Nav: Photography, {len(photos_list)} Stills Masonry, {len(panos_list)} 360 Panoramas 2:1)")
 
     # --------------------------------------------------------------------------
     # 4. SYNC ABOUT PAGE (pages/05_about -> about.html & about-me.html redirect)
