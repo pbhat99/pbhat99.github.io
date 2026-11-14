@@ -425,6 +425,51 @@
   // --------------------------------------------------------------------------
   // Attach 100% Zoomable Fullscreen Lightbox to Post Images
   // --------------------------------------------------------------------------
+  let blogActiveLightbox = null;
+
+  function openPostImageLightbox(postImages, startIndex = 0) {
+    if (typeof window.openLightbox === 'function') {
+      window.openLightbox(postImages.map(p => ({ src: p.src, caption: p.caption })), startIndex);
+      return;
+    }
+
+    if (blogActiveLightbox) {
+      try { blogActiveLightbox.destroy(); } catch (e) {}
+      blogActiveLightbox = null;
+    }
+
+    if (typeof GLightbox !== 'undefined') {
+      try {
+        blogActiveLightbox = GLightbox({
+          elements: postImages.map(p => ({ href: p.src, type: 'image', title: p.caption || '' })),
+          startAt: startIndex,
+          loop: postImages.length > 1,
+          zoomable: true,
+          touchNavigation: true,
+          openEffect: 'fade',
+          closeEffect: 'fade',
+          slideEffect: 'fade'
+        });
+
+        blogActiveLightbox.on('open', () => {
+          document.body.classList.add('lightbox-active');
+        });
+
+        blogActiveLightbox.on('close', () => {
+          document.body.classList.remove('lightbox-active');
+          if (blogActiveLightbox) {
+            try { blogActiveLightbox.destroy(); } catch (e) {}
+            blogActiveLightbox = null;
+          }
+        });
+
+        blogActiveLightbox.open();
+      } catch (err) {
+        console.error('Error opening GLightbox:', err);
+      }
+    }
+  }
+
   function setupPostImagesLightbox(post) {
     const postImages = [];
 
@@ -456,16 +501,7 @@
       item.el.onclick = function (e) {
         e.preventDefault();
         e.stopPropagation();
-        if (typeof window.openLightbox === 'function') {
-          window.openLightbox(postImages.map(p => ({ src: p.src, caption: p.caption })), idx);
-        } else if (typeof GLightbox !== 'undefined') {
-          GLightbox({
-            elements: postImages.map(p => ({ href: p.src, type: 'image', title: p.caption })),
-            startAt: idx,
-            zoomable: true,
-            touchNavigation: true
-          }).openAt(idx);
-        }
+        openPostImageLightbox(postImages, idx);
       };
     });
   }

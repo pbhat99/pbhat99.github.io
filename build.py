@@ -670,7 +670,7 @@ def sync_all():
   </footer>
 
   <script src="_engine/js/glightbox.min.js"></script>
-  <script src="_engine/js/lightbox.js"></script>
+  <script type="module" src="_engine/js/lightbox.js"></script>
   <script type="module" src="_engine/js/main.js"></script>
 
 {BACK_TO_TOP_HTML}
@@ -774,7 +774,7 @@ def sync_all():
   </footer>
 
   <script src="_engine/js/glightbox.min.js"></script>
-  <script src="_engine/js/lightbox.js"></script>
+  <script type="module" src="_engine/js/lightbox.js"></script>
   <script type="module">
     import {{ initPanoramaViewer }} from './_engine/js/panorama-360.js';
     import './_engine/js/main.js';
@@ -1105,7 +1105,7 @@ def sync_all():
   </footer>
 
   <script src="_engine/js/glightbox.min.js"></script>
-  <script src="_engine/js/lightbox.js"></script>
+  <script type="module" src="_engine/js/lightbox.js"></script>
   <script type="module" src="_engine/js/main.js"></script>
 
 {BACK_TO_TOP_HTML}
@@ -1304,7 +1304,7 @@ def sync_all():
   </footer>
 
   <script src="_engine/js/glightbox.min.js"></script>
-  <script src="_engine/js/lightbox.js"></script>
+  <script type="module" src="_engine/js/lightbox.js"></script>
   <script type="module" src="_engine/js/main.js"></script>
 
 {BACK_TO_TOP_HTML}
@@ -1319,7 +1319,8 @@ def sync_all():
     # 6. SYNC BLOG (pages/06_blog)
     # --------------------------------------------------------------------------
     blog_dir = "pages/06_blog"
-    blog_bg_img_html, blog_bg_overlay_html, _, _ = get_page_background_and_overlay(blog_dir)
+    blog_bg_img_html, blog_bg_overlay_html, blog_resolved_bg, blog_overlay_alpha = get_page_background_and_overlay(blog_dir)
+    reader_bg_html = f'<div class="reader-bg-image" style="background-image: url(\'{blog_resolved_bg}\');"></div>\n    <div class="reader-bg-overlay" style="opacity: {blog_overlay_alpha};"></div>' if blog_resolved_bg else ''
 
     # 1. Read Blog content.json (title, description, overlayOpacity)
     blog_page_info = {
@@ -1663,6 +1664,9 @@ def sync_all():
   <!-- Full Post Reader Modal (Expanded Reading View) -->
   <div id="blogReaderOverlay" class="blog-reader-overlay" aria-hidden="true">
 
+    <!-- Reader Background Layers (matches blog page background and overlay opacity settings) -->
+    {reader_bg_html}
+
     <!-- Pinned Floating Close Button (Viewport top-right, always visible) -->
     <button type="button" class="reader-floating-close" onclick="closePostModal()" aria-label="Close article" title="Close article (Esc)">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -1741,7 +1745,7 @@ def sync_all():
 
   <script src="_engine/js/prism.js"></script>
   <script src="_engine/js/glightbox.min.js"></script>
-  <script src="_engine/js/lightbox.js"></script>
+  <script type="module" src="_engine/js/lightbox.js"></script>
   <script src="_engine/js/blog.js"></script>
   <script type="module" src="_engine/js/main.js"></script>
 
