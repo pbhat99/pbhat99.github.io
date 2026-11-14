@@ -731,15 +731,6 @@ def sync_all():
     </div>
   </main>
 
-  <footer class="site-footer">
-    <div class="container-wide">
-      <div class="footer-bottom">
-        <div>&copy; 2026 Prasannakumar T Bhat (pbhat99). All rights reserved.</div>
-        <div style="font-family: var(--font-mono); font-size: 0.78rem;">Auto-synced from pages/02_VFX/</div>
-      </div>
-    </div>
-  </footer>
-
   <script src="_engine/js/glightbox.min.js"></script>
   <script type="module" src="_engine/js/lightbox.js"></script>
   <script type="module" src="_engine/js/main.js"></script>
@@ -1073,15 +1064,6 @@ def sync_all():
     </div>
   </div>
 
-  <footer class="site-footer">
-    <div class="container-wide">
-      <div class="footer-bottom">
-        <div>&copy; 2026 Prasannakumar T Bhat (pbhat99). All rights reserved.</div>
-        <div style="font-family: var(--font-mono); font-size: 0.78rem;">Auto-synced from pages/04_photography/ (photos & panos)</div>
-      </div>
-    </div>
-  </footer>
-
   <script id="photosData" type="application/json">
 {photos_json_str}
   </script>
@@ -1412,15 +1394,6 @@ def sync_all():
     </div>
   </main>
 
-  <footer class="site-footer">
-    <div class="container-wide">
-      <div class="footer-bottom">
-        <div>&copy; 2026 {name} (pbhat99). All rights reserved.</div>
-        <div style="font-family: var(--font-mono); font-size: 0.78rem;">Auto-synced from {about_dir}/</div>
-      </div>
-    </div>
-  </footer>
-
   <script src="_engine/js/glightbox.min.js"></script>
   <script type="module" src="_engine/js/lightbox.js"></script>
   <script type="module" src="_engine/js/main.js"></script>
@@ -1617,15 +1590,6 @@ def sync_all():
 
     </div>
   </main>
-
-  <footer class="site-footer">
-    <div class="container-wide">
-      <div class="footer-bottom">
-        <div>&copy; 2026 Prasannakumar T Bhat (pbhat99). All rights reserved.</div>
-        <div style="font-family: var(--font-mono); font-size: 0.78rem;">Hosted on GitHub Pages &bull; pbhat99.github.io</div>
-      </div>
-    </div>
-  </footer>
 
   <script src="_engine/js/glightbox.min.js"></script>
   <script type="module" src="_engine/js/lightbox.js"></script>
