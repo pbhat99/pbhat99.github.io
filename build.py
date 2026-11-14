@@ -4,6 +4,7 @@ import json
 import html
 import yaml
 import markdown
+import glob
 
 def slugify(text):
     text = text.lower()
@@ -1147,15 +1148,17 @@ def sync_all():
     ai_desc_inner = ai_desc.strip() if ai_desc else '&nbsp;'
 
     # Resolve Before/After Inpaint Demo images
-    ba_before_img = "pages/02_VFX/01_PixelFrames/02_goatbusters/projectImage.jpg"
-    ba_after_img = "pages/02_VFX/01_PixelFrames/03_gmc-hummer-ev-quiet-revolution/projectImage.jpg"
-    for cand in ["pages/02_VFX/01_PixelFrames/02_goatbusters/projectImage.jpg", "pages/02_VFX/01_DNEG/02_goatbusters/projectImage.jpg"]:
-        if os.path.exists(cand):
-            ba_before_img = cand
+    ba_before_img = "pages/02_VFX/02_The-Mill/02_goatbusters/projectImage.jpg"
+    ba_after_img = "pages/02_VFX/02_The-Mill/03_gmc-hummer-ev-quiet-revolution/projectImage.jpg"
+    for vfx_comp in glob.glob("pages/02_VFX/*"):
+        cand_before = os.path.join(vfx_comp, "02_goatbusters", "projectImage.jpg").replace("\\", "/")
+        if os.path.exists(cand_before):
+            ba_before_img = cand_before
             break
-    for cand in ["pages/02_VFX/01_PixelFrames/03_gmc-hummer-ev-quiet-revolution/projectImage.jpg", "pages/02_VFX/01_DNEG/03_gmc-hummer-ev-quiet-revolution/projectImage.jpg"]:
-        if os.path.exists(cand):
-            ba_after_img = cand
+    for vfx_comp in glob.glob("pages/02_VFX/*"):
+        cand_after = os.path.join(vfx_comp, "03_gmc-hummer-ev-quiet-revolution", "projectImage.jpg").replace("\\", "/")
+        if os.path.exists(cand_after):
+            ba_after_img = cand_after
             break
 
     ai_html = f'''<!DOCTYPE html>
@@ -1435,8 +1438,23 @@ def sync_all():
                     code_pattern = re.compile(r'```([a-zA-Z0-9_-]*)\r?\n(.*?)```', re.DOTALL)
                     def code_repl(m):
                         lang = m.group(1).strip() or 'text'
-                        code_esc = html.escape(m.group(2).rstrip())
-                        return f'''<div class="code-block-card is-collapsed">
+                        code_raw = m.group(2).rstrip()
+                        code_esc = html.escape(code_raw)
+                        line_count = len(code_raw.splitlines())
+                        if line_count <= 3:
+                            # 3 or fewer lines: show expanded by default, omit expand/collapse button
+                            return f'''<div class="code-block-card">
+  <div class="code-block-header">
+    <span class="code-lang-badge">{lang}</span>
+    <div class="code-actions">
+      <button type="button" class="btn-code-copy" onclick="copyCodeBlock(this)">Copy</button>
+    </div>
+  </div>
+  <pre><code class="language-{lang}">{code_esc}</code></pre>
+</div>'''
+                        else:
+                            # Greater than 3 lines: collapsed by default (3 lines), include expand/collapse toggle
+                            return f'''<div class="code-block-card is-collapsed">
   <div class="code-block-header">
     <span class="code-lang-badge">{lang}</span>
     <div class="code-actions">
@@ -1631,36 +1649,23 @@ def sync_all():
   <!-- Full Post Reader Modal (Expanded Reading View) -->
   <div id="blogReaderOverlay" class="blog-reader-overlay" aria-hidden="true">
 
-    <!-- Fixed Left Flank Preview Tile: Previous Post (Landscape only, fixed center vertically) -->
-    <aside class="reader-flank-card reader-flank-prev" id="readerFlankPrev" onclick="navigatePost(-1)" title="Go to Previous Post">
-      <div class="tile-circling-border" aria-hidden="true"></div>
-      <div class="tile-inner flank-card-inner">
-        <div class="flank-badge-row">
-          <span class="flank-nav-indicator">&larr; Previous</span>
-          <span class="flank-category" id="flankPrevCategory"></span>
-        </div>
-        <div class="flank-media">
-          <img id="flankPrevImg" src="" alt="Previous Post" class="flank-thumb">
-        </div>
-        <h4 class="flank-title" id="flankPrevTitle"></h4>
-        <div class="flank-date" id="flankPrevDate"></div>
-      </div>
-    </aside>
+    <!-- Floating Close Button (Fixed at far screen right, always visible) -->
+    <button type="button" class="reader-floating-close" onclick="closePostModal()" aria-label="Close article" title="Close article (Esc)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+
+    <!-- Floating Move-to-Top Button (Fixed at far screen right, bottom) -->
+    <button type="button" class="reader-floating-top" id="readerBackToTop" onclick="scrollReaderToTop()" aria-label="Move to top" title="Move to top">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="18 15 12 9 6 15"></polyline>
+      </svg>
+    </button>
 
     <div class="blog-reader-dialog" role="dialog" aria-modal="true">
       
-      <!-- Pinned Close Button (Topbar & Category pill removed, reduced top padding) -->
-      <button type="button" class="reader-close-btn" onclick="closePostModal()" title="Close (Esc)">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-      </button>
-
-      <!-- Floating Scroll-to-Top Button inside Reader Modal -->
-      <button type="button" class="reader-back-to-top" id="readerBackToTop" onclick="scrollReaderToTop()" aria-label="Scroll to top" title="Scroll to top">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="18 15 12 9 6 15"></polyline>
-        </svg>
-      </button>
-
       <article class="blog-reader-content">
         <header class="reader-header">
           <h1 class="reader-title" id="readerTitle">Title</h1>
@@ -1697,22 +1702,6 @@ def sync_all():
       </article>
 
     </div>
-
-    <!-- Fixed Right Flank Preview Tile: Next Post (Landscape only, fixed center vertically) -->
-    <aside class="reader-flank-card reader-flank-next" id="readerFlankNext" onclick="navigatePost(1)" title="Go to Next Post">
-      <div class="tile-circling-border" aria-hidden="true"></div>
-      <div class="tile-inner flank-card-inner">
-        <div class="flank-badge-row">
-          <span class="flank-category" id="flankNextCategory"></span>
-          <span class="flank-nav-indicator">Next &rarr;</span>
-        </div>
-        <div class="flank-media">
-          <img id="flankNextImg" src="" alt="Next Post" class="flank-thumb">
-        </div>
-        <h4 class="flank-title" id="flankNextTitle"></h4>
-        <div class="flank-date" id="flankNextDate"></div>
-      </div>
-    </aside>
 
   </div>
 

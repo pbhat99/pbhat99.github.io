@@ -512,14 +512,13 @@
   position: fixed;
   inset: 0;
   z-index: 10000;
-  background: rgba(10, 16, 36, 0.88);
+  background: rgba(8, 14, 32, 0.94);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden; /* Overlay does NOT scroll, keeping flank cards rock-solid fixed vertically centered */
-  padding: 20px 16px;
+  overflow-y: auto; /* Natural full page scroll */
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 0; /* Zero top/bottom padding as requested */
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease;
@@ -532,73 +531,100 @@
 
 .blog-reader-dialog {
   background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
+  border-left: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-subtle);
+  border-top: none;
+  border-bottom: none;
+  border-radius: 0;
   max-width: 920px;
   width: 100%;
-  max-height: 92vh;
-  overflow-y: auto; /* Internal smooth scroll inside dialog */
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.85);
+  min-height: 100vh;
+  margin: 0 auto;
+  box-shadow: 0 0 70px rgba(0, 0, 0, 0.85);
   position: relative;
-  animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.blog-reader-dialog::-webkit-scrollbar {
-  width: 8px;
-}
-.blog-reader-dialog::-webkit-scrollbar-track {
-  background: rgba(14, 23, 51, 0.6);
-}
-.blog-reader-dialog::-webkit-scrollbar-thumb {
-  background: rgba(249, 134, 3, 0.4);
-  border-radius: 4px;
-}
-.blog-reader-dialog::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-primary);
-}
-
-@keyframes modalSlideUp {
-  from { transform: translateY(20px) scale(0.98); opacity: 0; }
-  to { transform: translateY(0) scale(1); opacity: 1; }
-}
-
-/* Close button pinned to top-right of reader dialog */
-.reader-close-btn {
-  position: absolute;
-  top: 16px;
-  right: 18px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid var(--border-subtle);
-  color: var(--text-main);
-  width: 38px;
-  height: 38px;
+/* Floating Close Button at Far Screen Right (Always visible) */
+.reader-floating-close {
+  position: fixed;
+  top: clamp(16px, 2.5vw, 32px);
+  right: clamp(16px, 2.5vw, 36px);
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
+  background: rgba(14, 23, 51, 0.9);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(249, 134, 3, 0.4);
+  color: var(--text-main);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  z-index: 10050;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
   transition: all var(--transition-fast);
-  z-index: 25;
 }
 
-.reader-close-btn:hover {
+.reader-floating-close:hover {
   background: var(--accent-primary);
   border-color: var(--accent-primary);
-  color: #fff;
-  transform: rotate(90deg);
+  color: #ffffff;
+  transform: rotate(90deg) scale(1.08);
+  box-shadow: 0 6px 24px rgba(249, 134, 3, 0.45);
+}
+
+/* Floating Move to Top Button at Far Screen Right (Bottom) */
+.reader-floating-top {
+  position: fixed;
+  bottom: clamp(20px, 3vw, 40px);
+  right: clamp(16px, 2.5vw, 36px);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(14, 23, 51, 0.9);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(249, 134, 3, 0.4);
+  color: var(--accent-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10050;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px);
+  transition: opacity 0.25s ease, transform 0.25s ease, background 0.2s, color 0.2s;
+}
+
+.reader-floating-top svg {
+  width: 20px;
+  height: 20px;
+}
+
+.reader-floating-top.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.reader-floating-top:hover {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: #ffffff;
+  transform: translateY(-3px) scale(1.08);
+  box-shadow: 0 6px 24px rgba(249, 134, 3, 0.45);
 }
 
 .blog-reader-content {
-  padding: 24px clamp(20px, 4.5vw, 48px) 48px;
+  padding: 36px clamp(20px, 4.5vw, 48px) 64px;
 }
 
 .reader-header {
   margin-top: 0;
   margin-bottom: 24px;
-  padding-right: 48px; /* Room for close button */
-}
 }
 
 .reader-title {
@@ -929,155 +955,4 @@
   word-break: break-word;
   white-space: normal;
   max-width: 100%;
-}
-
-/* Floating Scroll-to-Top Button inside Reader Modal */
-.reader-back-to-top {
-  position: fixed;
-  bottom: 28px;
-  right: max(24px, calc(50vw - 440px));
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-full);
-  background: rgba(14, 23, 51, 0.95);
-  border: 1px solid var(--accent-primary);
-  color: var(--accent-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 10020;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(10px);
-  transition: opacity 0.25s ease, transform 0.25s ease, background 0.2s ease, border-color 0.2s ease;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 10px rgba(249, 134, 3, 0.3);
-}
-
-.reader-back-to-top.visible {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-}
-
-.reader-back-to-top:hover {
-  background: var(--accent-primary);
-  color: #ffffff;
-  transform: translateY(-2px);
-}
-
-.reader-back-to-top svg {
-  width: 20px;
-  height: 20px;
-  stroke: currentColor;
-  stroke-width: 2.5;
-}
-
-/* --------------------------------------------------------------------------
-   Landscape Only: Fixed Center Vertical Left & Right Flank Preview Tiles
-   (Non-scrollable, vertically centered, matches project tile circling border)
-   -------------------------------------------------------------------------- */
-.reader-flank-card {
-  display: none; /* hidden on portrait / smaller screens */
-}
-
-@media (orientation: landscape) and (min-width: 1360px) {
-  .reader-flank-card {
-    display: block;
-    position: fixed;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 210px;
-    z-index: 10010;
-    cursor: pointer;
-    user-select: none;
-    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
-    text-decoration: none;
-  }
-
-  .reader-flank-prev {
-    right: calc(50vw + 475px);
-  }
-
-  .reader-flank-next {
-    left: calc(50vw + 475px);
-  }
-
-  .reader-flank-card:hover {
-    transform: translateY(calc(-50% - 4px)) scale(1.02);
-  }
-
-  .flank-card-inner {
-    padding: 12px;
-    background: var(--bg-card);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-md);
-    box-shadow: 0 16px 45px rgba(0, 0, 0, 0.75);
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .flank-badge-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-  }
-
-  .flank-nav-indicator {
-    color: var(--accent-primary);
-    letter-spacing: 0.4px;
-  }
-
-  .flank-category {
-    color: var(--text-muted);
-    background: rgba(255, 255, 255, 0.06);
-    padding: 2px 6px;
-    border-radius: 4px;
-    max-width: 105px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .flank-media {
-    width: 100%;
-    aspect-ratio: 16/10;
-    overflow: hidden;
-    border-radius: 4px;
-    background: #000;
-  }
-
-  .flank-thumb {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    transition: transform 0.3s ease;
-  }
-
-  .reader-flank-card:hover .flank-thumb {
-    transform: scale(1.06);
-  }
-
-  .flank-title {
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: #ffffff;
-    line-height: 1.35;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    margin: 0;
-  }
-
-  .flank-date {
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    color: var(--text-muted);
-  }
 }

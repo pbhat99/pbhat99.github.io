@@ -7,6 +7,8 @@ let lightboxOverlay = null;
 let currentItems = [];
 let currentIndex = 0;
 let isZoomed = false;
+let openLightboxModal = null;
+let closeLightboxModal = null;
 
 // DOM elements
 let imgEl = null;
@@ -169,8 +171,16 @@ export function initLightbox() {
   function close() {
     resetZoom();
     lightboxOverlay.classList.remove('active');
-    document.body.style.overflow = '';
+    const blogOverlay = document.getElementById('blogReaderOverlay');
+    if (blogOverlay && blogOverlay.classList.contains('active')) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
   }
+
+  openLightboxModal = open;
+  closeLightboxModal = close;
 
   function updateContent() {
     const item = currentItems[currentIndex];
@@ -238,17 +248,9 @@ export function initLightbox() {
   scanLightboxTriggers(open);
 
   // Global helper for opening custom list of images
-  window.openLightbox = function (items, startIndex = 0) {
-    if (!items || items.length === 0) return;
-    currentItems = items.map(it => {
-      if (typeof it === 'string') return { src: it, caption: '' };
-      return { src: it.src || it.url, caption: it.caption || it.alt || '' };
-    });
-    open(startIndex);
-  };
-
+  window.openLightbox = openLightboxItems;
   window.scanLightboxTriggers = function () {
-    scanLightboxTriggers(open);
+    scanLightboxTriggers(openLightboxModal);
   };
 }
 
@@ -259,20 +261,17 @@ export function openLightboxItems(items, startIndex = 0) {
     if (typeof it === 'string') return { src: it, caption: '' };
     return { src: it.src || it.url, caption: it.caption || it.alt || '' };
   });
-  if (typeof open === 'function') {
-    open(startIndex);
+  if (openLightboxModal) {
+    openLightboxModal(startIndex);
   }
 }
 
 // Immediate global exposure
 if (typeof window !== 'undefined') {
-  window.openLightbox = function (items, startIndex = 0) {
-    if (!lightboxOverlay) initLightbox();
-    openLightboxItems(items, startIndex);
-  };
+  window.openLightbox = openLightboxItems;
   window.scanLightboxTriggers = function () {
     if (!lightboxOverlay) initLightbox();
-    scanLightboxTriggers(open);
+    scanLightboxTriggers(openLightboxModal);
   };
 }
 
@@ -297,8 +296,9 @@ export function scanLightboxTriggers(openFn) {
     el.style.cursor = 'zoom-in';
     el.onclick = (e) => {
       e.preventDefault();
-      if (openFn) {
-        openFn(index);
+      const fn = openLightboxModal || openFn;
+      if (fn) {
+        fn(index);
       } else if (window.openLightbox) {
         window.openLightbox(currentItems, index);
       }

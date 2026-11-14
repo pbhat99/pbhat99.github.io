@@ -59,9 +59,8 @@
       }
     });
 
-    // Close on overlay backdrop click & mousewheel forward to dialog
+    // Close on overlay backdrop click & scroll listener for floating top button
     const overlay = document.getElementById('blogReaderOverlay');
-    const readerDialog = document.querySelector('.blog-reader-dialog');
 
     if (overlay) {
       overlay.addEventListener('click', function (e) {
@@ -70,19 +69,10 @@
         }
       });
 
-      overlay.addEventListener('wheel', function (e) {
-        if (e.target === overlay && readerDialog) {
-          readerDialog.scrollTop += e.deltaY;
-        }
-      }, { passive: true });
-    }
-
-    // Scroll-to-top floating button inside post reader
-    if (readerDialog) {
-      readerDialog.addEventListener('scroll', function () {
+      overlay.addEventListener('scroll', function () {
         const topBtn = document.getElementById('readerBackToTop');
         if (topBtn) {
-          if (readerDialog.scrollTop > 220) {
+          if (overlay.scrollTop > 240) {
             topBtn.classList.add('visible');
           } else {
             topBtn.classList.remove('visible');
@@ -389,20 +379,18 @@
     document.body.style.overflow = 'hidden';
     window.location.hash = '#' + (post.slug || post.id);
 
-    // Scroll reader dialog to top immediately
-    const dialog = overlay.querySelector('.blog-reader-dialog');
-    if (dialog) {
-      dialog.scrollTop = 0;
-      dialog.scrollTo({ top: 0, behavior: 'auto' });
-    }
+    // Scroll reader overlay to top immediately
+    overlay.scrollTop = 0;
+    overlay.scrollTo({ top: 0, behavior: 'auto' });
+
     const readerBackToTop = document.getElementById('readerBackToTop');
     if (readerBackToTop) readerBackToTop.classList.remove('visible');
   };
 
   window.scrollReaderToTop = function () {
-    const dialog = document.querySelector('.blog-reader-dialog');
-    if (dialog) {
-      dialog.scrollTo({ top: 0, behavior: 'smooth' });
+    const overlay = document.getElementById('blogReaderOverlay');
+    if (overlay) {
+      overlay.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -423,6 +411,11 @@
     const newIdx = currentActivePostIndex + delta;
     if (newIdx >= 0 && newIdx < allPosts.length) {
       openPostModal(allPosts[newIdx].id);
+      const overlay = document.getElementById('blogReaderOverlay');
+      if (overlay) {
+        overlay.scrollTop = 0;
+        overlay.scrollTo({ top: 0, behavior: 'auto' });
+      }
     }
   };
 
@@ -494,46 +487,6 @@
     } else {
       if (nextBtn) nextBtn.disabled = true;
       if (nextTitle) nextTitle.textContent = 'None (Latest Post)';
-    }
-
-    // Fixed Left Flank Preview Tile (Landscape Only)
-    const flankPrev = document.getElementById('readerFlankPrev');
-    const flankPrevImg = document.getElementById('flankPrevImg');
-    const flankPrevCategory = document.getElementById('flankPrevCategory');
-    const flankPrevTitle = document.getElementById('flankPrevTitle');
-    const flankPrevDate = document.getElementById('flankPrevDate');
-
-    if (flankPrev) {
-      if (currentActivePostIndex > 0) {
-        const prevPost = allPosts[currentActivePostIndex - 1];
-        flankPrev.style.display = '';
-        if (flankPrevImg) flankPrevImg.src = prevPost.thumbnail || '';
-        if (flankPrevCategory) flankPrevCategory.textContent = prevPost.category || 'Article';
-        if (flankPrevTitle) flankPrevTitle.textContent = prevPost.title || '';
-        if (flankPrevDate) flankPrevDate.textContent = prevPost.date || '';
-      } else {
-        flankPrev.style.display = 'none';
-      }
-    }
-
-    // Fixed Right Flank Preview Tile (Landscape Only)
-    const flankNext = document.getElementById('readerFlankNext');
-    const flankNextImg = document.getElementById('flankNextImg');
-    const flankNextCategory = document.getElementById('flankNextCategory');
-    const flankNextTitle = document.getElementById('flankNextTitle');
-    const flankNextDate = document.getElementById('flankNextDate');
-
-    if (flankNext) {
-      if (currentActivePostIndex < allPosts.length - 1) {
-        const nextPost = allPosts[currentActivePostIndex + 1];
-        flankNext.style.display = '';
-        if (flankNextImg) flankNextImg.src = nextPost.thumbnail || '';
-        if (flankNextCategory) flankNextCategory.textContent = nextPost.category || 'Article';
-        if (flankNextTitle) flankNextTitle.textContent = nextPost.title || '';
-        if (flankNextDate) flankNextDate.textContent = nextPost.date || '';
-      } else {
-        flankNext.style.display = 'none';
-      }
     }
   }
 
