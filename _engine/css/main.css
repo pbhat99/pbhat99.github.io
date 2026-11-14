@@ -286,11 +286,16 @@ button {
 .section-desc {
   font-size: 1.05rem;
   color: var(--text-muted);
-  max-width: 760px;
+  max-width: 900px;
   margin-top: 8px;
   margin-inline: auto;
   text-align: center;
   line-height: 1.6;
+  min-height: 1.6em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
 }
 
 /* Portfolio Filters */
@@ -670,7 +675,8 @@ button {
 }
 
 .project-tile:hover .tile-circling-border,
-.blog-card:hover .tile-circling-border {
+.blog-card:hover .tile-circling-border,
+.reader-flank-card:hover .tile-circling-border {
   opacity: 1;
 }
 

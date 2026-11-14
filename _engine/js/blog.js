@@ -1,6 +1,8 @@
 /**
  * Blog Engine JavaScript
- * Tree Navigation, 3-Tile Grid Filtering, Pagination, Full Post Reader, Code Blocks
+ * Tree Navigation, 3-Tile Grid Filtering, Clickable Tags & Categories,
+ * Pagination, Full Post Reader Modal with 100% Zoomable Image Lightbox,
+ * Fixed Landscape Flank Preview Tiles, and Collapsible Code Blocks
  */
 
 (function () {
@@ -42,11 +44,17 @@
       const overlay = document.getElementById('blogReaderOverlay');
       if (overlay && overlay.classList.contains('active')) {
         if (e.key === 'Escape') {
-          closePostModal();
+          // If a lightbox is currently open, let the lightbox handle Escape
+          const lightbox = document.querySelector('.lightbox-overlay.active');
+          if (!lightbox) {
+            closePostModal();
+          }
         } else if (e.key === 'ArrowLeft') {
-          navigatePost(-1);
+          const lightbox = document.querySelector('.lightbox-overlay.active');
+          if (!lightbox) navigatePost(-1);
         } else if (e.key === 'ArrowRight') {
-          navigatePost(1);
+          const lightbox = document.querySelector('.lightbox-overlay.active');
+          if (!lightbox) navigatePost(1);
         }
       }
     });
@@ -71,7 +79,7 @@
       gridEl.innerHTML = `
         <div class="blog-empty-state">
           <h3>No posts found</h3>
-          <p>No articles match your current archive or category filter.</p>
+          <p>No articles match your current tag, category, or archive filter.</p>
           <button type="button" class="btn btn-primary" onclick="resetBlogFilter()" style="margin-top: 16px;">View All Posts</button>
         </div>`;
       return;
@@ -82,7 +90,9 @@
 
     let html = '';
     pagePosts.forEach(post => {
-      const tagsHtml = (post.tags || []).slice(0, 3).map(t => `<span class="blog-tag-pill">${escapeHtml(t)}</span>`).join('');
+      const tagsHtml = (post.tags || []).slice(0, 3).map(t => 
+        `<span class="blog-tag-pill" onclick="event.stopPropagation(); filterByTag('${escapeHtml(t)}');" title="Filter by tag: ${escapeHtml(t)}">${escapeHtml(t)}</span>`
+      ).join('');
       
       html += `
       <article class="blog-card" data-post-id="${post.id}">
@@ -90,7 +100,7 @@
         <div class="tile-inner blog-card-inner">
           <div class="blog-card-media" onclick="openPostModal('${post.id}')">
             <img src="${post.thumbnail}" alt="${escapeHtml(post.title)}" class="blog-card-img" loading="lazy">
-            <span class="blog-category-badge">${escapeHtml(post.category)}</span>
+            <span class="blog-category-badge" onclick="event.stopPropagation(); filterByCategory('${escapeHtml(post.category)}');" title="Filter by category: ${escapeHtml(post.category)}">${escapeHtml(post.category)}</span>
           </div>
           <div class="blog-card-body">
             <div class="blog-meta-strip">
@@ -173,7 +183,7 @@
   }
 
   // --------------------------------------------------------------------------
-  // Tree & Category Filters
+  // Tree, Category & Tag Filters
   // --------------------------------------------------------------------------
   window.toggleTreeNode = function (nodeEl, year) {
     const item = nodeEl.closest('.tree-item');
@@ -216,17 +226,57 @@
   };
 
   window.filterByCategory = function (category) {
-    document.querySelectorAll('.filter-pill').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
+    clearActiveTreeSelection();
+    const catLower = (category || 'all').toLowerCase();
 
-    if (!category || category.toLowerCase() === 'all') {
+    // Highlight matching category pill in sidebar
+    document.querySelectorAll('.filter-pill').forEach(btn => {
+      const text = btn.textContent.trim().toLowerCase();
+      if ((catLower === 'all' && text === 'all') || text === catLower) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+
+    if (!category || catLower === 'all') {
       filteredPosts = [...allPosts];
     } else {
-      filteredPosts = allPosts.filter(p => p.category.toLowerCase() === category.toLowerCase());
+      filteredPosts = allPosts.filter(p => (p.category || '').toLowerCase() === catLower);
     }
+
     currentPage = 1;
     renderGrid();
     renderPagination();
+    scrollToGridTop();
+  };
+
+  window.filterByTag = function (tagName) {
+    if (!tagName) return;
+    const tagLower = tagName.trim().toLowerCase();
+
+    // Clear sidebar active highlights
+    clearActiveTreeSelection();
+    document.querySelectorAll('.filter-pill').forEach(btn => btn.classList.remove('active'));
+
+    filteredPosts = allPosts.filter(p => 
+      (p.tags || []).some(t => t.toLowerCase() === tagLower)
+    );
+
+    currentPage = 1;
+    renderGrid();
+    renderPagination();
+    scrollToGridTop();
+  };
+
+  window.filterByCategoryFromReader = function (category) {
+    closePostModal();
+    filterByCategory(category);
+  };
+
+  window.filterByTagFromReader = function (tagName) {
+    closePostModal();
+    filterByTag(tagName);
   };
 
   window.resetBlogFilter = function () {
@@ -241,6 +291,7 @@
     currentPage = 1;
     renderGrid();
     renderPagination();
+    scrollToGridTop();
   };
 
   function clearActiveTreeSelection() {
@@ -261,18 +312,27 @@
     const overlay = document.getElementById('blogReaderOverlay');
     if (!overlay) return;
 
-    // Set Header
-    document.getElementById('readerCategory').textContent = post.category || 'Article';
+    // Header Info
+    const catEl = document.getElementById('readerCategory');
+    if (catEl) {
+      catEl.textContent = post.category || 'Article';
+      catEl.onclick = function () {
+        filterByCategoryFromReader(post.category || 'all');
+      };
+    }
+
     document.getElementById('readerTitle').textContent = post.title || '';
     document.getElementById('readerSubheading').textContent = post.subheading || '';
     document.getElementById('readerDate').textContent = post.date || '';
     document.getElementById('readerReadTime').textContent = post.readTime || '5 min read';
     document.getElementById('readerAuthor').textContent = post.author || 'Prasannakumar T Bhat';
 
-    // Tags
+    // Clickable Tag Pills in Reader Header
     const tagsEl = document.getElementById('readerTags');
     if (tagsEl) {
-      tagsEl.innerHTML = (post.tags || []).map(t => `<span class="blog-tag-pill">${escapeHtml(t)}</span>`).join('');
+      tagsEl.innerHTML = (post.tags || []).map(t => 
+        `<span class="blog-tag-pill" onclick="filterByTagFromReader('${escapeHtml(t)}')" title="Filter by tag: ${escapeHtml(t)}">${escapeHtml(t)}</span>`
+      ).join('');
     }
 
     // Hero Image
@@ -296,7 +356,10 @@
       }
     }
 
-    // Update Next/Prev Post buttons
+    // Attach 100% Zoomable Fullscreen Lightbox to ALL Images in Post
+    setupPostImagesLightbox(post);
+
+    // Update Bottom Prev/Next Buttons & Fixed Flank Tiles
     updateReaderNavButtons();
 
     // Show modal & set URL hash
@@ -329,28 +392,114 @@
     }
   };
 
+  // --------------------------------------------------------------------------
+  // Attach 100% Zoomable Fullscreen Lightbox to Post Images
+  // --------------------------------------------------------------------------
+  function setupPostImagesLightbox(post) {
+    const postImages = [];
+
+    // 1. Hero image
+    const heroImg = document.getElementById('readerHeroImg');
+    const heroWrap = document.getElementById('readerHeroWrap');
+    if (heroImg && heroWrap && heroWrap.style.display !== 'none' && heroImg.src) {
+      postImages.push({
+        el: heroImg,
+        src: heroImg.src,
+        caption: heroImg.alt || post.title || 'Cover image'
+      });
+    }
+
+    // 2. All images in markdown body
+    const bodyImgs = document.querySelectorAll('#readerBody img');
+    bodyImgs.forEach((img, i) => {
+      postImages.push({
+        el: img,
+        src: img.src,
+        caption: img.alt || img.title || (post.title + ' - Image ' + (i + 1))
+      });
+    });
+
+    // Make each image clickable with zoom-in cursor
+    postImages.forEach((item, idx) => {
+      item.el.style.cursor = 'zoom-in';
+      item.el.title = 'Click to open in 100% zoomable lightbox';
+      item.el.onclick = function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (window.openLightbox) {
+          window.openLightbox(postImages.map(p => ({ src: p.src, caption: p.caption })), idx);
+        }
+      };
+    });
+  }
+
+  // --------------------------------------------------------------------------
+  // Update Bottom Nav Buttons & Fixed Flank Preview Tiles
+  // --------------------------------------------------------------------------
   function updateReaderNavButtons() {
     const prevBtn = document.getElementById('readerPrevBtn');
     const nextBtn = document.getElementById('readerNextBtn');
     const prevTitle = document.getElementById('readerPrevTitle');
     const nextTitle = document.getElementById('readerNextTitle');
 
+    // Bottom Footer Prev Button
     if (currentActivePostIndex > 0) {
       const prevPost = allPosts[currentActivePostIndex - 1];
       if (prevBtn) prevBtn.disabled = false;
       if (prevTitle) prevTitle.textContent = prevPost.title;
     } else {
       if (prevBtn) prevBtn.disabled = true;
-      if (prevTitle) prevTitle.textContent = 'None';
+      if (prevTitle) prevTitle.textContent = 'None (First Post)';
     }
 
+    // Bottom Footer Next Button
     if (currentActivePostIndex < allPosts.length - 1) {
       const nextPost = allPosts[currentActivePostIndex + 1];
       if (nextBtn) nextBtn.disabled = false;
       if (nextTitle) nextTitle.textContent = nextPost.title;
     } else {
       if (nextBtn) nextBtn.disabled = true;
-      if (nextTitle) nextTitle.textContent = 'None';
+      if (nextTitle) nextTitle.textContent = 'None (Latest Post)';
+    }
+
+    // Fixed Left Flank Preview Tile (Landscape Only)
+    const flankPrev = document.getElementById('readerFlankPrev');
+    const flankPrevImg = document.getElementById('flankPrevImg');
+    const flankPrevCategory = document.getElementById('flankPrevCategory');
+    const flankPrevTitle = document.getElementById('flankPrevTitle');
+    const flankPrevDate = document.getElementById('flankPrevDate');
+
+    if (flankPrev) {
+      if (currentActivePostIndex > 0) {
+        const prevPost = allPosts[currentActivePostIndex - 1];
+        flankPrev.style.display = '';
+        if (flankPrevImg) flankPrevImg.src = prevPost.thumbnail || '';
+        if (flankPrevCategory) flankPrevCategory.textContent = prevPost.category || 'Article';
+        if (flankPrevTitle) flankPrevTitle.textContent = prevPost.title || '';
+        if (flankPrevDate) flankPrevDate.textContent = prevPost.date || '';
+      } else {
+        flankPrev.style.display = 'none';
+      }
+    }
+
+    // Fixed Right Flank Preview Tile (Landscape Only)
+    const flankNext = document.getElementById('readerFlankNext');
+    const flankNextImg = document.getElementById('flankNextImg');
+    const flankNextCategory = document.getElementById('flankNextCategory');
+    const flankNextTitle = document.getElementById('flankNextTitle');
+    const flankNextDate = document.getElementById('flankNextDate');
+
+    if (flankNext) {
+      if (currentActivePostIndex < allPosts.length - 1) {
+        const nextPost = allPosts[currentActivePostIndex + 1];
+        flankNext.style.display = '';
+        if (flankNextImg) flankNextImg.src = nextPost.thumbnail || '';
+        if (flankNextCategory) flankNextCategory.textContent = nextPost.category || 'Article';
+        if (flankNextTitle) flankNextTitle.textContent = nextPost.title || '';
+        if (flankNextDate) flankNextDate.textContent = nextPost.date || '';
+      } else {
+        flankNext.style.display = 'none';
+      }
     }
   }
 

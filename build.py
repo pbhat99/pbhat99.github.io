@@ -410,6 +410,11 @@ def sync_all():
         except Exception:
             pass
 
+    vfx_title = vfx_content.get('title', 'Visual Effects & Compositing')
+    vfx_desc = vfx_content.get('description', '')
+    vfx_title_inner = vfx_title.strip() if vfx_title else '&nbsp;'
+    vfx_desc_inner = vfx_desc.strip() if vfx_desc else '&nbsp;'
+
     vfx_bg_img_html, vfx_bg_overlay_html, _, _ = get_page_background_and_overlay(vfx_dir)
 
     company_subdirs = sorted([d for d in os.listdir(vfx_dir) if os.path.isdir(os.path.join(vfx_dir, d)) and not d.startswith('.')]) if os.path.exists(vfx_dir) else []
@@ -635,10 +640,8 @@ def sync_all():
   <main style="padding-block: clamp(24px, 4vw, 56px);">
     <div class="container-wide">
       <div class="section-header">
-        <h1 class="section-title">{vfx_content.get('title', 'Visual Effects & Compositing')}</h1>
-        <p class="section-desc">
-          {vfx_content.get('description', 'Production shots, feature film breakdowns, and commercials across world-class visual effects studios.')}
-        </p>
+        <h1 class="section-title">{vfx_title_inner}</h1>
+        <p class="section-desc">{vfx_desc_inner}</p>
       </div>
 
       <!-- Filter Controls: Dynamic Categories (No count on 'All', dynamically appends any added category) -->
@@ -695,8 +698,8 @@ def sync_all():
 
     photo_title = photo_page_info.get("title", "Photography & 360° Panoramas")
     photo_desc = photo_page_info.get("description", "")
-    photo_title_inner = photo_title if photo_title else '&nbsp;'
-    photo_desc_inner = photo_desc if photo_desc else ''
+    photo_title_inner = photo_title.strip() if photo_title else '&nbsp;'
+    photo_desc_inner = photo_desc.strip() if photo_desc else '&nbsp;'
 
     photo_files = sorted([f for f in os.listdir(gallery_dir) if os.path.splitext(f)[1].lower() in valid_img_exts]) if os.path.exists(gallery_dir) else []
     photo_cards_html = []
@@ -908,8 +911,8 @@ def sync_all():
 
     page_title = about_data.get("title", "About Me")
     page_desc = about_data.get("description", "")
-    title_inner = page_title if page_title else '&nbsp;'
-    desc_inner = page_desc if page_desc else ''
+    title_inner = page_title.strip() if page_title else '&nbsp;'
+    desc_inner = page_desc.strip() if page_desc else '&nbsp;'
 
     # 1. Contact Info Lines (separate key section in aboutMe.json, one per line, expands height)
     contact_lines_data = (
@@ -1140,8 +1143,8 @@ def sync_all():
 
     ai_title = ai_page_info.get("title", "ComfyUI Pipelines & AI Toolsets")
     ai_desc = ai_page_info.get("description", "")
-    ai_title_inner = ai_title if ai_title else '&nbsp;'
-    ai_desc_inner = ai_desc if ai_desc else ''
+    ai_title_inner = ai_title.strip() if ai_title else '&nbsp;'
+    ai_desc_inner = ai_desc.strip() if ai_desc else '&nbsp;'
 
     ai_html = f'''<!DOCTYPE html>
 <html lang="en">
@@ -1305,8 +1308,8 @@ def sync_all():
 
     blog_title = blog_page_info.get("title", "Technical Blog & Guides")
     blog_desc = blog_page_info.get("description", "")
-    blog_title_inner = blog_title if blog_title else '&nbsp;'
-    blog_desc_inner = blog_desc if blog_desc else ''
+    blog_title_inner = blog_title.strip() if blog_title else '&nbsp;'
+    blog_desc_inner = blog_desc.strip() if blog_desc else '&nbsp;'
 
     # 2. Discover and Parse all Dated Post Folders in pages/06_blog/posts/
     posts_base_dir = os.path.join(blog_dir, "posts")
@@ -1332,17 +1335,20 @@ def sync_all():
                 "readTime": "5 min read"
             }
 
-            # Date extraction from folder name: YYYY-MM-DD...
+            # Date extraction strictly from folder name: YYYY-MM-DD... (single source of truth)
             date_match = re.match(r'^(\d{4})-(\d{2})-(\d{2})', folder_name)
-            if date_match:
-                post_meta["date"] = f"{date_match.group(1)}-{date_match.group(2)}-{date_match.group(3)}"
+            post_date = f"{date_match.group(1)}-{date_match.group(2)}-{date_match.group(3)}" if date_match else "2026-01-01"
+            post_meta["date"] = post_date
 
             # Load post.json if present
             post_json_path = os.path.join(folder_path, "post.json")
             if os.path.exists(post_json_path):
                 try:
                     with open(post_json_path, "r", encoding="utf-8") as f:
-                        post_meta.update(json.load(f))
+                        loaded_json = json.load(f)
+                        if isinstance(loaded_json, dict):
+                            loaded_json.pop("date", None) # strictly fetched from folder name
+                            post_meta.update(loaded_json)
                 except Exception:
                     pass
 
@@ -1362,10 +1368,14 @@ def sync_all():
                     try:
                         frontmatter = yaml.safe_load(parts[1])
                         if isinstance(frontmatter, dict):
+                            frontmatter.pop("date", None) # strictly fetched from folder name
                             post_meta.update(frontmatter)
                             md_content = parts[2].strip()
                     except Exception:
                         pass
+
+            # Enforce date strictly from folder name
+            post_meta["date"] = post_date
 
             # Resolve thumbnail image
             thumbnail_path = ""
@@ -1608,10 +1618,27 @@ def sync_all():
 
   <!-- Full Post Reader Modal (Expanded Reading View) -->
   <div id="blogReaderOverlay" class="blog-reader-overlay" aria-hidden="true">
+
+    <!-- Fixed Left Flank Preview Tile: Previous Post (Landscape only, fixed center vertically) -->
+    <aside class="reader-flank-card reader-flank-prev" id="readerFlankPrev" onclick="navigatePost(-1)" title="Go to Previous Post">
+      <div class="tile-circling-border" aria-hidden="true"></div>
+      <div class="tile-inner flank-card-inner">
+        <div class="flank-badge-row">
+          <span class="flank-nav-indicator">&larr; Previous</span>
+          <span class="flank-category" id="flankPrevCategory"></span>
+        </div>
+        <div class="flank-media">
+          <img id="flankPrevImg" src="" alt="Previous Post" class="flank-thumb">
+        </div>
+        <h4 class="flank-title" id="flankPrevTitle"></h4>
+        <div class="flank-date" id="flankPrevDate"></div>
+      </div>
+    </aside>
+
     <div class="blog-reader-dialog" role="dialog" aria-modal="true">
       
       <div class="blog-reader-topbar">
-        <span class="reader-category-pill" id="readerCategory">Category</span>
+        <span class="reader-category-pill" id="readerCategory" title="Filter by category">Category</span>
         <button type="button" class="reader-close-btn" onclick="closePostModal()" title="Close (Esc)">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
@@ -1637,7 +1664,7 @@ def sync_all():
 
         <div class="reader-body" id="readerBody"></div>
 
-        <!-- Bottom Post Navigation: Move to Previous & Next Post -->
+        <!-- Bottom Post Navigation: Move to Previous & Next Post (50/50 full area) -->
         <nav class="reader-footer-nav">
           <button type="button" class="reader-nav-btn prev-post-btn" id="readerPrevBtn" onclick="navigatePost(-1)">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
@@ -1645,10 +1672,6 @@ def sync_all():
               <span class="nav-sub">Previous Post</span>
               <span class="nav-title" id="readerPrevTitle">Prev Title</span>
             </div>
-          </button>
-
-          <button type="button" class="reader-close-bottom-btn" onclick="closePostModal()">
-            Back to All Posts
           </button>
 
           <button type="button" class="reader-nav-btn next-post-btn" id="readerNextBtn" onclick="navigatePost(1)">
@@ -1663,6 +1686,23 @@ def sync_all():
       </article>
 
     </div>
+
+    <!-- Fixed Right Flank Preview Tile: Next Post (Landscape only, fixed center vertically) -->
+    <aside class="reader-flank-card reader-flank-next" id="readerFlankNext" onclick="navigatePost(1)" title="Go to Next Post">
+      <div class="tile-circling-border" aria-hidden="true"></div>
+      <div class="tile-inner flank-card-inner">
+        <div class="flank-badge-row">
+          <span class="flank-category" id="flankNextCategory"></span>
+          <span class="flank-nav-indicator">Next &rarr;</span>
+        </div>
+        <div class="flank-media">
+          <img id="flankNextImg" src="" alt="Next Post" class="flank-thumb">
+        </div>
+        <h4 class="flank-title" id="flankNextTitle"></h4>
+        <div class="flank-date" id="flankNextDate"></div>
+      </div>
+    </aside>
+
   </div>
 
   <script id="blogPostsData" type="application/json">

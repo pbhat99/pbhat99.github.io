@@ -33,6 +33,7 @@ myenv/Scripts/activate
 
 ---
 
+
 ## 3. Automated Dependency Installation
 
 FaceFusion includes a built-in installer script that configures `onnxruntime-gpu` and PyTorch automatically:
