@@ -3,6 +3,10 @@ $projectRoot = Split-Path -Parent $PSScriptRoot
 if (-not $projectRoot) { $projectRoot = Get-Location }
 Set-Location $projectRoot
 
+# Resolve Python executable
+$pyCandidate = "$env:LOCALAPPDATA\Programs\Python\Python314\python.exe"
+$pyExe = if (Test-Path $pyCandidate) { $pyCandidate } else { "python" }
+
 $port = 8080
 
 # 1. Release any stale process listening on port 8080
@@ -46,4 +50,4 @@ Write-Host "  URL: http://localhost:$port" -ForegroundColor Green
 Write-Host "  Closing this terminal window will kill the server." -ForegroundColor Yellow
 Write-Host "===================================================" -ForegroundColor Cyan
 
-python watcher.py
+& $pyExe watcher.py

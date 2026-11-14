@@ -8,10 +8,17 @@ echo.
 
 cd /d "%~dp0"
 
-:: 1. Verify Prerequisites
-where python >nul 2>nul
+:: 1. Verify Prerequisites & Resolve Python
+if exist "%LOCALAPPDATA%\Programs\Python\Python314\python.exe" (
+    set "PATH=%LOCALAPPDATA%\Programs\Python\Python314;%LOCALAPPDATA%\Programs\Python\Python314\Scripts;%LOCALAPPDATA%\Programs\Python\Launcher;%PATH%"
+    set "PY_EXE=%LOCALAPPDATA%\Programs\Python\Python314\python.exe"
+) else (
+    set "PY_EXE=python"
+)
+
+"%PY_EXE%" --version >nul 2>nul
 if %ERRORLEVEL% neq 0 (
-    echo [ERROR] Python is not installed or not in PATH!
+    echo [ERROR] Python is not installed or not working!
     pause
     exit /b 1
 )
@@ -25,7 +32,7 @@ if %ERRORLEVEL% neq 0 (
 
 :: 2. Run Site-Wide WebP Conversion and Build
 echo [1/6] Running site-wide WebP conversion and rebuilding all pages...
-python build.py --convert-webp
+"%PY_EXE%" build.py --convert-webp
 if %ERRORLEVEL% neq 0 (
     echo.
     echo [ERROR] Build failed! Please review the error above.
@@ -36,7 +43,7 @@ if %ERRORLEVEL% neq 0 (
 :: 3. Run Site Verification
 echo.
 echo [2/6] Verifying site links, CSS, JS, and image assets...
-python tools/verify_site.py
+"%PY_EXE%" tools/verify_site.py
 if %ERRORLEVEL% neq 0 (
     echo.
     echo [ERROR] Site verification failed!
