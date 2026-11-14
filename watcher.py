@@ -33,23 +33,31 @@ def watch_loop():
             print("[Watcher] ⚡ Detected changes in pages/ folder, rebuilding...")
             try:
                 importlib.reload(build)
-                build.sync_all()
+                build.sync_all(convert_webp=False)
                 print("[Watcher] ✅ Site refreshed successfully!\n")
             except Exception as e:
                 print(f"[Watcher] ❌ Error syncing: {e}")
             last_state = current_state
 
+class NoCacheHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
+    def end_headers(self):
+        self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+        self.send_header("Pragma", "no-cache")
+        self.send_header("Expires", "0")
+        super().end_headers()
+
 def start_server():
-    Handler = http.server.SimpleHTTPRequestHandler
-    with socketserver.TCPServer(("", PORT), Handler) as httpd:
-        print(f"[Server] 🚀 Serving at http://localhost:{PORT}/")
+    socketserver.TCPServer.allow_reuse_address = True
+    with socketserver.TCPServer(("", PORT), NoCacheHTTPRequestHandler) as httpd:
+        print(f"[Server] 🚀 Serving at http://localhost:{PORT}/ (no-cache enabled)")
+        print("[Server] 💡 Press Ctrl+C or close this window to stop the server.\n")
         try:
             httpd.serve_forever()
         except KeyboardInterrupt:
-            pass
+            print("\n[Server] 🛑 Stopping server cleanly...")
 
 if __name__ == "__main__":
-    build.sync_all()
+    build.sync_all(convert_webp=False)
     t = threading.Thread(target=watch_loop, daemon=True)
     t.start()
     start_server()

@@ -35,7 +35,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Build site and optimize WebP images
-        run: python build.py
+        run: python build.py --convert-webp
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

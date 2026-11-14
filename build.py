@@ -1,4 +1,5 @@
 import os
+import sys
 import re
 import json
 import html
@@ -212,9 +213,11 @@ def convert_all_pages_images_to_webp(root_dir="pages"):
                     except Exception as ref_err:
                         print(f"  [Ref Update Error] {file_path}: {ref_err}")
 
-def sync_all():
+def sync_all(convert_webp=False):
     print("=== Syncing site (Site-wide WebP, VFX company structure, Proportional Backgrounds) ===")
-    convert_all_pages_images_to_webp("pages")
+    if convert_webp:
+        print("  -> [WebP Optimization] Converting source images across pages/ to WebP...")
+        convert_all_pages_images_to_webp("pages")
 
     # --------------------------------------------------------------------------
     # 1. SYNC HOME PAGE (pages/01_home)
@@ -784,32 +787,34 @@ def sync_all():
             return []
 
         # 1. Convert any non-webp source image to webp and replace original file
-        from PIL import Image
-        for fname in os.listdir(dir_path):
-            if fname.startswith('.'):
-                continue
-            base, ext = os.path.splitext(fname)
-            ext_lower = ext.lower()
-            if ext_lower in ('.jpg', '.jpeg', '.png', '.avif', '.gif', '.bmp', '.tiff'):
-                src_path = os.path.join(dir_path, fname)
-                webp_path = os.path.join(dir_path, f"{base}.webp")
-                try:
-                    with Image.open(src_path) as im:
-                        if im.mode in ('RGBA', 'LA') or (im.mode == 'P' and 'transparency' in im.info):
-                            im_conv = im.convert('RGBA')
-                            im_conv.save(webp_path, 'WEBP', quality=90, method=6)
-                        else:
-                            im_conv = im.convert('RGB')
-                            im_conv.save(webp_path, 'WEBP', quality=85, method=6)
-                    print(f"  [WebP Conversion] Replaced {fname} -> {base}.webp")
+        if convert_webp:
+            from PIL import Image
+            for fname in os.listdir(dir_path):
+                if fname.startswith('.'):
+                    continue
+                base, ext = os.path.splitext(fname)
+                ext_lower = ext.lower()
+                if ext_lower in ('.jpg', '.jpeg', '.png', '.avif', '.gif', '.bmp', '.tiff'):
+                    src_path = os.path.join(dir_path, fname)
+                    webp_path = os.path.join(dir_path, f"{base}.webp")
                     try:
-                        os.remove(src_path)
-                    except OSError as rm_err:
-                        print(f"  [Warning] Could not remove original {src_path}: {rm_err}")
-                except Exception as err:
-                    print(f"  [WebP Error] {src_path}: {err}")
+                        with Image.open(src_path) as im:
+                            if im.mode in ('RGBA', 'LA') or (im.mode == 'P' and 'transparency' in im.info):
+                                im_conv = im.convert('RGBA')
+                                im_conv.save(webp_path, 'WEBP', quality=90, method=6)
+                            else:
+                                im_conv = im.convert('RGB')
+                                im_conv.save(webp_path, 'WEBP', quality=85, method=6)
+                        print(f"  [WebP Conversion] Replaced {fname} -> {base}.webp")
+                        try:
+                            os.remove(src_path)
+                        except OSError as rm_err:
+                            print(f"  [Warning] Could not remove original {src_path}: {rm_err}")
+                    except Exception as err:
+                        print(f"  [WebP Error] {src_path}: {err}")
 
         # 2. Read and index all .webp files
+        from PIL import Image
         webp_files = sorted([f for f in os.listdir(dir_path) if f.lower().endswith('.webp') and not f.startswith('.')])
         items = []
         for f in webp_files:
@@ -837,7 +842,7 @@ def sync_all():
     # Convert photography background.jpg to background.webp if present and delete original
     photo_bg_jpg = os.path.join(photo_dir, "background.jpg")
     photo_bg_webp = os.path.join(photo_dir, "background.webp")
-    if os.path.exists(photo_bg_jpg):
+    if convert_webp and os.path.exists(photo_bg_jpg):
         try:
             from PIL import Image
             with Image.open(photo_bg_jpg) as im:
@@ -2056,4 +2061,5 @@ def sync_all():
     print("\nSUCCESS: All pages synchronized cleanly!")
 
 if __name__ == "__main__":
-    sync_all()
+    convert_flag = ("--convert-webp" in sys.argv) or ("-w" in sys.argv)
+    sync_all(convert_webp=convert_flag)

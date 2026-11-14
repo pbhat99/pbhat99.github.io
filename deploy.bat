@@ -25,7 +25,7 @@ if %ERRORLEVEL% neq 0 (
 
 :: 2. Run Site-Wide WebP Conversion and Build
 echo [1/6] Running site-wide WebP conversion and rebuilding all pages...
-python build.py
+python build.py --convert-webp
 if %ERRORLEVEL% neq 0 (
     echo.
     echo [ERROR] Build failed! Please review the error above.
