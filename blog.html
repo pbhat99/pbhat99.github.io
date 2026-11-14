@@ -173,6 +173,19 @@
       </svg>
     </button>
 
+    <!-- Pinned Side Navigation Arrows: Left (Previous Post) & Right (Next Post) -->
+    <button type="button" class="reader-side-nav reader-side-prev" id="readerSidePrev" onclick="navigatePost(-1)" aria-label="Previous Post" title="Previous Post">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+    </button>
+
+    <button type="button" class="reader-side-nav reader-side-next" id="readerSideNext" onclick="navigatePost(1)" aria-label="Next Post" title="Next Post">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    </button>
+
     <!-- Pinned Floating Move-to-Top Button (Viewport bottom-right, matches VFX page) -->
     <button type="button" class="back-to-top reader-back-to-top" id="readerBackToTop" onclick="scrollReaderToTop()" aria-label="Scroll to top" title="Scroll to top">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">

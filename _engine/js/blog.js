@@ -471,15 +471,17 @@
   }
 
   // --------------------------------------------------------------------------
-  // Update Bottom Nav Buttons & Fixed Flank Preview Tiles
+  // Update Bottom Nav Buttons & Pinned Side Navigation Arrows
   // --------------------------------------------------------------------------
   function updateReaderNavButtons() {
     const prevBtn = document.getElementById('readerPrevBtn');
     const nextBtn = document.getElementById('readerNextBtn');
     const prevTitle = document.getElementById('readerPrevTitle');
     const nextTitle = document.getElementById('readerNextTitle');
+    const sidePrev = document.getElementById('readerSidePrev');
+    const sideNext = document.getElementById('readerSideNext');
 
-    // Bottom Footer Prev Button
+    // Bottom Footer Prev Button & Pinned Side Prev Arrow
     if (currentActivePostIndex > 0) {
       const prevPost = allPosts[currentActivePostIndex - 1];
       if (prevBtn) {
@@ -487,14 +489,22 @@
         prevBtn.disabled = false;
       }
       if (prevTitle) prevTitle.textContent = prevPost.title;
+      if (sidePrev) {
+        sidePrev.style.display = 'flex';
+        sidePrev.title = 'Previous: ' + prevPost.title;
+        sidePrev.setAttribute('aria-label', 'Previous: ' + prevPost.title);
+      }
     } else {
       if (prevBtn) {
         prevBtn.style.display = 'none';
         prevBtn.disabled = true;
       }
+      if (sidePrev) {
+        sidePrev.style.display = 'none';
+      }
     }
 
-    // Bottom Footer Next Button
+    // Bottom Footer Next Button & Pinned Side Next Arrow
     if (currentActivePostIndex < allPosts.length - 1) {
       const nextPost = allPosts[currentActivePostIndex + 1];
       if (nextBtn) {
@@ -502,10 +512,18 @@
         nextBtn.disabled = false;
       }
       if (nextTitle) nextTitle.textContent = nextPost.title;
+      if (sideNext) {
+        sideNext.style.display = 'flex';
+        sideNext.title = 'Next: ' + nextPost.title;
+        sideNext.setAttribute('aria-label', 'Next: ' + nextPost.title);
+      }
     } else {
       if (nextBtn) {
         nextBtn.style.display = 'none';
         nextBtn.disabled = true;
+      }
+      if (sideNext) {
+        sideNext.style.display = 'none';
       }
     }
   }

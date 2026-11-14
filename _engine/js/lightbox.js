@@ -34,6 +34,8 @@ export function scanLightboxTriggers() {
         touchNavigation: true,
         loop: true,
         zoomable: true,
+        openEffect: 'fade',
+        closeEffect: 'fade',
         autoplayVideos: false
       });
     } catch (e) {
@@ -55,13 +57,14 @@ export function openLightboxItems(items, startIndex = 0) {
     return {
       href: href,
       type: 'image',
-      title: title
+      title: title || ''
     };
   });
 
   // Destroy previous dynamic instance if any
   if (glightboxInstance) {
     try { glightboxInstance.destroy(); } catch (e) {}
+    glightboxInstance = null;
   }
 
   try {
@@ -71,11 +74,21 @@ export function openLightboxItems(items, startIndex = 0) {
       loop: elements.length > 1,
       zoomable: true,
       touchNavigation: true,
-      openEffect: 'zoom',
-      closeEffect: 'zoom'
+      openEffect: 'fade',
+      closeEffect: 'fade'
     });
 
-    glightboxInstance.openAt(startIndex);
+    // Hide blog reader floating buttons while lightbox is open to eliminate any overlap
+    glightboxInstance.on('open', () => {
+      document.body.classList.add('lightbox-active');
+    });
+
+    glightboxInstance.on('close', () => {
+      document.body.classList.remove('lightbox-active');
+    });
+
+    // open() directly displays the slide specified by startAt without race condition
+    glightboxInstance.open();
   } catch (err) {
     console.error('Error opening GLightbox:', err);
   }

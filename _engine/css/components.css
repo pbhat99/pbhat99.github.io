@@ -199,17 +199,56 @@
   -webkit-backdrop-filter: blur(14px) !important;
 }
 
+/* Eliminate GLightbox white bar completely */
+.gslide-description,
+.gdesc-inner,
+.gslide-inline,
+.ginlined-content {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.gslide-description:empty,
+.gdesc-inner:empty {
+  display: none !important;
+}
+
+.gslide-title {
+  color: #ffffff !important;
+  font-family: 'Ubuntu', sans-serif !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  text-align: center !important;
+  margin: 0 !important;
+  background: rgba(14, 23, 51, 0.85) !important;
+  border: 1px solid rgba(249, 134, 3, 0.3) !important;
+  border-radius: 6px !important;
+  padding: 6px 14px !important;
+  display: inline-block !important;
+}
+
+.gslide-desc {
+  color: var(--text-muted) !important;
+  font-size: 0.85rem !important;
+  text-align: center !important;
+  margin: 4px 0 0 !important;
+}
+
 .glightbox-clean .gclose,
 .glightbox-clean .gprev,
 .glightbox-clean .gnext {
-  background-color: rgba(14, 23, 51, 0.9) !important;
-  border: 1px solid rgba(249, 134, 3, 0.45) !important;
-  color: #ffffff !important;
+  background-color: rgba(14, 23, 51, 0.94) !important;
+  border: 1px solid var(--accent-primary) !important;
+  color: var(--accent-primary) !important;
   border-radius: 50% !important;
   width: 46px !important;
   height: 46px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   transition: all 0.2s ease !important;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6) !important;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.55), 0 0 12px rgba(249, 134, 3, 0.2) !important;
 }
 
 .glightbox-clean .gclose:hover,
@@ -219,7 +258,7 @@
   border-color: var(--accent-hover) !important;
   color: #ffffff !important;
   transform: scale(1.08) !important;
-  box-shadow: 0 6px 24px rgba(249, 134, 3, 0.5) !important;
+  box-shadow: 0 8px 28px rgba(249, 134, 3, 0.55) !important;
 }
 
 .glightbox-clean .gprev {
@@ -235,16 +274,13 @@
   right: 24px !important;
 }
 
-.gslide-title {
-  color: #ffffff !important;
-  font-family: 'Ubuntu', sans-serif !important;
-  font-size: 1.05rem !important;
-  font-weight: 700 !important;
-}
-
-.gslide-desc {
-  color: var(--text-muted) !important;
-  font-size: 0.9rem !important;
+/* Prevent close button and reader control overlap when lightbox is active */
+body.lightbox-active .reader-floating-close,
+body.lightbox-active .reader-back-to-top,
+body.lightbox-active .reader-side-nav {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
 }
 
 /* ==========================================================================
