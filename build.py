@@ -1351,10 +1351,7 @@ def sync_all(convert_webp=False):
                             if os.path.exists(os.path.join(social_folder, resolved_img)):
                                 social_tiles_html.append(f'''
             <a href="{s_link}" target="_blank" rel="noopener noreferrer" class="social-tile" title="{s_name}">
-              <div class="tile-circling-border" aria-hidden="true"></div>
-              <div class="tile-inner">
-                <img src="{s_img_path}" alt="{s_name}" class="social-icon-img" loading="lazy">
-              </div>
+              <img src="{s_img_path}" alt="{s_name}" class="social-icon-img" loading="lazy">
             </a>''')
             except Exception as e:
                 print("Notice reading social.json:", e)
