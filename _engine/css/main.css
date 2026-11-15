@@ -981,68 +981,84 @@ button {
   font-size: 0.95rem;
 }
 
-/* Single row of square tools fitted to overall width */
-.known-tools-section {
-  margin-block: 56px 48px;
+/* Known Tools Strip - Fixed Height (80% of original 10-tool height = 82px), Centered, Strictly Single Line */
+:root {
+  --tool-size-fixed: 82px;
 }
 
-.known-tools-heading {
-  font-family: 'Ubuntu', sans-serif;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--text-main);
-  margin-bottom: 20px;
+.known-tools-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-block: 48px 44px;
 }
 
 .known-tools-strip {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
-  gap: clamp(10px, 1.6vw, 18px);
-  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
   align-items: center;
+  flex-wrap: nowrap !important;
+  width: 100%;
+  max-width: 100%;
+  height: var(--tool-size-fixed);
+  gap: var(--tool-gap, clamp(8px, 1.8vw, 24px));
+  margin-inline: auto;
+  box-sizing: border-box;
 }
 
 .known-tool-card {
   position: relative;
+  height: var(--tool-size-fixed);
+  width: var(--tool-size-fixed);
+  max-height: var(--tool-size-fixed);
   aspect-ratio: 1 / 1;
+  flex: 0 1 var(--tool-size-fixed);
+  min-width: 0;
   background: transparent !important;
   border: none !important;
   border-radius: var(--radius-md);
   box-shadow: none !important;
-  padding: 8px;
+  padding: var(--tool-pad, 8px);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   user-select: none;
+  box-sizing: border-box;
 }
 
 .known-tool-card:hover {
-  transform: scale(1.15);
+  transform: scale(1.18);
+  z-index: 10;
 }
 
 .known-tool-img {
   width: 100%;
   height: 100%;
+  max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
   filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
   transition: transform 0.25s ease;
+  pointer-events: none;
 }
 
 /* Centered Name Overlay on Tool Hover (No Box or Outline in Normal State) */
 .known-tool-hover {
   position: absolute;
-  inset: 0;
+  inset: -2px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(14, 23, 51, 0.92);
+  background: rgba(14, 23, 51, 0.94);
   border-radius: var(--radius-sm);
   border: 1px solid var(--accent-primary);
   opacity: 0;
   transition: opacity 0.2s ease;
-  z-index: 3;
+  z-index: 12;
   padding: 4px 6px;
   text-align: center;
   pointer-events: none;
@@ -1055,7 +1071,7 @@ button {
 
 .known-tool-name {
   font-family: 'Ubuntu', sans-serif;
-  font-size: clamp(0.72rem, 1vw, 0.86rem);
+  font-size: clamp(0.7rem, 0.9vw, 0.84rem);
   font-weight: 700;
   color: #ffffff;
   line-height: 1.2;
@@ -1101,8 +1117,8 @@ button {
     width: 100%;
   }
   .known-tools-strip {
-    grid-template-columns: repeat(5, 1fr);
-    gap: 10px;
+    flex-wrap: nowrap !important;
+    gap: var(--tool-gap-mobile, clamp(4px, 1.2vw, 10px));
   }
 }
 

@@ -1167,9 +1167,31 @@ def sync_all(convert_webp=False):
 
     tools_section_html = ""
     if tools_cards_html:
+        num_tools = len(tools_cards_html)
+        # Dynamically set gap and padding based on number of tools:
+        # - Fewer tools (e.g. 3-4) -> larger padding & gap, perfectly centered
+        # - More tools (up to 15) -> smaller padding & gap to fit strictly in a single line
+        # - Fixed height is 82px (80% of original 10-tool arrangement)
+        if num_tools <= 4:
+            tool_gap = "clamp(24px, 3.5vw, 42px)"
+            tool_pad = "12px"
+        elif num_tools <= 7:
+            tool_gap = "clamp(16px, 2.2vw, 26px)"
+            tool_pad = "9px"
+        elif num_tools <= 10:
+            tool_gap = "clamp(10px, 1.5vw, 18px)"
+            tool_pad = "7px"
+        elif num_tools <= 12:
+            tool_gap = "clamp(7px, 1.1vw, 13px)"
+            tool_pad = "5px"
+        else:
+            # 13 to 15+ tools: reduced padding to make room for all
+            tool_gap = "clamp(4px, 0.8vw, 8px)"
+            tool_pad = "4px"
+
         tools_section_html = f'''
       <section class="known-tools-section">
-        <div class="known-tools-strip">
+        <div class="known-tools-strip" style="--tool-count: {num_tools}; --tool-gap: {tool_gap}; --tool-pad: {tool_pad};">
           {"".join(tools_cards_html)}
         </div>
       </section>'''
