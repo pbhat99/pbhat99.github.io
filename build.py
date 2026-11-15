@@ -521,7 +521,8 @@ def sync_all(convert_webp=False):
             "description": "",
             "color": "#0e1733",
             "cardBgColor": "#131e42",
-            "cardBgOpacity": 85
+            "cardBgOpacity": 85,
+            "link": ""
         }
         comp_info_file = os.path.join(comp_path, "companyInfo.json")
         if not os.path.exists(comp_info_file):
@@ -538,6 +539,7 @@ def sync_all(convert_webp=False):
         comp_designation = comp_info.get("designation", "")
         comp_description = comp_info.get("description", "")
         comp_color = comp_info.get("color", "#0e1733")
+        comp_link = (comp_info.get("link") or "").strip()
         card_bg_color = comp_info.get("cardBgColor", "#131e42")
         card_bg_opacity = comp_info.get("cardBgOpacity", 85)
         tile_bg_rgba = hex_to_rgba(card_bg_color, card_bg_opacity)
@@ -663,7 +665,18 @@ def sync_all(convert_webp=False):
           <img src="{banner_path}" alt="{company_name} Logo" class="company-banner-logo-img">
         </div>''' if banner_path else ''
 
-        company_banner_html = f'''
+        if comp_link:
+            company_banner_html = f'''
+        <a href="{comp_link}" target="_blank" rel="noopener noreferrer" class="company-banner-strip is-clickable" style="background-color: {comp_color};" title="Visit {company_name}">
+          <div class="company-banner-info">
+            <h2 class="company-banner-heading">{company_name}</h2>
+            {meta_html}
+            {description_html}
+          </div>
+          {logo_html}
+        </a>'''
+        else:
+            company_banner_html = f'''
         <div class="company-banner-strip" style="background-color: {comp_color};">
           <div class="company-banner-info">
             <h2 class="company-banner-heading">{company_name}</h2>
@@ -1484,20 +1497,25 @@ def sync_all(convert_webp=False):
     ai_desc_inner = ai_desc.strip() if ai_desc else '&nbsp;'
 
     # Resolve Before/After Inpaint Demo images
-    ba_before_img = "pages/02_VFX/02_The-Mill/02_goatbusters/projectImage.webp"
-    ba_after_img = "pages/02_VFX/02_The-Mill/03_gmc-hummer-ev-quiet-revolution/projectImage.webp"
-    for vfx_comp in glob.glob("pages/02_VFX/*"):
+    ba_before_img = ""
+    ba_after_img = ""
+    for gb_match in glob.glob("pages/02_VFX/*/*goatbusters*"):
         for cand_ext in [".webp", ".jpg", ".jpeg", ".png"]:
-            cand_before = os.path.join(vfx_comp, "02_goatbusters", f"projectImage{cand_ext}").replace("\\", "/")
-            if os.path.exists(cand_before):
-                ba_before_img = cand_before
+            cand = os.path.join(gb_match, f"projectImage{cand_ext}").replace("\\", "/")
+            if os.path.exists(cand):
+                ba_before_img = cand
                 break
-    for vfx_comp in glob.glob("pages/02_VFX/*"):
+        if ba_before_img:
+            break
+
+    for gmc_match in glob.glob("pages/02_VFX/*/*gmc-hummer*"):
         for cand_ext in [".webp", ".jpg", ".jpeg", ".png"]:
-            cand_after = os.path.join(vfx_comp, "03_gmc-hummer-ev-quiet-revolution", f"projectImage{cand_ext}").replace("\\", "/")
-            if os.path.exists(cand_after):
-                ba_after_img = cand_after
+            cand = os.path.join(gmc_match, f"projectImage{cand_ext}").replace("\\", "/")
+            if os.path.exists(cand):
+                ba_after_img = cand
                 break
+        if ba_after_img:
+            break
 
     # Resolve Workflow Architecture image
     workflow_img = "pages/03_ai-comfy/workflows/comfyui-production-pipeline.webp"

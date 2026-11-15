@@ -5,5 +5,6 @@
   "description": "Visual effects compositing for feature films, episodic television, and major commercial productions.",
   "color": "#017fd3",
   "cardBgColor": "#017fd3",
-  "cardBgOpacity": 75
+  "cardBgOpacity": 75,
+  "link": ""
 }

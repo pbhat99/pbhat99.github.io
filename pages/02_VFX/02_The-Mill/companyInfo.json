@@ -5,5 +5,6 @@
   "description": "Award-winning commercials, automotive CG integration, photoreal creature compositing, and music videos.",
   "color": "#000000",
   "cardBgColor": "#000000",
-  "cardBgOpacity": 75
+  "cardBgOpacity": 75,
+  "link": "https://www.themill.com"
 }
