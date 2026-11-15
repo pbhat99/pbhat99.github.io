@@ -7,5 +7,5 @@
     "Nuke",
     "Mocha"
   ],
-  "orientation": "horizontal"
+  "orientation": "vertical"
 }
