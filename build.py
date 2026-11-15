@@ -74,10 +74,19 @@ def get_page_background_and_overlay(page_dir):
 
     overlay_alpha = round(opacity_num / 100.0, 3)
 
-    bg_img_html = f'<div class="site-bg-image" style="background-image: url(\'{resolved_bg}\');"></div>' if resolved_bg else ''
+    # Append cache-busting timestamp query parameter so browsers/CDNs always fetch updated images
+    resolved_bg_url = resolved_bg
+    if resolved_bg and os.path.exists(resolved_bg):
+        try:
+            mtime = int(os.path.getmtime(resolved_bg))
+            resolved_bg_url = f"{resolved_bg}?v={mtime}"
+        except OSError:
+            pass
+
+    bg_img_html = f'<div class="site-bg-image" style="background-image: url(\'{resolved_bg_url}\');"></div>' if resolved_bg else ''
     bg_overlay_html = f'<div class="site-bg-overlay" style="opacity: {overlay_alpha};"></div>' if resolved_bg else ''
 
-    return bg_img_html, bg_overlay_html, resolved_bg, overlay_alpha
+    return bg_img_html, bg_overlay_html, resolved_bg_url, overlay_alpha
 
 def hex_to_rgba(hex_str, opacity_val=100):
     """Converts a hex string like #0e1733 and opacity (0-100 or 0.0-1.0) to rgba(...)"""

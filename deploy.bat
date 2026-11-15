@@ -51,17 +51,14 @@ if %ERRORLEVEL% neq 0 (
     exit /b %ERRORLEVEL%
 )
 
-:: 4. Stage All Changes in Git
+:: 4. Stage & Commit Changes on dev
 echo.
-echo [3/6] Staging changes in git (dev branch)...
+echo [3/5] Staging and committing changes to dev...
 git add -A
 
-:: 5. Commit Changes on dev
-echo.
-echo [4/6] Committing changes to dev...
 set "COMMIT_MSG=%~1"
 if "!COMMIT_MSG!"=="" (
-    set "COMMIT_MSG=deploy: site update and WebP optimization"
+    set "COMMIT_MSG=deploy: site update, assets, and WebP optimization"
 )
 
 git diff --cached --quiet
@@ -74,47 +71,33 @@ if %ERRORLEVEL% neq 0 (
 
 :: 6. Push dev branch to remote
 echo.
-echo [5/6] Pushing dev branch to origin/dev...
+echo [4/5] Pushing dev branch to origin/dev...
 git push origin dev
 if %ERRORLEVEL% neq 0 (
     echo.
     echo [WARNING] Failed to push dev branch to origin. Check internet/git credentials.
 )
 
-:: 7. Merge dev into main and push to trigger GitHub Pages
+:: 7. Replace main branch ENTIRELY with current dev branch
 echo.
-echo [6/6] Merging dev into main and pushing to origin/main (triggers GitHub Pages)...
-git checkout main
+echo [5/5] Mirroring dev branch to main (replaces main entirely on GitHub)...
+:: Update local main branch pointer to match dev exactly
+git branch -f main dev
+
+:: Force-push dev directly into origin/main so main is an exact 1:1 mirror of dev (all updates, deletions, modifications)
+git push origin dev:main --force
 if %ERRORLEVEL% neq 0 (
     echo.
-    echo [ERROR] Could not checkout main branch.
+    echo [ERROR] Failed to push to origin/main!
     pause
     exit /b 1
 )
-
-git merge dev --no-edit
-if %ERRORLEVEL% neq 0 (
-    echo.
-    echo [ERROR] Merge conflict occurred while merging dev into main!
-    git checkout dev
-    pause
-    exit /b 1
-)
-
-git push origin main
-if %ERRORLEVEL% neq 0 (
-    echo.
-    echo [WARNING] Failed to push main to origin. Check internet/git credentials.
-)
-
-:: 8. Return to dev branch
-git checkout dev
 
 echo.
 echo ======================================================================
 echo  SUCCESS: Site successfully built, optimized, committed, and deployed!
-echo  GitHub Pages is now deploying the latest main branch.
-echo  Working branch is back on 'dev'.
+echo  main branch on GitHub is now an exact 1:1 mirror of dev.
+echo  GitHub Pages is deploying your latest changes.
 echo ======================================================================
 echo.
 pause
