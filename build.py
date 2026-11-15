@@ -129,7 +129,7 @@ def generate_nav_html(active_page="home"):
         links_html.append(f'<li><a href="{href}"{active_cls}>{label}</a></li>')
 
     return f'''  <header class="site-header">
-    <div class="container-wide nav-wrapper">
+    <div class="nav-wrapper">
       <a href="index.html" class="brand-logo">
         <img src="_engine/images/logo.png" alt="Pra Motions Logo" width="34" height="34" style="border-radius: 6px;">
         <span>Pra - <span class="brand-badge">Motions</span></span>
@@ -660,23 +660,22 @@ def sync_all(convert_webp=False):
 
         meta_html = f'<div class="company-banner-meta">{"<span class=\"company-banner-sep\"> - </span>".join(meta_items)}</div>' if meta_items else ''
         description_html = f'<div class="company-banner-desc">{comp_description}</div>' if comp_description else ''
-        logo_html = f'''
+
+        if banner_path:
+            if comp_link:
+                logo_html = f'''
+        <a href="{comp_link}" target="_blank" rel="noopener noreferrer" class="company-banner-logo-wrap is-clickable" title="Visit {company_name}">
+          <img src="{banner_path}" alt="{company_name} Logo" class="company-banner-logo-img">
+        </a>'''
+            else:
+                logo_html = f'''
         <div class="company-banner-logo-wrap">
           <img src="{banner_path}" alt="{company_name} Logo" class="company-banner-logo-img">
-        </div>''' if banner_path else ''
-
-        if comp_link:
-            company_banner_html = f'''
-        <a href="{comp_link}" target="_blank" rel="noopener noreferrer" class="company-banner-strip is-clickable" style="background-color: {comp_color};" title="Visit {company_name}">
-          <div class="company-banner-info">
-            <h2 class="company-banner-heading">{company_name}</h2>
-            {meta_html}
-            {description_html}
-          </div>
-          {logo_html}
-        </a>'''
+        </div>'''
         else:
-            company_banner_html = f'''
+            logo_html = ''
+
+        company_banner_html = f'''
         <div class="company-banner-strip" style="background-color: {comp_color};">
           <div class="company-banner-info">
             <h2 class="company-banner-heading">{company_name}</h2>

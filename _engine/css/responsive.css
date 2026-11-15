@@ -20,6 +20,11 @@
 
 /* Mobile Devices (<= 768px) */
 @media (max-width: 768px) {
+  .nav-wrapper {
+    height: 72px;
+    padding-inline: clamp(16px, 4.5vw, 24px);
+  }
+
   .mobile-nav-toggle {
     display: flex;
   }
