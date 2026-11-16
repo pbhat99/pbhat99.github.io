@@ -1138,6 +1138,17 @@ def sync_all(convert_webp=False):
     info_raw = about_data.get("info", "")
     resume_link = about_data.get("resumeLink") or (f"{about_dir}/resume.pdf" if os.path.exists(f"{about_dir}/resume.pdf") else "#")
     cover_letter_link = about_data.get("coverLetterLink") or (f"{about_dir}/coverLetter.pdf" if os.path.exists(f"{about_dir}/coverLetter.pdf") else "#")
+    showreel_title = (
+        about_data.get("showreelTitle")
+        or about_data.get("showreel title")
+        or about_data.get("showreelHeading")
+        or about_data.get("videoTitle")
+        or ""
+    ).strip()
+    info_bg_color = about_data.get("infoBGcolor") or about_data.get("infoBgColor") or "#131e42"
+    info_bg_opacity = about_data.get("infoBGopacity", about_data.get("infoBgOpacity", about_data.get("info_bg_opacity", 75)))
+    info_bg_rgba = hex_to_rgba(info_bg_color, info_bg_opacity)
+
     showreel_url = (
         about_data.get("showreelLink")
         or about_data.get("showreel link")
@@ -1243,12 +1254,18 @@ def sync_all(convert_webp=False):
                 allow_attr = "autoplay; fullscreen; picture-in-picture"
 
         if embed_src:
+            video_header_html = f'''
+        <div class="about-video-header">
+          <h2 class="about-video-heading">{showreel_title}</h2>
+        </div>''' if showreel_title else ""
+
             showreel_section_html = f'''
       <section class="about-video-card">
+        {video_header_html}
         <div class="about-video-container">
           <iframe src="{embed_src}"
                   allow="{allow_attr}" allowfullscreen
-                  title="VFX Showreel - {name}"></iframe>
+                  title="{showreel_title or 'VFX Showreel'} - {name}"></iframe>
         </div>
       </section>'''
 
@@ -1403,25 +1420,29 @@ def sync_all(convert_webp=False):
           </div>
         </div>
 
-        <div class="about-bio-col">
-          <h1 class="about-name">{name}</h1>
-          <div class="about-role-strip">{meta_role}</div>
-          <div class="about-paragraphs">
-            {paragraphs_html}
+        <div class="about-bio-col" style="--info-bg: {info_bg_rgba};">
+          <div class="about-bio-top">
+            <h1 class="about-name">{name}</h1>
+            <div class="about-role-strip">{meta_role}</div>
+            <div class="about-paragraphs">
+              {paragraphs_html}
+            </div>
           </div>
-          {social_section_html}
-          <div class="about-actions-wrap">
-            <a href="{resume_link}" class="btn btn-primary" download>Resume</a>
-            <a href="{cover_letter_link}" class="btn btn-primary" download>Cover Letter</a>
+          <div class="about-bio-bottom">
+            {social_section_html}
+            <div class="about-actions-wrap">
+              <a href="{resume_link}" class="btn btn-primary" download>Resume</a>
+              <a href="{cover_letter_link}" class="btn btn-primary" download>Cover Letter</a>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Known Tools Strip (Single Row Auto-Fitted Across Full Width) -->
-      {tools_section_html}
-
       <!-- Showreel Video Embed (Vimeo or YouTube) -->
       {showreel_section_html}
+
+      <!-- Known Tools Strip (Single Row Auto-Fitted Across Full Width) -->
+      {tools_section_html}
 
       <!-- Contact Information Card (Lines List on Left, Optional Right-Aligned Image) -->
       <section id="contact" class="contact-card">
