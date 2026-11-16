@@ -1,8 +1,13 @@
 [
   {
+    "name": "Gmail",
+    "image": "gmail.webp",
+    "link": "mailto:pbhat99@gmail.com"
+  },
+  {
     "name": "LinkedIn",
     "image": "linkedin.webp",
-    "link": "https://www.linkedin.com/in/prasannakumar-t-bhat"
+    "link": "https://www.linkedin.com/in/pbhat99"
   },
   {
     "name": "GitHub",
@@ -17,7 +22,7 @@
   {
     "name": "IMDb",
     "image": "imdb.webp",
-    "link": "https://www.imdb.com"
+    "link": "https://www.imdb.com/name/nm9329447/"
   },
   {
     "name": "ArtStation",
@@ -27,7 +32,11 @@
   {
     "name": "Instagram",
     "image": "instagram.webp",
-    "link": "https://www.instagram.com"
+    "link": "https://www.instagram.com/prasannakumar_t_bhat"
+  },
+  {
+    "name": "Facebook",
+    "image": "facebook.webp",
+    "link": "https://www.facebook.com/pbhat99/"
   }
 ]
-
