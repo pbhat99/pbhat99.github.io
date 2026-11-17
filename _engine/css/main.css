@@ -1536,3 +1536,297 @@ a.company-banner-logo-wrap.is-clickable:hover .company-banner-logo-img {
     font-size: 1.15rem;
   }
 }
+
+/* ==========================================================================
+   MORE / RESOURCES PAGE (Useful Links & forDownload Files)
+   ========================================================================== */
+.more-section {
+  margin-bottom: 56px;
+}
+
+.more-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.more-section-title {
+  font-family: 'Ubuntu', sans-serif;
+  font-size: clamp(1.3rem, 2vw, 1.65rem);
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.more-section-badge {
+  font-family: 'Ubuntu Mono', monospace;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  background: rgba(249, 134, 3, 0.12);
+  color: var(--accent-primary);
+  border: 1px solid rgba(249, 134, 3, 0.3);
+}
+
+/* Useful Links Grid & Cards */
+.more-links-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
+}
+
+.more-link-card {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  text-decoration: none;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.25s ease,
+              box-shadow 0.25s ease,
+              background 0.25s ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  overflow: hidden;
+}
+
+.more-link-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent-primary);
+  background: var(--bg-card-hover);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4), 0 0 15px rgba(249, 134, 3, 0.15);
+}
+
+.more-link-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.more-link-icon-wrap {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  background: rgba(249, 134, 3, 0.1);
+  color: var(--accent-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+.more-link-card:hover .more-link-icon-wrap {
+  background: var(--accent-primary);
+  color: #fff;
+}
+
+.more-link-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.more-link-title {
+  font-family: 'Ubuntu', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+
+.more-link-desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+
+.more-link-arrow {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.more-link-card:hover .more-link-arrow {
+  color: var(--accent-primary);
+  transform: translate(2px, -2px);
+}
+
+/* Downloads Grid & Cards */
+.more-downloads-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 20px;
+}
+
+.more-download-card {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 18px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.25s ease,
+              box-shadow 0.25s ease,
+              background 0.25s ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-sizing: border-box;
+}
+
+.more-download-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent-primary);
+  background: var(--bg-card-hover);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4), 0 0 15px rgba(249, 134, 3, 0.15);
+}
+
+.more-download-info-wrap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.more-file-badge {
+  font-family: 'Ubuntu Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: rgba(249, 134, 3, 0.12);
+  color: var(--accent-primary);
+  border: 1px solid rgba(249, 134, 3, 0.3);
+  text-transform: uppercase;
+  flex-shrink: 0;
+  text-align: center;
+  min-width: 44px;
+}
+
+.more-file-badge.badge-zip {
+  background: rgba(249, 134, 3, 0.15);
+  color: #f98603;
+  border-color: rgba(249, 134, 3, 0.35);
+}
+.more-file-badge.badge-json {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.35);
+}
+.more-file-badge.badge-html {
+  background: rgba(244, 63, 94, 0.15);
+  color: #f43f5e;
+  border-color: rgba(244, 63, 94, 0.35);
+}
+.more-file-badge.badge-img {
+  background: rgba(52, 211, 153, 0.15);
+  color: #34d399;
+  border-color: rgba(52, 211, 153, 0.35);
+}
+
+.more-download-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.more-download-name {
+  font-family: 'Ubuntu', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+
+.more-download-meta {
+  font-family: 'Ubuntu Mono', monospace;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.more-download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.more-download-btn svg {
+  flex-shrink: 0;
+}
+
+.more-empty-msg {
+  padding: 32px 24px;
+  text-align: center;
+  color: var(--text-muted);
+  background: var(--bg-card);
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+}
+
+.more-empty-msg code {
+  color: var(--accent-primary);
+  background: rgba(249, 134, 3, 0.1);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  font-family: 'Ubuntu Mono', monospace;
+}
+
+@media (max-width: 768px) {
+  .more-links-grid,
+  .more-downloads-grid {
+    grid-template-columns: 1fr;
+  }
+  .more-download-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+  .more-download-info-wrap {
+    width: 100%;
+  }
+  .more-download-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+

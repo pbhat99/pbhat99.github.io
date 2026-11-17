@@ -40,6 +40,16 @@ def watch_loop():
             last_state = current_state
 
 class NoCacheHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
+    def do_GET(self):
+        # Resolve clean extensionless URLs (e.g. /more -> /more.html)
+        path_without_query = self.path.split('?')[0].rstrip('/')
+        if path_without_query and not os.path.exists(self.translate_path(path_without_query)):
+            cand_html = self.translate_path(path_without_query) + ".html"
+            if os.path.exists(cand_html):
+                query = ("?" + self.path.split('?', 1)[1]) if '?' in self.path else ""
+                self.path = path_without_query + ".html" + query
+        super().do_GET()
+
     def end_headers(self):
         self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
         self.send_header("Pragma", "no-cache")

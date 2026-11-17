@@ -173,6 +173,9 @@ def convert_all_pages_images_to_webp(root_dir="pages"):
 
     # 1. Walk root_dir and convert non-webp images
     for current_root, dirs, files in os.walk(root_dir):
+        # Preserve original files in forDownload directories
+        if "fordownload" in current_root.replace("\\", "/").lower():
+            continue
         for f in files:
             if f.startswith('.'):
                 continue
@@ -2123,6 +2126,246 @@ def sync_all(convert_webp=False):
     with open("blog.html", "w", encoding="utf-8") as f:
         f.write(blog_html)
     print("  -> Updated blog.html (Nav: Blog, 3-Tile Grid, Archive Tree, Modal Reader, Code Highlights)")
+
+    # --------------------------------------------------------------------------
+    # 7. SYNC MORE / RESOURCES PAGE (pages/07_more -> more.html, not in nav)
+    # --------------------------------------------------------------------------
+    more_dir = "pages/07_more" if os.path.exists("pages/07_more") else "pages/more"
+    more_bg_img_html, more_bg_overlay_html, _, _ = get_page_background_and_overlay(more_dir)
+
+    more_data = {
+        "title": "More & Resources",
+        "description": "Direct downloads, project files, and curated links.",
+        "linksSectionTitle": "Useful Links",
+        "downloadsSectionTitle": "Downloads",
+        "overlayOpacity": 75
+    }
+
+    more_content_json = os.path.join(more_dir, "content.json")
+    if os.path.exists(more_content_json):
+        try:
+            with open(more_content_json, "r", encoding="utf-8") as f:
+                more_data.update(json.load(f))
+        except Exception:
+            pass
+
+    page_title = more_data.get("title", "More & Resources")
+    page_desc = more_data.get("description", "")
+    title_inner = page_title.strip() if page_title else '&nbsp;'
+    desc_inner = page_desc.strip() if page_desc else '&nbsp;'
+    links_section_title = more_data.get("linksSectionTitle", "Useful Links").strip()
+    downloads_section_title = more_data.get("downloadsSectionTitle", "Downloads").strip()
+
+    # 1. Parse Useful Links (usefullLinks.json, usefulLinks.json, links.json)
+    useful_links_list = []
+    for cand_json in ["usefullLinks.json", "usefulLinks.json", "links.json"]:
+        cand_path = os.path.join(more_dir, cand_json)
+        if os.path.exists(cand_path):
+            try:
+                with open(cand_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    if isinstance(data, list):
+                        useful_links_list = data
+                        break
+            except Exception as e:
+                print(f"Notice reading {cand_path}:", e)
+
+    links_cards_html = []
+    for item in useful_links_list:
+        if not isinstance(item, dict):
+            continue
+        l_name = (item.get("name") or item.get("title") or "Link").strip()
+        l_url = (item.get("link") or item.get("url") or item.get("href") or "#").strip()
+        l_desc = (item.get("description") or item.get("desc") or "").strip()
+        if not l_desc and l_url.startswith("http"):
+            domain_part = re.sub(r'^https?:\/\/(?:www\.)?', '', l_url).split('/')[0]
+            l_desc = domain_part
+
+        links_cards_html.append(f'''
+          <a href="{l_url}" target="_blank" rel="noopener noreferrer" class="more-link-card" title="{l_name}">
+            <div class="more-link-content">
+              <div class="more-link-icon-wrap" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                </svg>
+              </div>
+              <div class="more-link-text">
+                <span class="more-link-title">{l_name}</span>
+                <span class="more-link-desc">{l_desc}</span>
+              </div>
+            </div>
+            <div class="more-link-arrow" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="7" y1="17" x2="17" y2="7"></line>
+                <polyline points="7 7 17 7 17 17"></polyline>
+              </svg>
+            </div>
+          </a>''')
+
+    if links_cards_html:
+        links_section_html = f'''
+      <section class="more-section">
+        <div class="more-section-header">
+          <h2 class="more-section-title">
+            <span>{links_section_title}</span>
+            <span class="more-section-badge">{len(links_cards_html)}</span>
+          </h2>
+        </div>
+        <div class="more-links-grid">
+          {"".join(links_cards_html)}
+        </div>
+      </section>'''
+    else:
+        links_section_html = f'''
+      <section class="more-section">
+        <div class="more-section-header">
+          <h2 class="more-section-title">{links_section_title}</h2>
+        </div>
+        <p class="more-empty-msg">No links listed yet. Add entries to <code>{more_dir}/usefullLinks.json</code>.</p>
+      </section>'''
+
+    # 2. Parse Files for Download (forDownload/ folder)
+    downloads_dir = os.path.join(more_dir, "forDownload")
+    if not os.path.exists(downloads_dir):
+        downloads_dir = "forDownload"
+
+    download_cards_html = []
+    if os.path.exists(downloads_dir):
+        raw_files = [f for f in os.listdir(downloads_dir) if not f.startswith(".") and os.path.isfile(os.path.join(downloads_dir, f))]
+        raw_files.sort(key=lambda s: s.lower())
+
+        def _fmt_size(b):
+            if b < 1024:
+                return f"{b} B"
+            elif b < 1024 * 1024:
+                return f"{b / 1024:.1f} KB"
+            elif b < 1024 * 1024 * 1024:
+                return f"{b / (1024 * 1024):.1f} MB"
+            else:
+                return f"{b / (1024 * 1024 * 1024):.1f} GB"
+
+        for fname in raw_files:
+            fpath = os.path.join(downloads_dir, fname)
+            frel_path = fpath.replace("\\", "/")
+            fsize_bytes = os.path.getsize(fpath)
+            fsize_str = _fmt_size(fsize_bytes)
+            ext = os.path.splitext(fname)[1].lower().lstrip(".")
+            badge_text = ext.upper() if ext else "FILE"
+
+            badge_cls = "badge-other"
+            if ext in ["zip", "rar", "7z", "tar", "gz"]:
+                badge_cls = "badge-zip"
+            elif ext in ["json", "js", "ts", "py"]:
+                badge_cls = "badge-json"
+            elif ext in ["html", "htm", "css", "xml"]:
+                badge_cls = "badge-html"
+            elif ext in ["jpg", "jpeg", "png", "webp", "gif", "svg", "bmp"]:
+                badge_cls = "badge-img"
+
+            download_cards_html.append(f'''
+          <div class="more-download-card">
+            <div class="more-download-info-wrap">
+              <span class="more-file-badge {badge_cls}">{badge_text}</span>
+              <div class="more-download-text">
+                <span class="more-download-name" title="{fname}">{fname}</span>
+                <span class="more-download-meta">{fsize_str} &bull; {badge_text}</span>
+              </div>
+            </div>
+            <a href="{frel_path}" download="{fname}" class="btn btn-primary more-download-btn" title="Download {fname}">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>Download</span>
+            </a>
+          </div>''')
+
+    if download_cards_html:
+        downloads_section_html = f'''
+      <section class="more-section">
+        <div class="more-section-header">
+          <h2 class="more-section-title">
+            <span>{downloads_section_title}</span>
+            <span class="more-section-badge">{len(download_cards_html)}</span>
+          </h2>
+        </div>
+        <div class="more-downloads-grid">
+          {"".join(download_cards_html)}
+        </div>
+      </section>'''
+    else:
+        downloads_section_html = f'''
+      <section class="more-section">
+        <div class="more-section-header">
+          <h2 class="more-section-title">{downloads_section_title}</h2>
+        </div>
+        <p class="more-empty-msg">No files currently in <code>{downloads_dir}/</code>. Upload any files here to list them for download.</p>
+      </section>'''
+
+    more_html = f'''<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{page_title} | Prasannakumar T Bhat</title>
+  <meta name="description" content="{page_desc}">
+  <link rel="icon" type="image/png" href="_engine/images/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,700&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="_engine/css/main.css">
+  <link rel="stylesheet" href="_engine/css/components.css">
+  <link rel="stylesheet" href="_engine/css/responsive.css">
+</head>
+<body>
+  {more_bg_img_html}
+  {more_bg_overlay_html}
+
+{generate_nav_html("")}
+
+  <main style="padding-block: clamp(36px, 5vw, 64px);">
+    <div class="container-wide">
+      
+      <!-- Page Header -->
+      <div class="section-header">
+        <h1 class="section-title">{title_inner}</h1>
+        <p class="section-desc">{desc_inner}</p>
+      </div>
+
+      <!-- Useful Links Section -->
+      {links_section_html}
+
+      <!-- Downloads Section -->
+      {downloads_section_html}
+
+    </div>
+  </main>
+
+  <script type="module" src="_engine/js/main.js"></script>
+
+{BACK_TO_TOP_HTML}
+</body>
+</html>
+'''
+    with open("more.html", "w", encoding="utf-8") as f:
+        f.write(more_html)
+    print("  -> Updated more.html (Unlisted Page: Useful Links & forDownload Assets)")
+
+    # Also generate more/index.html meta-redirect so /more or /more/ works everywhere
+    os.makedirs("more", exist_ok=True)
+    more_redirect_html = '''<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="0; url=../more.html">
+  <title>Redirecting to More...</title>
+</head>
+<body>
+  <script>window.location.replace("../more.html");</script>
+</body>
+</html>'''
+    with open("more/index.html", "w", encoding="utf-8") as f:
+        f.write(more_redirect_html)
 
     print("\nSUCCESS: All pages synchronized cleanly!")
 
