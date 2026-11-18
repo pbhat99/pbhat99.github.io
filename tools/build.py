@@ -284,9 +284,10 @@ Sitemap: {site_url}/sitemap.xml
     <priority>{priority}</priority>
   </url>""")
 
+    urls_joined = "\n".join(urls_xml)
     sitemap_content = f"""<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-{"\n".join(urls_xml)}
+{urls_joined}
 </urlset>
 """
     with open("sitemap.xml", "w", encoding="utf-8") as f:
