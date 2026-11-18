@@ -88,6 +88,44 @@ def get_page_background_and_overlay(page_dir):
 
     return bg_img_html, bg_overlay_html, resolved_bg_url, overlay_alpha
 
+def get_google_analytics_tag():
+    """
+    Resolves the Google Analytics Measurement ID from siteConfig.json, config.json,
+    or pages/01_home/content.json.
+    Returns the Google Analytics 4 (gtag.js) script block for injection into <head>.
+    """
+    ga_id = None
+    for cand_file in ["siteConfig.json", "config.json", "pages/01_home/content.json"]:
+        if os.path.exists(cand_file):
+            try:
+                with open(cand_file, "r", encoding="utf-8") as f:
+                    d = json.load(f)
+                    val = (
+                        d.get("googleAnalyticsId")
+                        or d.get("gaId")
+                        or d.get("analyticsId")
+                        or d.get("googleAnalytics")
+                        or d.get("ga_id")
+                    )
+                    if val and isinstance(val, str) and val.strip():
+                        ga_id = val.strip()
+                        break
+            except Exception:
+                pass
+
+    if not ga_id:
+        ga_id = "G-XXXXXXXXXX"
+
+    return f'''  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id={ga_id}"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){{dataLayer.push(arguments);}}
+    gtag('js', new Date());
+
+    gtag('config', '{ga_id}');
+  </script>'''
+
 def hex_to_rgba(hex_str, opacity_val=100):
     """Converts a hex string like #0e1733 and opacity (0-100 or 0.0-1.0) to rgba(...)"""
     if not hex_str:
@@ -231,6 +269,8 @@ def sync_all(convert_webp=False):
         print("  -> [WebP Optimization] Converting source images across pages/ to WebP...")
         convert_all_pages_images_to_webp("pages")
 
+    ga_tag = get_google_analytics_tag()
+
     # --------------------------------------------------------------------------
     # 1. SYNC HOME PAGE (pages/01_home)
     # --------------------------------------------------------------------------
@@ -264,6 +304,7 @@ def sync_all(convert_webp=False):
     index_html = f'''<!DOCTYPE html>
 <html lang="en">
 <head>
+{ga_tag}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{fixed_name}</title>
@@ -721,6 +762,7 @@ def sync_all(convert_webp=False):
     vfx_html = f'''<!DOCTYPE html>
 <html lang="en">
 <head>
+{ga_tag}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>VFX | Pra - Motions</title>
@@ -941,6 +983,7 @@ def sync_all(convert_webp=False):
     photography_html = f'''<!DOCTYPE html>
 <html lang="en">
 <head>
+{ga_tag}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{photo_title} | Pra - Motions</title>
@@ -1386,6 +1429,7 @@ def sync_all(convert_webp=False):
     about_html = f'''<!DOCTYPE html>
 <html lang="en">
 <head>
+{ga_tag}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>About | {name}</title>
@@ -1545,6 +1589,7 @@ def sync_all(convert_webp=False):
     ai_html = f'''<!DOCTYPE html>
 <html lang="en">
 <head>
+{ga_tag}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{ai_title} | Pra - Motions</title>
@@ -1937,6 +1982,7 @@ def sync_all(convert_webp=False):
     blog_html = f'''<!DOCTYPE html>
 <html lang="en">
 <head>
+{ga_tag}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{blog_title} | Pra - Motions</title>
@@ -2307,6 +2353,7 @@ def sync_all(convert_webp=False):
     more_html = f'''<!DOCTYPE html>
 <html lang="en">
 <head>
+{ga_tag}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{page_title} | Prasannakumar T Bhat</title>
@@ -2547,6 +2594,7 @@ def sync_all(convert_webp=False):
     extra_html = f'''<!DOCTYPE html>
 <html lang="en">
 <head>
+{ga_tag}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{page_title} | Prasannakumar T Bhat</title>
