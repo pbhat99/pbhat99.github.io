@@ -853,11 +853,8 @@ def sync_all(convert_webp=False):
             else:
                 p_tags = [str(t).strip() for t in raw_tags if str(t).strip()]
 
-            cat_label = "Commercial"
-            if p_category == "films": cat_label = "Feature Film"
-            elif p_category == "music-videos": cat_label = "Music Video"
-            elif p_category == "other": cat_label = "Other"
-            else: cat_label = p_category.replace('-', ' ').replace('_', ' ').title()
+            # Category label: keep exactly as in json, changed to titlecase (no substitutions)
+            cat_label = p_category.replace('-', ' ').replace('_', ' ').title()
 
             year_span = f'<span class="tile-year">{p_year}</span>' if p_year else ''
             desc_html = f'<p class="tile-desc">{p_desc}</p>' if p_desc else ''
@@ -930,14 +927,7 @@ def sync_all(convert_webp=False):
         </section>''')
 
     # Dynamic Category Filter Pills (Ordered with 'All' first without count)
-    CATEGORY_LABELS = {
-        "commercials": "Commercials",
-        "films": "Feature Films",
-        "music-videos": "Music Videos",
-        "other": "Other"
-    }
-
-    preferred_order = ["commercials", "films", "music-videos", "other"]
+    preferred_order = ["commercials", "films", "feature films", "series", "music-videos", "other"]
     sorted_categories = []
     for c in preferred_order:
         if c in all_categories:
@@ -948,7 +938,7 @@ def sync_all(convert_webp=False):
 
     filter_buttons_html = ['<button class="filter-btn active" data-filter="all">All</button>']
     for cat in sorted_categories:
-        label = CATEGORY_LABELS.get(cat, cat.replace('-', ' ').replace('_', ' ').title())
+        label = cat.replace('-', ' ').replace('_', ' ').title()
         filter_buttons_html.append(f'<button class="filter-btn" data-filter="{cat}">{label}</button>')
 
     vfx_seo_meta = get_seo_meta_tags(
