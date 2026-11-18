@@ -247,6 +247,7 @@
   function updateFilterUI() {
     const isCatAll = (selectedCategories.size === 0);
     const isTagAll = (selectedTags.size === 0);
+    const isDateAll = !activeDateFilter;
 
     // 1. Sidebar Category Pills
     document.querySelectorAll('.category-filter-pill').forEach(btn => {

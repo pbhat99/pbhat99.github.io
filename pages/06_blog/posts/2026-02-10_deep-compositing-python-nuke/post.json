@@ -1,5 +1,4 @@
 {
-  "title": "Automating Deep Compositing Workflows in Nuke with Python",
   "category": "Nuke & VFX",
   "tags": [
     "Nuke",
@@ -8,8 +7,6 @@
     "Automation",
     "Compositing"
   ],
-  "subheading": "Techniques for managing DeepEXR volumetric channels, automating holdouts, and optimizing heavy read pipelines using Python scripts.",
-  "thumbnail": "cover.webp",
   "author": "Prasannakumar T Bhat",
   "readTime": "7 min read"
 }

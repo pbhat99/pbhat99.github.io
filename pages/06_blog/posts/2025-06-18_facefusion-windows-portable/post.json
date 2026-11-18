@@ -1,5 +1,4 @@
 {
-  "title": "Step-by-Step Installation of FaceFusion on Windows",
   "category": "AI / Deep Learning",
   "tags": [
     "FaceFusion",
@@ -8,8 +7,6 @@
     "CUDA",
     "Python"
   ],
-  "subheading": "Complete installation walkthrough for FaceFusion next-generation face enhancement and swapping tool using isolated virtual environments.",
-  "thumbnail": "cover.webp",
   "author": "Prasannakumar T Bhat",
   "readTime": "4 min read"
 }

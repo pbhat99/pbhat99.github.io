@@ -2039,9 +2039,66 @@ def sync_all(convert_webp=False):
             # Enforce date strictly from folder name
             post_meta["date"] = post_date
 
-            # Resolve thumbnail image
-            thumbnail_path = ""
-            if post_meta.get("thumbnail"):
+            # 1. Extract Title from markdown (1st # Heading)
+            extracted_title = ""
+            if md_content:
+                title_match = re.search(r'^\s*#\s+(.+)$', md_content, re.MULTILINE)
+                if title_match:
+                    extracted_title = title_match.group(1).strip()
+
+            # 2. Extract Subheading from markdown (1st paragraph of text)
+            extracted_subheading = ""
+            if md_content:
+                raw_paragraphs = re.split(r'\r?\n\s*\r?\n', md_content)
+                for raw_p in raw_paragraphs:
+                    p_clean = raw_p.strip()
+                    if not p_clean:
+                        continue
+                    if p_clean.startswith('#') or p_clean.startswith('![') or p_clean.startswith('<') or p_clean.startswith('```') or p_clean.startswith('>') or p_clean.startswith('---'):
+                        continue
+                    clean_excerpt = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', p_clean)
+                    clean_excerpt = re.sub(r'[*_`]', '', clean_excerpt)
+                    clean_excerpt = ' '.join(clean_excerpt.split())
+                    if clean_excerpt:
+                        extracted_subheading = clean_excerpt
+                        break
+
+            # 3. Extract Thumbnail from markdown (1st image in post.md)
+            extracted_thumb = ""
+            if md_content:
+                md_img_match = re.search(r'!\[([^\]]*)\]\(([^)]+)\)', md_content)
+                html_img_match = re.search(r'<img[^>]+src=[\'"]([^\'"]+)[\'"]', md_content)
+
+                first_img_src = None
+                if md_img_match and html_img_match:
+                    if md_img_match.start() < html_img_match.start():
+                        first_img_src = md_img_match.group(2).strip()
+                    else:
+                        first_img_src = html_img_match.group(1).strip()
+                elif md_img_match:
+                    first_img_src = md_img_match.group(2).strip()
+                elif html_img_match:
+                    first_img_src = html_img_match.group(1).strip()
+
+                if first_img_src:
+                    clean_src = first_img_src.split('?')[0].strip()
+                    if clean_src.startswith("http") or clean_src.startswith("/") or clean_src.startswith("pages/"):
+                        extracted_thumb = clean_src
+                    else:
+                        base_thumb, _ = os.path.splitext(clean_src)
+                        webp_path = os.path.join(folder_path, f"{base_thumb}.webp")
+                        orig_path = os.path.join(folder_path, clean_src)
+                        if os.path.exists(webp_path):
+                            extracted_thumb = f"{folder_path}/{base_thumb}.webp".replace("\\", "/")
+                        elif os.path.exists(orig_path):
+                            extracted_thumb = f"{folder_path}/{clean_src}".replace("\\", "/")
+
+            post_title = extracted_title or post_meta.get("title") or format_title_from_filename(folder_name)
+            post_subheading = extracted_subheading or post_meta.get("subheading") or ""
+
+            # Resolve thumbnail image (extracted_thumb primary, fallback to folder files)
+            thumbnail_path = extracted_thumb or ""
+            if not thumbnail_path and post_meta.get("thumbnail"):
                 cand_thumb = os.path.join(folder_path, post_meta["thumbnail"])
                 if os.path.exists(cand_thumb):
                     thumbnail_path = cand_thumb.replace("\\", "/")
@@ -2072,6 +2129,9 @@ def sync_all(convert_webp=False):
             # Render Markdown into HTML
             rendered_html = ""
             if md_content:
+                # Remove top # Title line from markdown body so it is not duplicated in reader
+                md_body = re.sub(r'^\s*#\s+[^\r\n]+(?:\r?\n)+', '', md_content, count=1)
+
                 # 1. Process relative image paths: e.g. src="image.png" -> src="pages/06_blog/posts/.../image.webp"
                 def fix_md_img(m):
                     alt, src = m.group(1), m.group(2)
@@ -2082,7 +2142,7 @@ def sync_all(convert_webp=False):
                         else:
                             src = f"{folder_path}/{src}".replace("\\", "/")
                     return f'![{alt}]({src})'
-                fixed_md = re.sub(r'!\[([^\]]*)\]\(([^)]+)\)', fix_md_img, md_content)
+                fixed_md = re.sub(r'!\[([^\]]*)\]\(([^)]+)\)', fix_md_img, md_body)
 
                 # Process code blocks into collapsible cards with copy button
                 def process_markdown_code_blocks(md_text):
@@ -2140,13 +2200,13 @@ def sync_all(convert_webp=False):
                 "id": post_id,
                 "slug": slug,
                 "folder": folder_path.replace("\\", "/"),
-                "title": post_meta.get("title", ""),
+                "title": post_title,
                 "date": post_date,
                 "year": year_str,
                 "month_name": month_name,
                 "category": post_meta.get("category", "General"),
                 "tags": post_meta.get("tags", []),
-                "subheading": post_meta.get("subheading", ""),
+                "subheading": post_subheading,
                 "thumbnail": thumbnail_path,
                 "author": post_meta.get("author", "Prasannakumar T Bhat"),
                 "readTime": post_meta.get("readTime", "5 min read"),
@@ -2305,12 +2365,6 @@ def sync_all(convert_webp=False):
             </div>
 
             <ul class="tree-root">
-              <li class="tree-item tree-all active" onclick="filterByTree('all')">
-                <span class="tree-left-wrap">
-                  <span class="tree-label">All Posts</span>
-                </span>
-                <span class="tree-count">{len(parsed_posts)}</span>
-              </li>
               {"".join(tree_items_html)}
             </ul>
           </div>
