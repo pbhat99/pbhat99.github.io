@@ -2982,5 +2982,11 @@ def sync_all(convert_webp=False):
     print("\nSUCCESS: All pages synchronized cleanly!")
 
 if __name__ == "__main__":
-    convert_flag = ("--convert-webp" in sys.argv) or ("-w" in sys.argv)
-    sync_all(convert_webp=convert_flag)
+    try:
+        convert_flag = ("--convert-webp" in sys.argv) or ("-w" in sys.argv)
+        sync_all(convert_webp=convert_flag)
+    except Exception as err:
+        import traceback
+        print(f"\n[FATAL BUILD ERROR] {err}", file=sys.stderr)
+        traceback.print_exc()
+        sys.exit(1)
