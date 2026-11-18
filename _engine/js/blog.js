@@ -26,9 +26,7 @@
       return;
     }
 
-    filteredPosts = [...allPosts];
-    renderGrid();
-    renderPagination();
+    applyFilters();
 
     // Check URL Hash for deep link (e.g. #camera-projections-in-nuke)
     const hash = window.location.hash.replace('#', '').trim();
@@ -220,27 +218,24 @@
         }
       }
 
-      // 2. Category & Tag filters (multi-filter)
-      const hasCats = selectedCategories.size > 0;
-      const hasTags = selectedTags.size > 0;
-
-      if (!hasCats && !hasTags) {
-        return true;
+      // 2. Category filter (works alongside date & tags)
+      if (selectedCategories.size > 0) {
+        const pCat = (post.category || '').toLowerCase();
+        if (!selectedCategories.has(pCat)) {
+          return false;
+        }
       }
 
-      const pCat = (post.category || '').toLowerCase();
-      const pTags = (post.tags || []).map(t => t.toLowerCase());
-
-      const matchesCat = hasCats && selectedCategories.has(pCat);
-      const matchesTag = hasTags && pTags.some(t => selectedTags.has(t));
-
-      if (hasCats && hasTags) {
-        return matchesCat || matchesTag;
-      } else if (hasCats) {
-        return matchesCat;
-      } else {
-        return matchesTag;
+      // 3. Tag filter (works alongside date & categories)
+      if (selectedTags.size > 0) {
+        const pTags = (post.tags || []).map(t => t.toLowerCase());
+        const hasMatchingTag = pTags.some(t => selectedTags.has(t));
+        if (!hasMatchingTag) {
+          return false;
+        }
       }
+
+      return true;
     });
 
     currentPage = 1;
@@ -250,13 +245,14 @@
   }
 
   function updateFilterUI() {
-    const isAll = (selectedCategories.size === 0 && selectedTags.size === 0);
+    const isCatAll = (selectedCategories.size === 0);
+    const isTagAll = (selectedTags.size === 0);
 
-    // Sidebar Category Pills
-    document.querySelectorAll('.filter-pill').forEach(btn => {
+    // 1. Sidebar Category Pills
+    document.querySelectorAll('.category-filter-pill').forEach(btn => {
       const catVal = (btn.dataset.category || btn.textContent).trim().toLowerCase();
       if (catVal === 'all') {
-        if (isAll) btn.classList.add('active');
+        if (isCatAll) btn.classList.add('active');
         else btn.classList.remove('active');
       } else {
         if (selectedCategories.has(catVal)) {
@@ -267,7 +263,22 @@
       }
     });
 
-    // Cards category badges & tag pills
+    // 2. Sidebar Tag Pills
+    document.querySelectorAll('.tag-filter-pill').forEach(btn => {
+      const tagVal = (btn.dataset.tag || btn.textContent).trim().toLowerCase();
+      if (tagVal === 'all') {
+        if (isTagAll) btn.classList.add('active');
+        else btn.classList.remove('active');
+      } else {
+        if (selectedTags.has(tagVal)) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      }
+    });
+
+    // 3. Cards category badges & tag pills
     document.querySelectorAll('.blog-card').forEach(card => {
       const catBadge = card.querySelector('.blog-category-badge');
       if (catBadge) {
@@ -318,11 +329,9 @@
     const catLower = (category || 'all').trim().toLowerCase();
 
     if (catLower === 'all') {
-      // "all will be reset individual": clicking All resets individual filters
-      selectedCategories.clear();
-      selectedTags.clear();
+      selectedCategories.clear(); // Resets category filter to All
     } else {
-      // Toggle category: enables 2 or more filters enabled at same time
+      // Toggle category: enables 2 or more filters simultaneously, resets individual on click
       if (selectedCategories.has(catLower)) {
         selectedCategories.delete(catLower); // Individual reset / toggle off
       } else {
@@ -335,14 +344,17 @@
   };
 
   window.filterByTag = function (tagName) {
-    if (!tagName) return;
-    const tagLower = tagName.trim().toLowerCase();
+    const tagLower = (tagName || 'all').trim().toLowerCase();
 
-    // Toggle tag: enables 2 or more filters enabled at same time
-    if (selectedTags.has(tagLower)) {
-      selectedTags.delete(tagLower); // Individual reset / toggle off
+    if (tagLower === 'all') {
+      selectedTags.clear(); // Tag All resets tag filter, same way as category all
     } else {
-      selectedTags.add(tagLower);
+      // Toggle tag: enables 2 or more filters simultaneously, resets individual on click
+      if (selectedTags.has(tagLower)) {
+        selectedTags.delete(tagLower); // Individual reset / toggle off
+      } else {
+        selectedTags.add(tagLower);
+      }
     }
 
     applyFilters();
@@ -351,12 +363,22 @@
 
   window.filterByCategoryFromReader = function (category) {
     closePostModal();
-    filterByCategory(category);
+    const catLower = (category || '').trim().toLowerCase();
+    if (catLower && !selectedCategories.has(catLower)) {
+      selectedCategories.add(catLower);
+    }
+    applyFilters();
+    scrollToGridTop();
   };
 
   window.filterByTagFromReader = function (tagName) {
     closePostModal();
-    filterByTag(tagName);
+    const tagLower = (tagName || '').trim().toLowerCase();
+    if (tagLower && !selectedTags.has(tagLower)) {
+      selectedTags.add(tagLower);
+    }
+    applyFilters();
+    scrollToGridTop();
   };
 
   window.resetBlogFilter = function () {

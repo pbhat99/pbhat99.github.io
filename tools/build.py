@@ -2159,6 +2159,7 @@ def sync_all(convert_webp=False):
     # 3. Build Tree Data: Year -> Month -> Posts
     tree_hierarchy = {}
     categories_set = set()
+    tags_set = set()
     for p in parsed_posts:
         y = p["year"]
         m = p["month_name"]
@@ -2169,6 +2170,10 @@ def sync_all(convert_webp=False):
         tree_hierarchy[y][m].append(p)
         if p.get("category"):
             categories_set.add(p["category"])
+        if p.get("tags") and isinstance(p["tags"], list):
+            for t in p["tags"]:
+                if t and isinstance(t, str) and t.strip():
+                    tags_set.add(t.strip())
 
     tree_items_html = []
     for y in sorted(tree_hierarchy.keys(), reverse=True):
@@ -2199,10 +2204,15 @@ def sync_all(convert_webp=False):
             </ul>
           </li>''')
 
-    categories_pills = ['<button type="button" class="filter-pill active" data-category="all" onclick="filterByCategory(\'all\')">All</button>']
+    categories_pills = ['<button type="button" class="filter-pill category-filter-pill active" data-category="all" onclick="filterByCategory(\'all\')">All</button>']
     for cat in sorted(categories_set):
         cat_esc = html.escape(cat)
-        categories_pills.append(f'<button type="button" class="filter-pill" data-category="{cat_esc}" onclick="filterByCategory(\'{cat_esc}\')">{cat_esc}</button>')
+        categories_pills.append(f'<button type="button" class="filter-pill category-filter-pill" data-category="{cat_esc}" onclick="filterByCategory(\'{cat_esc}\')">{cat_esc}</button>')
+
+    tags_pills = ['<button type="button" class="filter-pill tag-filter-pill active" data-tag="all" onclick="filterByTag(\'all\')">All</button>']
+    for tag in sorted(tags_set, key=lambda x: x.lower()):
+        tag_esc = html.escape(tag)
+        tags_pills.append(f'<button type="button" class="filter-pill tag-filter-pill" data-tag="{tag_esc}" onclick="filterByTag(\'{tag_esc}\')">{tag_esc}</button>')
 
     posts_json_str = json.dumps(parsed_posts)
 
@@ -2280,6 +2290,15 @@ def sync_all(convert_webp=False):
               <h4 class="tree-subtitle">Categories</h4>
               <div class="tree-pill-list">
                 {"".join(categories_pills)}
+              </div>
+            </div>
+
+            <div class="tree-section-divider"></div>
+
+            <div class="tree-tags-wrap">
+              <h4 class="tree-subtitle">Tags</h4>
+              <div class="tree-pill-list">
+                {"".join(tags_pills)}
               </div>
             </div>
           </div>
