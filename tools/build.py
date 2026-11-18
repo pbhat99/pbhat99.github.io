@@ -1168,7 +1168,7 @@ def sync_all(convert_webp=False):
               360° Panorama
             </span>
             <div class="pano-center-indicator" aria-hidden="true">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" style="margin-left: 2px;"><polygon points="6 3 20 12 6 21 6 3"/></svg>
             </div>
             <div class="tile-hover-overlay">
               <div class="tile-hover-content">
@@ -1514,7 +1514,7 @@ def sync_all(convert_webp=False):
         </div>''' if showreel_title else ""
 
             showreel_section_html = f'''
-      <section class="about-video-card">
+      <section class="about-video-card" style="--info-bg: {info_bg_rgba};">
         {video_header_html}
         <div class="about-video-container">
           <iframe src="{embed_src}"
@@ -2199,9 +2199,10 @@ def sync_all(convert_webp=False):
             </ul>
           </li>''')
 
-    categories_pills = ['<button type="button" class="filter-pill active" onclick="filterByCategory(\'all\')">All</button>']
+    categories_pills = ['<button type="button" class="filter-pill active" data-category="all" onclick="filterByCategory(\'all\')">All</button>']
     for cat in sorted(categories_set):
-        categories_pills.append(f'<button type="button" class="filter-pill" onclick="filterByCategory(\'{cat}\')">{cat}</button>')
+        cat_esc = html.escape(cat)
+        categories_pills.append(f'<button type="button" class="filter-pill" data-category="{cat_esc}" onclick="filterByCategory(\'{cat_esc}\')">{cat_esc}</button>')
 
     posts_json_str = json.dumps(parsed_posts)
 

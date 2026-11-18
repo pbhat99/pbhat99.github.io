@@ -102,9 +102,13 @@
 
     let html = '';
     pagePosts.forEach(post => {
-      const tagsHtml = (post.tags || []).slice(0, 3).map(t => 
-        `<span class="blog-tag-pill" onclick="event.stopPropagation(); filterByTag('${escapeHtml(t)}');" title="Filter by tag: ${escapeHtml(t)}">${escapeHtml(t)}</span>`
-      ).join('');
+      const pCat = (post.category || '').toLowerCase();
+      const isCatActive = selectedCategories.has(pCat) ? 'active' : '';
+
+      const tagsHtml = (post.tags || []).slice(0, 3).map(t => {
+        const isTagActive = selectedTags.has(t.toLowerCase()) ? 'active' : '';
+        return `<span class="blog-tag-pill ${isTagActive}" onclick="event.stopPropagation(); filterByTag('${escapeHtml(t)}');" title="Filter by tag: ${escapeHtml(t)}">${escapeHtml(t)}</span>`;
+      }).join('');
       
       html += `
       <article class="blog-card" data-post-id="${post.id}">
@@ -112,7 +116,7 @@
         <div class="tile-inner blog-card-inner">
           <div class="blog-card-media" onclick="openPostModal('${post.id}')">
             <img src="${post.thumbnail}" alt="${escapeHtml(post.title)}" class="blog-card-img" loading="lazy">
-            <span class="blog-category-badge" onclick="event.stopPropagation(); filterByCategory('${escapeHtml(post.category)}');" title="Filter by category: ${escapeHtml(post.category)}">${escapeHtml(post.category)}</span>
+            <span class="blog-category-badge ${isCatActive}" onclick="event.stopPropagation(); filterByCategory('${escapeHtml(post.category)}');" title="Filter by category: ${escapeHtml(post.category)}">${escapeHtml(post.category)}</span>
           </div>
           <div class="blog-card-body">
             <div class="blog-meta-strip">
@@ -195,8 +199,90 @@
   }
 
   // --------------------------------------------------------------------------
-  // Tree, Category & Tag Filters
+  // Multi-Filter State & Tree, Category, Tag Filters
   // --------------------------------------------------------------------------
+  const selectedCategories = new Set();
+  const selectedTags = new Set();
+  let activeDateFilter = null; // { type: 'year', year: '2026' } or { type: 'month', year: '2026', month: 'March' }
+
+  function applyFilters() {
+    filteredPosts = allPosts.filter(post => {
+      // 1. Date filter (from archive tree)
+      if (activeDateFilter) {
+        const postYear = String(post.year || (post.date ? post.date.split('-')[0] : ''));
+        if (activeDateFilter.type === 'year' && postYear !== String(activeDateFilter.year)) {
+          return false;
+        }
+        if (activeDateFilter.type === 'month') {
+          if (postYear !== String(activeDateFilter.year) || post.month_name !== activeDateFilter.month) {
+            return false;
+          }
+        }
+      }
+
+      // 2. Category & Tag filters (multi-filter)
+      const hasCats = selectedCategories.size > 0;
+      const hasTags = selectedTags.size > 0;
+
+      if (!hasCats && !hasTags) {
+        return true;
+      }
+
+      const pCat = (post.category || '').toLowerCase();
+      const pTags = (post.tags || []).map(t => t.toLowerCase());
+
+      const matchesCat = hasCats && selectedCategories.has(pCat);
+      const matchesTag = hasTags && pTags.some(t => selectedTags.has(t));
+
+      if (hasCats && hasTags) {
+        return matchesCat || matchesTag;
+      } else if (hasCats) {
+        return matchesCat;
+      } else {
+        return matchesTag;
+      }
+    });
+
+    currentPage = 1;
+    renderGrid();
+    renderPagination();
+    updateFilterUI();
+  }
+
+  function updateFilterUI() {
+    const isAll = (selectedCategories.size === 0 && selectedTags.size === 0);
+
+    // Sidebar Category Pills
+    document.querySelectorAll('.filter-pill').forEach(btn => {
+      const catVal = (btn.dataset.category || btn.textContent).trim().toLowerCase();
+      if (catVal === 'all') {
+        if (isAll) btn.classList.add('active');
+        else btn.classList.remove('active');
+      } else {
+        if (selectedCategories.has(catVal)) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      }
+    });
+
+    // Cards category badges & tag pills
+    document.querySelectorAll('.blog-card').forEach(card => {
+      const catBadge = card.querySelector('.blog-category-badge');
+      if (catBadge) {
+        const catVal = catBadge.textContent.trim().toLowerCase();
+        if (selectedCategories.has(catVal)) catBadge.classList.add('active');
+        else catBadge.classList.remove('active');
+      }
+      card.querySelectorAll('.blog-tag-pill').forEach(tagEl => {
+        const tagVal = tagEl.textContent.trim().toLowerCase();
+        if (selectedTags.has(tagVal)) tagEl.classList.add('active');
+        else tagEl.classList.remove('active');
+      });
+    });
+  }
+
   window.toggleTreeNode = function (nodeEl, year) {
     const item = nodeEl.closest('.tree-item');
     if (item) {
@@ -206,60 +292,45 @@
 
   window.filterByTree = function (type) {
     clearActiveTreeSelection();
+    activeDateFilter = null;
     const allItem = document.querySelector('.tree-all');
     if (allItem) allItem.classList.add('active');
-
-    filteredPosts = [...allPosts];
-    currentPage = 1;
-    renderGrid();
-    renderPagination();
+    applyFilters();
   };
 
   window.filterByYear = function (year) {
     clearActiveTreeSelection();
     const yearItem = document.querySelector(`.tree-year[data-year="${year}"]`);
     if (yearItem) yearItem.classList.add('active-year');
-
-    filteredPosts = allPosts.filter(p => p.year === String(year) || p.date.startsWith(String(year)));
-    currentPage = 1;
-    renderGrid();
-    renderPagination();
+    activeDateFilter = { type: 'year', year: String(year) };
+    applyFilters();
   };
 
   window.filterByMonth = function (year, monthName) {
     clearActiveTreeSelection();
     const monthEl = document.querySelector(`.tree-month[data-year="${year}"][data-month="${monthName}"]`);
     if (monthEl) monthEl.classList.add('active');
-
-    filteredPosts = allPosts.filter(p => (p.year === String(year) || p.date.startsWith(String(year))) && p.month_name === monthName);
-    currentPage = 1;
-    renderGrid();
-    renderPagination();
+    activeDateFilter = { type: 'month', year: String(year), month: monthName };
+    applyFilters();
   };
 
   window.filterByCategory = function (category) {
-    clearActiveTreeSelection();
-    const catLower = (category || 'all').toLowerCase();
+    const catLower = (category || 'all').trim().toLowerCase();
 
-    // Highlight matching category pill in sidebar
-    document.querySelectorAll('.filter-pill').forEach(btn => {
-      const text = btn.textContent.trim().toLowerCase();
-      if ((catLower === 'all' && text === 'all') || text === catLower) {
-        btn.classList.add('active');
-      } else {
-        btn.classList.remove('active');
-      }
-    });
-
-    if (!category || catLower === 'all') {
-      filteredPosts = [...allPosts];
+    if (catLower === 'all') {
+      // "all will be reset individual": clicking All resets individual filters
+      selectedCategories.clear();
+      selectedTags.clear();
     } else {
-      filteredPosts = allPosts.filter(p => (p.category || '').toLowerCase() === catLower);
+      // Toggle category: enables 2 or more filters enabled at same time
+      if (selectedCategories.has(catLower)) {
+        selectedCategories.delete(catLower); // Individual reset / toggle off
+      } else {
+        selectedCategories.add(catLower);
+      }
     }
 
-    currentPage = 1;
-    renderGrid();
-    renderPagination();
+    applyFilters();
     scrollToGridTop();
   };
 
@@ -267,17 +338,14 @@
     if (!tagName) return;
     const tagLower = tagName.trim().toLowerCase();
 
-    // Clear sidebar active highlights
-    clearActiveTreeSelection();
-    document.querySelectorAll('.filter-pill').forEach(btn => btn.classList.remove('active'));
+    // Toggle tag: enables 2 or more filters enabled at same time
+    if (selectedTags.has(tagLower)) {
+      selectedTags.delete(tagLower); // Individual reset / toggle off
+    } else {
+      selectedTags.add(tagLower);
+    }
 
-    filteredPosts = allPosts.filter(p => 
-      (p.tags || []).some(t => t.toLowerCase() === tagLower)
-    );
-
-    currentPage = 1;
-    renderGrid();
-    renderPagination();
+    applyFilters();
     scrollToGridTop();
   };
 
@@ -292,17 +360,14 @@
   };
 
   window.resetBlogFilter = function () {
+    selectedCategories.clear();
+    selectedTags.clear();
+    activeDateFilter = null;
     clearActiveTreeSelection();
     const allItem = document.querySelector('.tree-all');
     if (allItem) allItem.classList.add('active');
-    document.querySelectorAll('.filter-pill').forEach(btn => btn.classList.remove('active'));
-    const firstPill = document.querySelector('.filter-pill');
-    if (firstPill) firstPill.classList.add('active');
 
-    filteredPosts = [...allPosts];
-    currentPage = 1;
-    renderGrid();
-    renderPagination();
+    applyFilters();
     scrollToGridTop();
   };
 

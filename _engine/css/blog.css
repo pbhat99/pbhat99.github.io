@@ -316,6 +316,13 @@
   transform: scale(1.05);
 }
 
+.blog-category-badge.active {
+  background: var(--accent-primary);
+  color: #ffffff;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 12px rgba(249, 134, 3, 0.45);
+}
+
 .blog-card-body {
   padding: 16px 18px 12px;
   display: flex;
@@ -388,6 +395,13 @@
   border-color: var(--accent-primary);
   background: rgba(249, 134, 3, 0.12);
   transform: translateY(-1px);
+}
+
+.blog-tag-pill.active {
+  color: #ffffff;
+  border-color: var(--accent-primary);
+  background: var(--accent-primary);
+  box-shadow: 0 0 8px rgba(249, 134, 3, 0.35);
 }
 
 .blog-card-footer {

@@ -953,7 +953,7 @@ a.company-banner-logo-wrap.is-clickable:hover .company-banner-logo-img {
 .about-grid {
   display: grid;
   grid-template-columns: 4fr 6fr;
-  gap: clamp(28px, 4vw, 56px);
+  gap: clamp(14px, 2vw, 24px);
   align-items: stretch;
   margin-bottom: 56px;
 }
@@ -1151,18 +1151,24 @@ a.company-banner-logo-wrap.is-clickable:hover .company-banner-logo-img {
 
 /* Vimeo Video Embed */
 .about-video-card {
-  background: var(--bg-card);
+  background: var(--info-bg, rgba(19, 30, 66, 0.75));
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   overflow: hidden;
   margin-bottom: 48px;
   box-shadow: var(--shadow-subtle);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .about-video-header {
   padding: clamp(16px, 2.4vw, 22px) clamp(20px, 3vw, 32px);
   border-bottom: 1px solid var(--border-subtle);
-  background: var(--bg-card);
+  background: var(--info-bg, rgba(19, 30, 66, 0.75));
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .about-video-heading {
@@ -1172,6 +1178,7 @@ a.company-banner-logo-wrap.is-clickable:hover .company-banner-logo-img {
   color: var(--text-main);
   margin: 0;
   letter-spacing: -0.01em;
+  text-align: center;
 }
 
 .about-video-container {
