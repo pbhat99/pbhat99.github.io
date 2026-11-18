@@ -6,6 +6,7 @@ import html
 import yaml
 import markdown
 import glob
+import datetime
 
 def slugify(text):
     text = text.lower()
@@ -88,35 +89,69 @@ def get_page_background_and_overlay(page_dir):
 
     return bg_img_html, bg_overlay_html, resolved_bg_url, overlay_alpha
 
-def get_google_analytics_tag():
+def get_tracking_tags():
     """
-    Resolves the Google Analytics Measurement ID from siteConfig.json, config.json,
-    or pages/01_home/content.json.
-    Returns the Google Analytics 4 (gtag.js) script block for injection into <head>.
+    Resolves Google Analytics (GA4) ID and Google Tag Manager (GTM) ID
+    from siteConfig.json, config.json, or pages/01_home/content.json.
+    Returns (head_tracking_html, body_tracking_html).
     """
     ga_id = None
+    gtm_id = None
+
     for cand_file in ["siteConfig.json", "config.json", "pages/01_home/content.json"]:
         if os.path.exists(cand_file):
             try:
                 with open(cand_file, "r", encoding="utf-8") as f:
                     d = json.load(f)
-                    val = (
-                        d.get("googleAnalyticsId")
-                        or d.get("gaId")
-                        or d.get("analyticsId")
-                        or d.get("googleAnalytics")
-                        or d.get("ga_id")
-                    )
-                    if val and isinstance(val, str) and val.strip():
-                        ga_id = val.strip()
-                        break
+                    if not ga_id:
+                        val = (
+                            d.get("googleAnalyticsId")
+                            or d.get("gaId")
+                            or d.get("analyticsId")
+                            or d.get("googleAnalytics")
+                            or d.get("ga_id")
+                        )
+                        if val and isinstance(val, str) and val.strip():
+                            ga_id = val.strip()
+                    if not gtm_id:
+                        val = (
+                            d.get("googleTagManagerId")
+                            or d.get("gtmId")
+                            or d.get("tagManagerId")
+                            or d.get("googleTagManager")
+                            or d.get("gtm_id")
+                        )
+                        if val and isinstance(val, str) and val.strip():
+                            gtm_id = val.strip()
             except Exception:
                 pass
 
     if not ga_id:
-        ga_id = "G-XXXXXXXXXX"
+        ga_id = "G-PTGZPG59ZS"
+    if not gtm_id:
+        gtm_id = "GTM-WZLPRH6G"
 
-    return f'''  <!-- Google tag (gtag.js) -->
+    head_snippets = []
+    body_snippets = []
+
+    # 1. Google Tag Manager (Script in <head> and noscript in <body>)
+    if gtm_id and gtm_id != "GTM-XXXXXXXX":
+        head_snippets.append(f'''  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){{w[l]=w[l]||[];w[l].push({{'gtm.start':
+  new Date().getTime(),event:'gtm.js'}});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  }})(window,document,'script','dataLayer','{gtm_id}');</script>
+  <!-- End Google Tag Manager -->''')
+
+        body_snippets.append(f'''  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={gtm_id}"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->''')
+
+    # 2. Google Analytics 4 (gtag.js script in <head>)
+    if ga_id and ga_id != "G-XXXXXXXXXX":
+        head_snippets.append(f'''  <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id={ga_id}"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -124,7 +159,133 @@ def get_google_analytics_tag():
     gtag('js', new Date());
 
     gtag('config', '{ga_id}');
-  </script>'''
+  </script>''')
+
+    head_html = "\n".join(head_snippets)
+    body_html = "\n".join(body_snippets)
+    return head_html, body_html
+
+def get_google_analytics_tag():
+    head_html, _ = get_tracking_tags()
+    return head_html
+
+def get_seo_meta_tags(page_url, page_title, page_desc, is_private=False, image_url=None):
+    """
+    Generates standard SEO meta tags, Open Graph tags, Twitter Card tags, and canonical link.
+    If is_private=True, sets robots to noindex, nofollow, noarchive and omits canonical/OG.
+    """
+    site_url = "https://pbhat99.github.io"
+    for cand_file in ["siteConfig.json", "config.json"]:
+        if os.path.exists(cand_file):
+            try:
+                with open(cand_file, "r", encoding="utf-8") as f:
+                    d = json.load(f)
+                    val = d.get("siteUrl") or d.get("url")
+                    if val and isinstance(val, str) and val.strip():
+                        site_url = val.strip().rstrip('/')
+            except Exception:
+                pass
+
+    if is_private:
+        return '''  <!-- SEO: Strictly Private Page (Excluded from Google Indexing) -->
+  <meta name="robots" content="noindex, nofollow, noarchive">'''
+
+    canonical_url = f"{site_url}/{page_url}" if page_url else site_url
+    if not image_url:
+        image_url = f"{site_url}/_engine/images/logo.png"
+    elif not image_url.startswith("http"):
+        image_url = f"{site_url}/{image_url.lstrip('/')}"
+
+    clean_title = (page_title or "").replace('"', '&quot;').strip()
+    clean_desc = (page_desc or "").replace('"', '&quot;').strip()
+
+    return f'''  <!-- SEO & Canonical Link -->
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="{canonical_url}">
+
+  <!-- Open Graph / Social Media Sharing (Facebook, LinkedIn, Discord) -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="{canonical_url}">
+  <meta property="og:title" content="{clean_title}">
+  <meta property="og:description" content="{clean_desc}">
+  <meta property="og:image" content="{image_url}">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="{canonical_url}">
+  <meta name="twitter:title" content="{clean_title}">
+  <meta name="twitter:description" content="{clean_desc}">
+  <meta name="twitter:image" content="{image_url}">'''
+
+def generate_sitemap_and_robots():
+    """
+    Generates robots.txt and sitemap.xml.
+    Excludes private pages (/more and /extra) from indexing.
+    """
+    site_url = "https://pbhat99.github.io"
+    for cand_file in ["siteConfig.json", "config.json"]:
+        if os.path.exists(cand_file):
+            try:
+                with open(cand_file, "r", encoding="utf-8") as f:
+                    d = json.load(f)
+                    val = d.get("siteUrl") or d.get("url")
+                    if val and isinstance(val, str) and val.strip():
+                        site_url = val.strip().rstrip('/')
+            except Exception:
+                pass
+
+    today = datetime.datetime.now().strftime("%Y-%m-%d")
+
+    # 1. robots.txt
+    robots_content = f"""# robots.txt for Pra - Motions ({site_url})
+User-agent: *
+Allow: /
+
+# Private / Utility Pages (Excluded from Google Indexing)
+Disallow: /more
+Disallow: /more.html
+Disallow: /more/
+Disallow: /extra
+Disallow: /extra.html
+Disallow: /extra/
+Disallow: /pages/07_more/
+Disallow: /pages/08_extra/
+
+# XML Sitemap
+Sitemap: {site_url}/sitemap.xml
+"""
+    with open("robots.txt", "w", encoding="utf-8") as f:
+        f.write(robots_content)
+    print("  -> Generated robots.txt (Allows public pages, blocks /more and /extra, links sitemap)")
+
+    # 2. sitemap.xml (Public pages only, strictly excludes more and extra)
+    public_entries = [
+        ("", "1.0", "weekly"),
+        ("vfx.html", "0.9", "weekly"),
+        ("ai-comfy.html", "0.8", "monthly"),
+        ("photography.html", "0.8", "monthly"),
+        ("about.html", "0.8", "monthly"),
+        ("blog.html", "0.8", "weekly"),
+    ]
+
+    urls_xml = []
+    for rel_path, priority, freq in public_entries:
+        loc = f"{site_url}/{rel_path}" if rel_path else f"{site_url}/"
+        urls_xml.append(f"""  <url>
+    <loc>{loc}</loc>
+    <lastmod>{today}</lastmod>
+    <changefreq>{freq}</changefreq>
+    <priority>{priority}</priority>
+  </url>""")
+
+    sitemap_content = f"""<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+{"\n".join(urls_xml)}
+</urlset>
+"""
+    with open("sitemap.xml", "w", encoding="utf-8") as f:
+        f.write(sitemap_content)
+    print("  -> Generated sitemap.xml (All 6 public pages listed, /more and /extra excluded)")
 
 def hex_to_rgba(hex_str, opacity_val=100):
     """Converts a hex string like #0e1733 and opacity (0-100 or 0.0-1.0) to rgba(...)"""
@@ -269,7 +430,26 @@ def sync_all(convert_webp=False):
         print("  -> [WebP Optimization] Converting source images across pages/ to WebP...")
         convert_all_pages_images_to_webp("pages")
 
-    ga_tag = get_google_analytics_tag()
+    ga_head_tag, ga_body_tag = get_tracking_tags()
+    ga_tag = ga_head_tag
+
+    json_ld_person = '''  <!-- Structured Data (JSON-LD) for Google Rich Results -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Prasannakumar T Bhat",
+    "jobTitle": "Visual Effects Compositor",
+    "url": "https://pbhat99.github.io",
+    "image": "https://pbhat99.github.io/_engine/images/logo.png",
+    "sameAs": [
+      "https://github.com/pbhat99",
+      "https://www.imdb.com/name/nm9329447/",
+      "https://www.linkedin.com/in/pbhat99",
+      "https://vimeo.com/662339422"
+    ]
+  }
+  </script>'''
 
     # --------------------------------------------------------------------------
     # 1. SYNC HOME PAGE (pages/01_home)
@@ -301,14 +481,19 @@ def sync_all(convert_webp=False):
     home_bg_img_html = f'<div class="home-bg-image" style="background-image: url(\'{home_bg_path}\');"></div>' if home_bg_path else ''
     home_bg_overlay_html = f'<div class="home-bg-overlay" style="opacity: {home_alpha};"></div>' if home_bg_path else ''
 
+    home_desc = f"{fixed_name} - {designation}. {tagline}".strip()
+    home_seo_meta = get_seo_meta_tags("", f"{fixed_name} | Visual Effects Compositor", home_desc)
+
     index_html = f'''<!DOCTYPE html>
 <html lang="en">
 <head>
-{ga_tag}
+{ga_head_tag}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{fixed_name}</title>
   <meta name="description" content="{fixed_name} - {designation}">
+{home_seo_meta}
+{json_ld_person}
   <link rel="icon" type="image/png" href="_engine/images/logo.png">
   
   <!-- Ubuntu Typography -->
@@ -472,6 +657,7 @@ def sync_all(convert_webp=False):
   </style>
 </head>
 <body>
+{ga_body_tag}
 
 {generate_nav_html("home")}
 
@@ -759,14 +945,21 @@ def sync_all(convert_webp=False):
         label = CATEGORY_LABELS.get(cat, cat.replace('-', ' ').replace('_', ' ').title())
         filter_buttons_html.append(f'<button class="filter-btn" data-filter="{cat}">{label}</button>')
 
+    vfx_seo_meta = get_seo_meta_tags(
+        "vfx.html",
+        "Visual Effects & Compositing | Pra - Motions",
+        "Visual Effects & Compositing portfolio of Prasannakumar T Bhat across DNEG, The Mill, and feature film productions."
+    )
+
     vfx_html = f'''<!DOCTYPE html>
 <html lang="en">
 <head>
-{ga_tag}
+{ga_head_tag}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>VFX | Pra - Motions</title>
   <meta name="description" content="Visual Effects & Compositing portfolio of Prasannakumar T Bhat across DNEG, The Mill, and feature film productions.">
+{vfx_seo_meta}
   <link rel="icon" type="image/png" href="_engine/images/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,700&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="_engine/css/main.css">
@@ -775,6 +968,7 @@ def sync_all(convert_webp=False):
   <link rel="stylesheet" href="_engine/css/responsive.css">
 </head>
 <body>
+{ga_body_tag}
   {vfx_bg_img_html}
   {vfx_bg_overlay_html}
 
@@ -980,13 +1174,20 @@ def sync_all(convert_webp=False):
           </div>
         </article>''')
 
+    photo_seo_meta = get_seo_meta_tags(
+        "photography.html",
+        f"{photo_title} | Pra - Motions",
+        photo_desc or "Photography and 360 interactive panoramas by Prasannakumar T Bhat."
+    )
+
     photography_html = f'''<!DOCTYPE html>
 <html lang="en">
 <head>
-{ga_tag}
+{ga_head_tag}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{photo_title} | Pra - Motions</title>
+{photo_seo_meta}
   <link rel="icon" type="image/png" href="_engine/images/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,700&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="_engine/css/main.css">
@@ -996,6 +1197,7 @@ def sync_all(convert_webp=False):
   <link rel="stylesheet" href="_engine/css/responsive.css">
 </head>
 <body>
+{ga_body_tag}
   {photo_bg_img_html}
   {photo_bg_overlay_html}
 
@@ -1426,14 +1628,23 @@ def sync_all(convert_webp=False):
             {"".join(social_tiles_html)}
           </div>'''
 
+    about_seo_meta = get_seo_meta_tags(
+        "about.html",
+        f"About {name} | {designation}",
+        f"{name} - {designation}. {experience}. Production visual effects, compositing breakdown, and workflow automation.",
+        image_url=profile_img
+    )
+
     about_html = f'''<!DOCTYPE html>
 <html lang="en">
 <head>
-{ga_tag}
+{ga_head_tag}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>About | {name}</title>
   <meta name="description" content="{name} - {designation}. {experience}.">
+{about_seo_meta}
+{json_ld_person}
   <link rel="icon" type="image/png" href="_engine/images/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,700&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="_engine/css/main.css">
@@ -1442,6 +1653,7 @@ def sync_all(convert_webp=False):
   <link rel="stylesheet" href="_engine/css/responsive.css">
 </head>
 <body>
+{ga_body_tag}
   {about_bg_img_html}
   {about_bg_overlay_html}
 
@@ -1586,14 +1798,21 @@ def sync_all(convert_webp=False):
     if not os.path.exists(workflow_img):
         workflow_img = "pages/03_ai-comfy/workflows/comfyui-production-pipeline.png"
 
+    ai_seo_meta = get_seo_meta_tags(
+        "ai-comfy.html",
+        f"{ai_title} | Pra - Motions",
+        ai_desc or "ComfyUI pipelines, automated cleanup nodes, and custom AI VFX workflows."
+    )
+
     ai_html = f'''<!DOCTYPE html>
 <html lang="en">
 <head>
-{ga_tag}
+{ga_head_tag}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{ai_title} | Pra - Motions</title>
   <meta name="description" content="{ai_desc}">
+{ai_seo_meta}
   <link rel="icon" type="image/png" href="_engine/images/logo.png">
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1606,6 +1825,7 @@ def sync_all(convert_webp=False):
   <link rel="stylesheet" href="_engine/css/responsive.css">
 </head>
 <body>
+{ga_body_tag}
   {ai_bg_img_html}
   {ai_bg_overlay_html}
 
@@ -1979,14 +2199,21 @@ def sync_all(convert_webp=False):
 
     posts_json_str = json.dumps(parsed_posts)
 
+    blog_seo_meta = get_seo_meta_tags(
+        "blog.html",
+        f"{blog_title} | Pra - Motions",
+        blog_desc or "Technical blog, practical VFX setups, automation scripts, and workflow optimization."
+    )
+
     blog_html = f'''<!DOCTYPE html>
 <html lang="en">
 <head>
-{ga_tag}
+{ga_head_tag}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{blog_title} | Pra - Motions</title>
   <meta name="description" content="{blog_desc}">
+{blog_seo_meta}
   <link rel="icon" type="image/png" href="_engine/images/logo.png">
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2001,6 +2228,7 @@ def sync_all(convert_webp=False):
   <link rel="stylesheet" href="_engine/css/blog.css">
 </head>
 <body>
+{ga_body_tag}
   {blog_bg_img_html}
   {blog_bg_overlay_html}
 
@@ -2350,14 +2578,17 @@ def sync_all(convert_webp=False):
         <p class="more-empty-msg">No files currently in <code>{downloads_dir}/</code>. Upload any files here to list them for download.</p>
       </section>'''
 
+    more_seo_meta = get_seo_meta_tags("more.html", page_title, page_desc, is_private=True)
+
     more_html = f'''<!DOCTYPE html>
 <html lang="en">
 <head>
-{ga_tag}
+{ga_head_tag}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{page_title} | Prasannakumar T Bhat</title>
   <meta name="description" content="{page_desc}">
+{more_seo_meta}
   <link rel="icon" type="image/png" href="_engine/images/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,700&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="_engine/css/main.css">
@@ -2365,6 +2596,7 @@ def sync_all(convert_webp=False):
   <link rel="stylesheet" href="_engine/css/responsive.css">
 </head>
 <body>
+{ga_body_tag}
   {more_bg_img_html}
   {more_bg_overlay_html}
 
@@ -2591,14 +2823,17 @@ def sync_all(convert_webp=False):
         <p class="more-empty-msg">No files currently in <code>{extra_downloads_dir}/</code>. Upload any files here to list them for download.</p>
       </section>'''
 
+    extra_seo_meta = get_seo_meta_tags("extra.html", page_title, page_desc, is_private=True)
+
     extra_html = f'''<!DOCTYPE html>
 <html lang="en">
 <head>
-{ga_tag}
+{ga_head_tag}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{page_title} | Prasannakumar T Bhat</title>
   <meta name="description" content="{page_desc}">
+{extra_seo_meta}
   <link rel="icon" type="image/png" href="_engine/images/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,700&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="_engine/css/main.css">
@@ -2606,6 +2841,7 @@ def sync_all(convert_webp=False):
   <link rel="stylesheet" href="_engine/css/responsive.css">
 </head>
 <body>
+{ga_body_tag}
   {extra_bg_img_html}
   {extra_bg_overlay_html}
 
@@ -2654,6 +2890,11 @@ def sync_all(convert_webp=False):
 </html>'''
     with open("extra/index.html", "w", encoding="utf-8") as f:
         f.write(extra_redirect_html)
+
+    # --------------------------------------------------------------------------
+    # 9. GENERATE SITEMAP & ROBOTS.TXT (Exclude /more and /extra)
+    # --------------------------------------------------------------------------
+    generate_sitemap_and_robots()
 
     print("\nSUCCESS: All pages synchronized cleanly!")
 
