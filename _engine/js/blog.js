@@ -278,7 +278,13 @@
       }
     });
 
-    // 3. Cards category badges & tag pills
+    // 3. Date / Archive All button
+    document.querySelectorAll('.date-filter-pill').forEach(btn => {
+      if (isDateAll) btn.classList.add('active');
+      else btn.classList.remove('active');
+    });
+
+    // 4. Cards category badges & tag pills
     document.querySelectorAll('.blog-card').forEach(card => {
       const catBadge = card.querySelector('.blog-category-badge');
       if (catBadge) {

@@ -2204,12 +2204,12 @@ def sync_all(convert_webp=False):
             </ul>
           </li>''')
 
-    categories_pills = ['<button type="button" class="filter-pill category-filter-pill active" data-category="all" onclick="filterByCategory(\'all\')">All</button>']
+    categories_pills = []
     for cat in sorted(categories_set):
         cat_esc = html.escape(cat)
         categories_pills.append(f'<button type="button" class="filter-pill category-filter-pill" data-category="{cat_esc}" onclick="filterByCategory(\'{cat_esc}\')">{cat_esc}</button>')
 
-    tags_pills = ['<button type="button" class="filter-pill tag-filter-pill active" data-tag="all" onclick="filterByTag(\'all\')">All</button>']
+    tags_pills = []
     for tag in sorted(tags_set, key=lambda x: x.lower()):
         tag_esc = html.escape(tag)
         tags_pills.append(f'<button type="button" class="filter-pill tag-filter-pill" data-tag="{tag_esc}" onclick="filterByTag(\'{tag_esc}\')">{tag_esc}</button>')
@@ -2268,17 +2268,13 @@ def sync_all(convert_webp=False):
           
           <!-- Box 1: Content Filters Card (Categories & Tags First) -->
           <div class="blog-tree-card blog-filter-card">
-            <div class="tree-header">
-              <h3 class="tree-title">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-                Filters
-              </h3>
-              <button type="button" class="tree-reset-btn" onclick="resetBlogFilter()" title="Reset all filters">Reset All</button>
-            </div>
-
+            
             <!-- Categories Section -->
             <div class="tree-categories-wrap">
-              <h4 class="tree-subtitle">Categories</h4>
+              <div class="tree-section-header">
+                <h4 class="tree-subtitle">Categories</h4>
+                <button type="button" class="filter-pill category-filter-pill active" data-category="all" onclick="filterByCategory('all')">All</button>
+              </div>
               <div class="tree-pill-list" id="categoryPillList">
                 {"".join(categories_pills)}
               </div>
@@ -2288,7 +2284,10 @@ def sync_all(convert_webp=False):
 
             <!-- Tags Section -->
             <div class="tree-tags-wrap">
-              <h4 class="tree-subtitle">Tags</h4>
+              <div class="tree-section-header">
+                <h4 class="tree-subtitle">Tags</h4>
+                <button type="button" class="filter-pill tag-filter-pill active" data-tag="all" onclick="filterByTag('all')">All</button>
+              </div>
               <div class="tree-pill-list" id="tagPillList">
                 {"".join(tags_pills)}
               </div>
@@ -2302,7 +2301,7 @@ def sync_all(convert_webp=False):
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                 Archive
               </h3>
-              <button type="button" class="tree-reset-btn" onclick="filterByTree('all')" title="Reset date filter">All Dates</button>
+              <button type="button" class="filter-pill date-filter-pill active" data-date="all" onclick="filterByTree('all')" title="Reset date filter">All</button>
             </div>
 
             <ul class="tree-root">

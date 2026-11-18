@@ -184,6 +184,17 @@
   margin: 18px 0;
 }
 
+.tree-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.tree-section-header .tree-subtitle {
+  margin-bottom: 0;
+}
+
 .tree-subtitle {
   font-family: 'Ubuntu', sans-serif;
   font-size: 0.85rem;
