@@ -295,10 +295,24 @@
   }
 
   window.toggleTreeNode = function (nodeEl, year) {
-    const item = nodeEl.closest('.tree-item');
-    if (item) {
-      item.classList.toggle('open');
+    const item = nodeEl ? (nodeEl.classList.contains('tree-item') ? nodeEl : nodeEl.closest('.tree-item')) : null;
+    const yearStr = String(year);
+
+    if (activeDateFilter && activeDateFilter.type === 'year' && activeDateFilter.year === yearStr) {
+      // Already filtering by this year: collapse and reset date to all
+      if (item) item.classList.remove('open');
+      clearActiveTreeSelection();
+      activeDateFilter = null;
+      const allItem = document.querySelector('.tree-all');
+      if (allItem) allItem.classList.add('active');
+    } else {
+      // Expand and filter by this year
+      if (item) item.classList.add('open');
+      clearActiveTreeSelection();
+      if (item) item.classList.add('active-year');
+      activeDateFilter = { type: 'year', year: yearStr };
     }
+    applyFilters();
   };
 
   window.filterByTree = function (type) {
@@ -310,20 +324,33 @@
   };
 
   window.filterByYear = function (year) {
-    clearActiveTreeSelection();
-    const yearItem = document.querySelector(`.tree-year[data-year="${year}"]`);
-    if (yearItem) yearItem.classList.add('active-year');
-    activeDateFilter = { type: 'year', year: String(year) };
-    applyFilters();
+    const yearStr = String(year);
+    const yearItem = document.querySelector(`.tree-year[data-year="${yearStr}"]`);
+    toggleTreeNode(yearItem, yearStr);
   };
 
   window.filterByMonth = function (year, monthName) {
-    clearActiveTreeSelection();
-    const monthEl = document.querySelector(`.tree-month[data-year="${year}"][data-month="${monthName}"]`);
-    if (monthEl) monthEl.classList.add('active');
-    activeDateFilter = { type: 'month', year: String(year), month: monthName };
+    const yearStr = String(year);
+    if (activeDateFilter && activeDateFilter.type === 'month' && activeDateFilter.year === yearStr && activeDateFilter.month === monthName) {
+      // Toggle off month filter
+      clearActiveTreeSelection();
+      activeDateFilter = null;
+      const allItem = document.querySelector('.tree-all');
+      if (allItem) allItem.classList.add('active');
+    } else {
+      clearActiveTreeSelection();
+      const monthEl = document.querySelector(`.tree-month[data-year="${yearStr}"][data-month="${monthName}"]`);
+      if (monthEl) monthEl.classList.add('active');
+      const yearItem = document.querySelector(`.tree-year[data-year="${yearStr}"]`);
+      if (yearItem) item_open(yearItem);
+      activeDateFilter = { type: 'month', year: yearStr, month: monthName };
+    }
     applyFilters();
   };
+
+  function item_open(el) {
+    if (el) el.classList.add('open');
+  }
 
   window.filterByCategory = function (category) {
     const catLower = (category || 'all').trim().toLowerCase();
@@ -386,6 +413,7 @@
     selectedTags.clear();
     activeDateFilter = null;
     clearActiveTreeSelection();
+    document.querySelectorAll('.tree-year').forEach(el => el.classList.remove('open'));
     const allItem = document.querySelector('.tree-all');
     if (allItem) allItem.classList.add('active');
 

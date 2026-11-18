@@ -2191,7 +2191,7 @@ def sync_all(convert_webp=False):
               </li>''')
 
         tree_items_html.append(f'''
-          <li class="tree-item tree-year open" data-year="{y}">
+          <li class="tree-item tree-year" data-year="{y}">
             <div class="tree-node" onclick="toggleTreeNode(this, '{y}')">
               <span class="tree-left-wrap">
                 <span class="tree-arrow">&#9660;</span>
@@ -2263,15 +2263,46 @@ def sync_all(convert_webp=False):
       <!-- Blog Layout: Sidebar Tree + 3-Tile Grid -->
       <div class="blog-layout">
         
-        <!-- Left Tree View Archive Sidebar -->
+        <!-- Left Sidebar: Independent Filters & Archive Cards -->
         <aside class="blog-sidebar">
-          <div class="blog-tree-card">
+          
+          <!-- Box 1: Content Filters Card (Categories & Tags First) -->
+          <div class="blog-tree-card blog-filter-card">
+            <div class="tree-header">
+              <h3 class="tree-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                Filters
+              </h3>
+              <button type="button" class="tree-reset-btn" onclick="resetBlogFilter()" title="Reset all filters">Reset All</button>
+            </div>
+
+            <!-- Categories Section -->
+            <div class="tree-categories-wrap">
+              <h4 class="tree-subtitle">Categories</h4>
+              <div class="tree-pill-list" id="categoryPillList">
+                {"".join(categories_pills)}
+              </div>
+            </div>
+
+            <div class="tree-section-divider"></div>
+
+            <!-- Tags Section -->
+            <div class="tree-tags-wrap">
+              <h4 class="tree-subtitle">Tags</h4>
+              <div class="tree-pill-list" id="tagPillList">
+                {"".join(tags_pills)}
+              </div>
+            </div>
+          </div>
+
+          <!-- Box 2: Independent Date / Archive Filter Card -->
+          <div class="blog-tree-card blog-archive-card">
             <div class="tree-header">
               <h3 class="tree-title">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                 Archive
               </h3>
-              <button type="button" class="tree-reset-btn" onclick="resetBlogFilter()">Reset</button>
+              <button type="button" class="tree-reset-btn" onclick="filterByTree('all')" title="Reset date filter">All Dates</button>
             </div>
 
             <ul class="tree-root">
@@ -2283,25 +2314,8 @@ def sync_all(convert_webp=False):
               </li>
               {"".join(tree_items_html)}
             </ul>
-
-            <div class="tree-section-divider"></div>
-
-            <div class="tree-categories-wrap">
-              <h4 class="tree-subtitle">Categories</h4>
-              <div class="tree-pill-list">
-                {"".join(categories_pills)}
-              </div>
-            </div>
-
-            <div class="tree-section-divider"></div>
-
-            <div class="tree-tags-wrap">
-              <h4 class="tree-subtitle">Tags</h4>
-              <div class="tree-pill-list">
-                {"".join(tags_pills)}
-              </div>
-            </div>
           </div>
+
         </aside>
 
         <!-- Main Blog Area: Post Grid & Pagination -->
