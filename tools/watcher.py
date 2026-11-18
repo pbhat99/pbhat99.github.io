@@ -1,5 +1,15 @@
 import os
 import sys
+
+# Ensure working directory is project root
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if os.path.abspath(os.getcwd()) != PROJECT_ROOT:
+    os.chdir(PROJECT_ROOT)
+
+TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
+if TOOLS_DIR not in sys.path:
+    sys.path.insert(0, TOOLS_DIR)
+
 import time
 import threading
 import http.server

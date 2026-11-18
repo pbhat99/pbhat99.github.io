@@ -50,4 +50,4 @@ Write-Host "  URL: http://localhost:$port" -ForegroundColor Green
 Write-Host "  Closing this terminal window will kill the server." -ForegroundColor Yellow
 Write-Host "===================================================" -ForegroundColor Cyan
 
-& $pyExe watcher.py
+& $pyExe (Join-Path $PSScriptRoot "watcher.py")

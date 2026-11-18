@@ -1,5 +1,11 @@
 import os
 import sys
+
+# Ensure script working directory is always repository root
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if os.path.abspath(os.getcwd()) != PROJECT_ROOT:
+    os.chdir(PROJECT_ROOT)
+
 import re
 import json
 import html
@@ -98,7 +104,7 @@ def get_tracking_tags():
     ga_id = None
     gtm_id = None
 
-    for cand_file in ["siteConfig.json", "config.json", "pages/01_home/content.json"]:
+    for cand_file in ["tools/siteConfig.json", "siteConfig.json", "config.json", "pages/01_home/content.json"]:
         if os.path.exists(cand_file):
             try:
                 with open(cand_file, "r", encoding="utf-8") as f:
@@ -175,7 +181,7 @@ def get_seo_meta_tags(page_url, page_title, page_desc, is_private=False, image_u
     If is_private=True, sets robots to noindex, nofollow, noarchive and omits canonical/OG.
     """
     site_url = "https://pbhat99.github.io"
-    for cand_file in ["siteConfig.json", "config.json"]:
+    for cand_file in ["tools/siteConfig.json", "siteConfig.json", "config.json"]:
         if os.path.exists(cand_file):
             try:
                 with open(cand_file, "r", encoding="utf-8") as f:
@@ -223,7 +229,7 @@ def generate_sitemap_and_robots():
     Excludes private pages (/more and /extra) from indexing.
     """
     site_url = "https://pbhat99.github.io"
-    for cand_file in ["siteConfig.json", "config.json"]:
+    for cand_file in ["tools/siteConfig.json", "siteConfig.json", "config.json"]:
         if os.path.exists(cand_file):
             try:
                 with open(cand_file, "r", encoding="utf-8") as f:

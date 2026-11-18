@@ -18,80 +18,47 @@ Replaces the legacy Weebly site (`pramotions.weebly.com`) with a dark cinematic 
 pbhat99.github.io/
 ├── .github/workflows/
 │   └── deploy.yml            # Automated GitHub Pages CI/CD deployment
-├── assets/
-│   ├── css/
-│   │   ├── main.css          # Design system & dark mode cinematic theme
-│   │   ├── components.css    # Wipe slider, lightbox, accordions, 360 viewer
-│   │   └── responsive.css    # Fluid scaling, auto-alignment for mobile/desktop
-│   ├── js/
-│   │   ├── main.js           # Core router, filtering, and event coordinator
-│   │   ├── before-after.js   # Touch & drag wipe comparison slider
-│   │   ├── accordion.js      # Accessible expandable shot breakdowns
-│   │   ├── lightbox.js       # High-res image modal with gesture support
-│   │   ├── multi-pass.js     # VFX layer composite pass switcher
-│   │   └── panorama-360.js   # 360 photosphere WebGL viewer
-│   └── images/
-│       ├── branding/         # Logos & banners
-│       └── portfolio/        # Project thumbnails & composite passes
-├── data/
-│   ├── projects.json         # Master VFX project database
-│   ├── comfy_workflows.json  # ComfyUI nodes & AI generative pipelines
-│   ├── photography.json      # Photographs & 360 photospheres
-│   └── blog.json             # Technical tutorial articles
-├── index.html                # Home page with hero reel & live dynamic showcases
-├── vfx-works.html            # Complete categorized VFX portfolio
+├── _engine/
+│   ├── css/                  # Design system & dark mode cinematic theme
+│   ├── js/                   # Slider, lightbox, accordions, 360 viewer, routing
+│   └── images/               # Branding and core engine icons
+├── pages/                    # Source content and raw high-res images
+├── tools/                    # Developer build, preview, and deployment tools
+│   ├── preview.bat           # 1-click local test server launcher (localhost:8080)
+│   ├── deploy.bat            # 1-click build, verify, commit & deploy to GitHub
+│   ├── build.py              # Site compiler (WebP generator, sitemap, HTML builder)
+│   ├── watcher.py            # Live hot-reloading development server
+│   ├── verify_site.py        # Static asset and link validator
+│   ├── preview.ps1           # PowerShell browser & port orchestrator
+│   └── siteConfig.json       # Central tracking & domain configuration
+├── index.html                # Home page with hero reel & dynamic showcases
+├── vfx.html                  # Complete categorized VFX portfolio
 ├── ai-comfy.html             # AI / ComfyUI pipelines & custom node guides
 ├── photography.html          # Photography & interactive 360 panorama
-├── about-me.html             # Bio, DNEG compositing role, software matrix, contact
-├── blog.html                 # Technical guides (ComfyUI portable, FaceFusion)
-├── package.json              # Development scripts
+├── about.html                # Bio, showreel, software matrix, contact
+├── blog.html                 # Technical articles & guides
+├── more.html                 # Private download vault & curated links
+├── extra.html                # Private utilities & additional resources
+├── robots.txt                # Search engine crawler policies
+├── sitemap.xml               # Search engine index sitemap
 └── README.md
 ```
 
 ---
 
-## Easy Maintenance Process
+## Easy Maintenance & Developer Workflow
 
-Adding a new VFX project or blog post takes **less than 60 seconds**:
-
-### 1. Adding a New VFX Project
-Open `data/projects.json` and append your project:
-```json
-{
-  "id": "my-new-project",
-  "title": "Client Name - Spot Title",
-  "client": "Client",
-  "category": "commercials",
-  "year": "2026",
-  "role": "Lead Compositor",
-  "thumbnail": "assets/images/portfolio/my-shot.jpg",
-  "description": "Shot summary...",
-  "tools": ["Nuke", "Maya"],
-  "hasBeforeAfter": true,
-  "beforeImage": "assets/images/portfolio/my-plate.jpg",
-  "afterImage": "assets/images/portfolio/my-comp.jpg"
-}
+### 1. Local Preview & Testing
+Run the preview tool:
+```bash
+tools\preview.bat
 ```
+This automatically converts any new images in `pages/` to WebP, clears caches, and launches a live server at `http://localhost:8080`.
 
 ### 2. Deploying to GitHub
-Any commit pushed to `main` is automatically built and deployed live via the included GitHub Action (`.github/workflows/deploy.yml`):
+When ready to publish updates live:
 ```bash
-git add .
-git commit -m "Add new project"
-git push origin main
+tools\deploy.bat
 ```
-
----
-
-## Local Development Preview
-
-To test locally:
-```bash
-# Using Node / npx:
-npm run dev
-
-# Or using Python:
-python -m http.server 3000
-```
-Then open `http://localhost:3000` in your browser.
+This automatically runs WebP optimization, validates site links, commits changes to `dev`, and mirrors directly to `main` for GitHub Pages.
 

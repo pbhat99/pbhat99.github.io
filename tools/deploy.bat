@@ -6,7 +6,7 @@ echo             Pra - Motions: Build and Deploy to GitHub
 echo ======================================================================
 echo.
 
-cd /d "%~dp0"
+cd /d "%~dp0.."
 
 :: 1. Verify Prerequisites & Resolve Python
 if exist "%LOCALAPPDATA%\Programs\Python\Python314\python.exe" (
@@ -32,7 +32,7 @@ if %ERRORLEVEL% neq 0 (
 
 :: 2. Run Site-Wide WebP Conversion and Build
 echo [1/6] Running site-wide WebP conversion and rebuilding all pages...
-"%PY_EXE%" build.py --convert-webp
+"%PY_EXE%" tools\build.py --convert-webp
 if %ERRORLEVEL% neq 0 (
     echo.
     echo [ERROR] Build failed! Please review the error above.

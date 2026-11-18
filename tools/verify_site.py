@@ -1,5 +1,11 @@
 import os
+import sys
 import re
+
+# Ensure working directory is project root
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if os.path.abspath(os.getcwd()) != PROJECT_ROOT:
+    os.chdir(PROJECT_ROOT)
 
 html_files = [f for f in os.listdir('.') if f.endswith('.html')]
 print("HTML Files found:", html_files)
