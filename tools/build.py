@@ -28,10 +28,10 @@ def format_title_from_filename(filename):
 
 def get_page_background_and_overlay(page_dir):
     """
-    Finds the background image for a page folder, falling back to pages/01_home/background.jpg.
+    Finds the background image for a page folder, falling back to pages/01_home backgrounds.
     Also resolves overlayOpacity (0 = full image display, 100 = solid dark #0e1733), falling back to home's setting.
     """
-    bg_candidates = ["background.webp", "background.jpg", "background.jpeg", "background.png"]
+    bg_candidates = ["background.webp", "background.jpg", "background.jpeg", "background.png", "background.jfif"]
     resolved_bg = None
     
     # 1. Look in page_dir first
@@ -41,16 +41,33 @@ def get_page_background_and_overlay(page_dir):
             resolved_bg = path.replace("\\", "/")
             break
             
-    # 2. Fall back to pages/01_home
-    if not resolved_bg:
-        home_dir = "pages/01_home"
-        for cand in bg_candidates:
-            path = os.path.join(home_dir, cand)
-            if os.path.exists(path):
-                resolved_bg = path.replace("\\", "/")
+    # 2. Check for numbered or prefixed backgrounds in page_dir (e.g. background_00.webp)
+    if not resolved_bg and os.path.exists(page_dir):
+        img_exts = {'.webp', '.jpg', '.jpeg', '.jfif', '.png', '.avif'}
+        cand_files = sorted(os.listdir(page_dir), key=lambda x: [int(c) if c.isdigit() else c.lower() for c in re.split(r'(\d+)', x)])
+        for f in cand_files:
+            if f.lower().startswith("background") and os.path.splitext(f)[1].lower() in img_exts:
+                resolved_bg = os.path.join(page_dir, f).replace("\\", "/")
                 break
 
-    # 3. Resolve overlayOpacity
+    # 3. Fall back to pages/01_home
+    if not resolved_bg:
+        home_dir = "pages/01_home"
+        if os.path.exists(home_dir):
+            for cand in bg_candidates:
+                path = os.path.join(home_dir, cand)
+                if os.path.exists(path):
+                    resolved_bg = path.replace("\\", "/")
+                    break
+            if not resolved_bg:
+                img_exts = {'.webp', '.jpg', '.jpeg', '.jfif', '.png', '.avif'}
+                home_files = sorted(os.listdir(home_dir), key=lambda x: [int(c) if c.isdigit() else c.lower() for c in re.split(r'(\d+)', x)])
+                for f in home_files:
+                    if f.lower().startswith("background") and os.path.splitext(f)[1].lower() in img_exts:
+                        resolved_bg = os.path.join(home_dir, f).replace("\\", "/")
+                        break
+
+    # 4. Resolve overlayOpacity
     raw_opacity = None
     page_content = os.path.join(page_dir, "content.json")
     if os.path.exists(page_content):
@@ -94,6 +111,33 @@ def get_page_background_and_overlay(page_dir):
     bg_overlay_html = f'<div class="site-bg-overlay" style="opacity: {overlay_alpha};"></div>' if resolved_bg else ''
 
     return bg_img_html, bg_overlay_html, resolved_bg_url, overlay_alpha
+
+def get_home_background_list(home_dir="pages/01_home"):
+    """
+    Returns a list of tuples: [(rel_path, url_with_mtime, media_type), ...]
+    where media_type is 'video' or 'image', sorted numerically.
+    Supports images (.webp, .jpg, .jpeg, .jfif, .png, .avif) and videos (.mp4, .webm).
+    """
+    if not os.path.exists(home_dir):
+        return []
+    img_exts = {'.webp', '.jpg', '.jpeg', '.jfif', '.png', '.avif'}
+    video_exts = {'.mp4', '.webm'}
+    media_exts = img_exts | video_exts
+
+    home_files = sorted(os.listdir(home_dir), key=lambda x: [int(c) if c.isdigit() else c.lower() for c in re.split(r'(\d+)', x)])
+    results = []
+    for f in home_files:
+        ext = os.path.splitext(f)[1].lower()
+        if f.lower().startswith("background") and ext in media_exts:
+            path = os.path.join(home_dir, f).replace("\\", "/")
+            media_type = 'video' if ext in video_exts else 'image'
+            try:
+                mtime = int(os.path.getmtime(path))
+                url = f"{path}?v={mtime}"
+            except OSError:
+                url = path
+            results.append((path, url, media_type))
+    return results
 
 def get_tracking_tags():
     """
@@ -374,7 +418,7 @@ def convert_all_pages_images_to_webp(root_dir="pages"):
         return
 
     from PIL import Image
-    valid_exts = {'.jpg', '.jpeg', '.png', '.avif', '.gif', '.bmp', '.tiff'}
+    valid_exts = {'.jpg', '.jpeg', '.jfif', '.png', '.avif', '.gif', '.bmp', '.tiff'}
     replacements = {}
 
     # 1. Walk root_dir and convert non-webp images
@@ -477,19 +521,67 @@ def sync_all(convert_webp=False):
             print(f"Notice reading {content_file}: {e}")
 
     fixed_name = "Prasannakumar T Bhat"
+    page_title = home_data.get("pageTitle", fixed_name).strip() or fixed_name
     designation = home_data.get("designation", "").strip()
     tagline = home_data.get("tagline", "").strip()
+    wipe_angle = str(home_data.get("wipeAngle", home_data.get("wipeFrom", "45"))).strip() or "45"
 
-    _, _, home_bg_path, home_alpha = get_page_background_and_overlay(home_dir)
+    _, _, _, home_alpha = get_page_background_and_overlay(home_dir)
+
+    home_bgs = get_home_background_list(home_dir)
+    if not home_bgs:
+        _, _, fallback_bg, _ = get_page_background_and_overlay(home_dir)
+        if fallback_bg:
+            home_bgs = [(fallback_bg.split('?')[0], fallback_bg, 'image')]
+
+    slides_html_list = []
+    for idx, (bg_path, bg_url, media_type) in enumerate(home_bgs):
+        if media_type == 'video':
+            ext_name = os.path.splitext(bg_path)[1].lower().replace('.', '')
+            mime_type = f"video/{ext_name}"
+            if idx == 0:
+                slides_html_list.append(
+                    f'      <div class="home-bg-slide is-active" data-index="{idx}" data-type="video">\n'
+                    f'        <video class="home-bg-slide-video" autoplay loop muted playsinline preload="metadata">\n'
+                    f'          <source src="{bg_url}" type="{mime_type}">\n'
+                    f'        </video>\n'
+                    f'      </div>'
+                )
+            else:
+                slides_html_list.append(
+                    f'      <div class="home-bg-slide" data-index="{idx}" data-type="video" data-video-src="{bg_url}" data-video-type="{mime_type}">\n'
+                    f'        <video class="home-bg-slide-video" loop muted playsinline preload="none"></video>\n'
+                    f'      </div>'
+                )
+        else:
+            if idx == 0:
+                slides_html_list.append(
+                    f'      <div class="home-bg-slide is-active" data-index="{idx}" data-type="image">\n'
+                    f'        <div class="home-bg-slide-inner" style="background-image: url(\'{bg_url}\');"></div>\n'
+                    f'      </div>'
+                )
+            else:
+                slides_html_list.append(
+                    f'      <div class="home-bg-slide" data-index="{idx}" data-type="image" data-bg="{bg_url}">\n'
+                    f'        <div class="home-bg-slide-inner"></div>\n'
+                    f'      </div>'
+                )
+
+    home_bg_slider_html = (
+        '    <!-- Background Slider & Directional Wipe Layer -->\n'
+        f'    <div class="home-bg-slider" id="home-bg-slider" data-wipe-angle="{wipe_angle}" data-wipe-from="{wipe_angle}" aria-hidden="true">\n'
+        + "\n".join(slides_html_list) + "\n"
+        '    </div>'
+    ) if home_bgs else ''
+
+    home_bg_overlay_html = f'<div class="home-bg-overlay" style="opacity: {home_alpha};"></div>' if home_bgs else ''
+    preload_bg_html = f'  <link rel="preload" as="image" href="{home_bgs[0][1]}">' if home_bgs and home_bgs[0][2] == 'image' else ''
 
     designation_html = f'<p class="hero-designation-plain">{designation}</p>' if designation else ""
     tagline_html = f'<p class="hero-tagline-plain">"{tagline}"</p>' if tagline else ""
 
-    home_bg_img_html = f'<div class="home-bg-image" style="background-image: url(\'{home_bg_path}\');"></div>' if home_bg_path else ''
-    home_bg_overlay_html = f'<div class="home-bg-overlay" style="opacity: {home_alpha};"></div>' if home_bg_path else ''
-
     home_desc = f"{fixed_name} - {designation}. {tagline}".strip()
-    home_seo_meta = get_seo_meta_tags("", f"{fixed_name} | Visual Effects Compositor", home_desc)
+    home_seo_meta = get_seo_meta_tags("", page_title, home_desc)
 
     index_html = f'''<!DOCTYPE html>
 <html lang="en">
@@ -497,9 +589,10 @@ def sync_all(convert_webp=False):
 {ga_head_tag}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{fixed_name}</title>
+  <title>{page_title}</title>
   <meta name="description" content="{fixed_name} - {designation}">
 {home_seo_meta}
+{preload_bg_html}
 {json_ld_person}
   <link rel="icon" type="image/png" href="_engine/images/logo.png">
   
@@ -527,7 +620,7 @@ def sync_all(convert_webp=False):
       font-family: 'Ubuntu', sans-serif;
     }}
 
-    /* Seamless Navigation: No borders, no lines, no background */
+    /* Seamless Navigation */
     .site-header {{
       position: absolute;
       top: 0;
@@ -554,8 +647,35 @@ def sync_all(convert_webp=False):
       overflow: hidden;
     }}
 
-    /* Non-stretching, automatic proportional fit */
-    .home-bg-image {{
+    /* Background Slider & Directional Wipe Layer */
+    .home-bg-slider {{
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }}
+
+    .home-bg-slide {{
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      visibility: hidden;
+      pointer-events: none;
+      z-index: 0;
+      will-change: clip-path;
+    }}
+
+    .home-bg-slide.is-active {{
+      visibility: visible;
+      z-index: 1;
+    }}
+
+    .home-bg-slide-inner {{
       position: absolute;
       inset: 0;
       width: 100%;
@@ -563,11 +683,19 @@ def sync_all(convert_webp=False):
       background-size: cover;
       background-position: center center;
       background-repeat: no-repeat;
-      z-index: 0;
+    }}
+
+    .home-bg-slide-video {{
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center center;
       pointer-events: none;
     }}
 
-    /* Controlled Overlay Layer: opacity 0 = full image, 100 = solid background */
+    /* Single Controlled Fixed Overlay Layer across all images & videos */
     .home-bg-overlay {{
       position: absolute;
       inset: 0;
@@ -656,6 +784,59 @@ def sync_all(convert_webp=False):
       letter-spacing: 0.02em;
     }}
 
+    @media (max-width: 768px) {{
+      .home-fullscreen-container {{
+        padding-inline: 14px;
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+      }}
+
+      .home-center-stage {{
+        max-width: 92vw !important;
+        width: 92vw !important;
+        padding-inline: 8px !important;
+        gap: 8px !important;
+      }}
+
+      /* Heading: Half size for mobile */
+      .hero-name-main {{
+        font-size: clamp(1.2rem, 5.5vw, 1.55rem) !important;
+        line-height: 1.15 !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        white-space: normal !important;
+      }}
+
+      /* Subheading Designation: Half size for mobile */
+      .hero-designation-plain {{
+        font-size: clamp(0.7rem, 2.6vw, 0.8rem) !important;
+        line-height: 1.3 !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+      }}
+
+      /* Subheading Tagline: Half size and wrap into 2 or 3 lines */
+      .hero-tagline-plain {{
+        font-size: clamp(0.65rem, 2.3vw, 0.74rem) !important;
+        line-height: 1.45 !important;
+        max-width: 86vw !important;
+        margin-inline: auto !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        white-space: normal !important;
+      }}
+
+      .hero-about-wrap {{
+        margin-top: 14px !important;
+      }}
+
+      .btn-about {{
+        padding: 7px 26px !important;
+        font-size: 0.78rem !important;
+      }}
+    }}
+
     .btn-about:hover {{
       background: var(--accent-hover);
       transform: translateY(-2px);
@@ -670,7 +851,7 @@ def sync_all(convert_webp=False):
 
   <!-- Full-Screen Interactive Viewport -->
   <main class="home-fullscreen-container">
-    {home_bg_img_html}
+{home_bg_slider_html}
     {home_bg_overlay_html}
 
     <!-- Interactive Canvas Background -->
@@ -690,8 +871,11 @@ def sync_all(convert_webp=False):
 
   <script type="module">
     import {{ initInteractiveBackground }} from './_engine/js/interactive-bg.js';
+    import {{ initHomeBackgroundSlider }} from './_engine/js/home-bg-slider.js';
     import './_engine/js/main.js';
+
     initInteractiveBackground('bg-canvas');
+    initHomeBackgroundSlider('home-bg-slider');
 
     // Live sync overlay opacity if content.json is edited
     fetch('pages/01_home/content.json')
@@ -942,9 +1126,10 @@ def sync_all(convert_webp=False):
         label = cat.replace('-', ' ').replace('_', ' ').title()
         filter_buttons_html.append(f'<button class="filter-btn" data-filter="{cat}">{label}</button>')
 
+    vfx_page_title = vfx_content.get("pageTitle", "VFX | Pra - Motions").strip() or "VFX | Pra - Motions"
     vfx_seo_meta = get_seo_meta_tags(
         "vfx.html",
-        "Visual Effects & Compositing | Pra - Motions",
+        vfx_page_title,
         "Visual Effects & Compositing portfolio of Prasannakumar T Bhat across DNEG, The Mill, and feature film productions."
     )
 
@@ -954,7 +1139,7 @@ def sync_all(convert_webp=False):
 {ga_head_tag}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VFX | Pra - Motions</title>
+  <title>{vfx_page_title}</title>
   <meta name="description" content="Visual Effects & Compositing portfolio of Prasannakumar T Bhat across DNEG, The Mill, and feature film productions.">
 {vfx_seo_meta}
   <link rel="icon" type="image/png" href="_engine/images/logo.png">
@@ -971,7 +1156,7 @@ def sync_all(convert_webp=False):
 
 {generate_nav_html("vfx")}
 
-  <main style="padding-block: clamp(24px, 4vw, 56px);">
+  <main style="padding-top: clamp(84px, 7vw, 110px); padding-bottom: clamp(36px, 5vw, 64px);">
     <div class="container-wide">
       <div class="section-header">
         <h1 class="section-title">{vfx_title_inner}</h1>
@@ -992,7 +1177,6 @@ def sync_all(convert_webp=False):
   </main>
 
   <script src="_engine/js/glightbox.min.js"></script>
-  <script type="module" src="_engine/js/lightbox.js"></script>
   <script type="module" src="_engine/js/main.js"></script>
 
 {BACK_TO_TOP_HTML}
@@ -1171,9 +1355,10 @@ def sync_all(convert_webp=False):
           </div>
         </article>''')
 
+    photo_page_title = photo_page_info.get("pageTitle", f"{photo_title} | Pra - Motions").strip() or f"{photo_title} | Pra - Motions"
     photo_seo_meta = get_seo_meta_tags(
         "photography.html",
-        f"{photo_title} | Pra - Motions",
+        photo_page_title,
         photo_desc or "Photography and 360 interactive panoramas by Prasannakumar T Bhat."
     )
 
@@ -1183,7 +1368,7 @@ def sync_all(convert_webp=False):
 {ga_head_tag}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{photo_title} | Pra - Motions</title>
+  <title>{photo_page_title}</title>
 {photo_seo_meta}
   <link rel="icon" type="image/png" href="_engine/images/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,700&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -1200,7 +1385,7 @@ def sync_all(convert_webp=False):
 
 {generate_nav_html("photography")}
 
-  <main style="padding-block: clamp(24px, 4vw, 56px);">
+  <main style="padding-top: clamp(84px, 7vw, 110px); padding-bottom: clamp(36px, 5vw, 64px);">
     <div class="container-wide">
       <div class="section-header">
         <h1 class="section-title">{photo_title_inner}</h1>
@@ -1625,9 +1810,10 @@ def sync_all(convert_webp=False):
             {"".join(social_tiles_html)}
           </div>'''
 
+    about_page_title = about_data.get("pageTitle", f"About | {name}").strip() or f"About | {name}"
     about_seo_meta = get_seo_meta_tags(
         "about.html",
-        f"About {name} | {designation}",
+        about_page_title,
         f"{name} - {designation}. {experience}. Production visual effects, compositing breakdown, and workflow automation.",
         image_url=profile_img
     )
@@ -1638,7 +1824,7 @@ def sync_all(convert_webp=False):
 {ga_head_tag}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>About | {name}</title>
+  <title>{about_page_title}</title>
   <meta name="description" content="{name} - {designation}. {experience}.">
 {about_seo_meta}
 {json_ld_person}
@@ -1656,7 +1842,7 @@ def sync_all(convert_webp=False):
 
 {generate_nav_html("about")}
 
-  <main style="padding-block: clamp(36px, 5vw, 64px);">
+  <main style="padding-top: clamp(84px, 7vw, 110px); padding-bottom: clamp(36px, 5vw, 64px);">
     <div class="container-wide">
       
       <!-- Page Header (With Title & Description; spacing preserved even if empty) -->
@@ -1717,7 +1903,6 @@ def sync_all(convert_webp=False):
   </main>
 
   <script src="_engine/js/glightbox.min.js"></script>
-  <script type="module" src="_engine/js/lightbox.js"></script>
   <script type="module" src="_engine/js/main.js"></script>
 
 {BACK_TO_TOP_HTML}
@@ -1795,9 +1980,10 @@ def sync_all(convert_webp=False):
     if not os.path.exists(workflow_img):
         workflow_img = "pages/03_ai-comfy/workflows/comfyui-production-pipeline.png"
 
+    ai_page_title = ai_page_info.get("pageTitle", f"{ai_title} | Pra - Motions").strip() or f"{ai_title} | Pra - Motions"
     ai_seo_meta = get_seo_meta_tags(
         "ai-comfy.html",
-        f"{ai_title} | Pra - Motions",
+        ai_page_title,
         ai_desc or "ComfyUI pipelines, automated cleanup nodes, and custom AI VFX workflows."
     )
 
@@ -1807,7 +1993,7 @@ def sync_all(convert_webp=False):
 {ga_head_tag}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{ai_title} | Pra - Motions</title>
+  <title>{ai_page_title}</title>
   <meta name="description" content="{ai_desc}">
 {ai_seo_meta}
   <link rel="icon" type="image/png" href="_engine/images/logo.png">
@@ -1828,7 +2014,7 @@ def sync_all(convert_webp=False):
 
 {generate_nav_html("ai-comfy")}
 
-  <main style="padding-block: clamp(36px, 6vw, 72px);">
+  <main style="padding-top: clamp(84px, 7vw, 110px); padding-bottom: clamp(36px, 5vw, 64px);">
     <div class="container-wide">
       
       <!-- Page Header -->
@@ -1928,7 +2114,6 @@ def sync_all(convert_webp=False):
   </main>
 
   <script src="_engine/js/glightbox.min.js"></script>
-  <script type="module" src="_engine/js/lightbox.js"></script>
   <script type="module" src="_engine/js/main.js"></script>
 
 {BACK_TO_TOP_HTML}
@@ -2267,9 +2452,10 @@ def sync_all(convert_webp=False):
 
     posts_json_str = json.dumps(parsed_posts)
 
+    blog_page_title = blog_page_info.get("pageTitle", f"{blog_title} | Pra - Motions").strip() or f"{blog_title} | Pra - Motions"
     blog_seo_meta = get_seo_meta_tags(
         "blog.html",
-        f"{blog_title} | Pra - Motions",
+        blog_page_title,
         blog_desc or "Technical blog, practical VFX setups, automation scripts, and workflow optimization."
     )
 
@@ -2279,7 +2465,7 @@ def sync_all(convert_webp=False):
 {ga_head_tag}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{blog_title} | Pra - Motions</title>
+  <title>{blog_page_title}</title>
   <meta name="description" content="{blog_desc}">
 {blog_seo_meta}
   <link rel="icon" type="image/png" href="_engine/images/logo.png">
@@ -2302,7 +2488,7 @@ def sync_all(convert_webp=False):
 
 {generate_nav_html("blog")}
 
-  <main style="padding-block: clamp(36px, 5vw, 64px);">
+  <main style="padding-top: clamp(84px, 7vw, 110px); padding-bottom: clamp(36px, 5vw, 64px);">
     <div class="container-wide">
       
       <!-- Page Header -->
@@ -2430,7 +2616,6 @@ def sync_all(convert_webp=False):
         <article class="blog-reader-content">
           <header class="reader-header">
             <h1 class="reader-title" id="readerTitle">Title</h1>
-            <p class="reader-subheading" id="readerSubheading">Subheading</p>
             <div class="reader-meta">
               <span id="readerDate">Date</span>
               <span>&bull;</span>
@@ -2473,7 +2658,6 @@ def sync_all(convert_webp=False):
 
   <script src="_engine/js/prism.js"></script>
   <script src="_engine/js/glightbox.min.js"></script>
-  <script type="module" src="_engine/js/lightbox.js"></script>
   <script src="_engine/js/blog.js"></script>
   <script type="module" src="_engine/js/main.js"></script>
 
@@ -2662,7 +2846,8 @@ def sync_all(convert_webp=False):
         <p class="more-empty-msg">No files currently in <code>{downloads_dir}/</code>. Upload any files here to list them for download.</p>
       </section>'''
 
-    more_seo_meta = get_seo_meta_tags("more.html", page_title, page_desc, is_private=True)
+    more_page_title = more_data.get("pageTitle", f"{page_title} | Prasannakumar T Bhat").strip() or f"{page_title} | Prasannakumar T Bhat"
+    more_seo_meta = get_seo_meta_tags("more.html", more_page_title, page_desc, is_private=True)
 
     more_html = f'''<!DOCTYPE html>
 <html lang="en">
@@ -2670,7 +2855,7 @@ def sync_all(convert_webp=False):
 {ga_head_tag}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{page_title} | Prasannakumar T Bhat</title>
+  <title>{more_page_title}</title>
   <meta name="description" content="{page_desc}">
 {more_seo_meta}
   <link rel="icon" type="image/png" href="_engine/images/logo.png">
@@ -2686,7 +2871,7 @@ def sync_all(convert_webp=False):
 
 {generate_nav_html("")}
 
-  <main style="padding-block: clamp(36px, 5vw, 64px);">
+  <main style="padding-top: clamp(84px, 7vw, 110px); padding-bottom: clamp(36px, 5vw, 64px);">
     <div class="container-wide">
       
       <!-- Page Header -->
@@ -2907,7 +3092,8 @@ def sync_all(convert_webp=False):
         <p class="more-empty-msg">No files currently in <code>{extra_downloads_dir}/</code>. Upload any files here to list them for download.</p>
       </section>'''
 
-    extra_seo_meta = get_seo_meta_tags("extra.html", page_title, page_desc, is_private=True)
+    extra_page_title = extra_data.get("pageTitle", f"{page_title} | Prasannakumar T Bhat").strip() or f"{page_title} | Prasannakumar T Bhat"
+    extra_seo_meta = get_seo_meta_tags("extra.html", extra_page_title, page_desc, is_private=True)
 
     extra_html = f'''<!DOCTYPE html>
 <html lang="en">
@@ -2915,7 +3101,7 @@ def sync_all(convert_webp=False):
 {ga_head_tag}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{page_title} | Prasannakumar T Bhat</title>
+  <title>{extra_page_title}</title>
   <meta name="description" content="{page_desc}">
 {extra_seo_meta}
   <link rel="icon" type="image/png" href="_engine/images/logo.png">
@@ -2931,7 +3117,7 @@ def sync_all(convert_webp=False):
 
 {generate_nav_html("")}
 
-  <main style="padding-block: clamp(36px, 5vw, 64px);">
+  <main style="padding-top: clamp(84px, 7vw, 110px); padding-bottom: clamp(36px, 5vw, 64px);">
     <div class="container-wide">
       
       <!-- Page Header -->

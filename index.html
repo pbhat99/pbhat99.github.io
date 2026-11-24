@@ -28,16 +28,17 @@
   <!-- Open Graph / Social Media Sharing (Facebook, LinkedIn, Discord) -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://pbhat99.github.io">
-  <meta property="og:title" content="Prasannakumar T Bhat | Visual Effects Compositor">
+  <meta property="og:title" content="Prasannakumar T Bhat">
   <meta property="og:description" content="Prasannakumar T Bhat - Visual Effects Compositor. CG is not just faking, its adding beautiful layers of lie on the ugly truth.">
   <meta property="og:image" content="https://pbhat99.github.io/_engine/images/logo.png">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:url" content="https://pbhat99.github.io">
-  <meta name="twitter:title" content="Prasannakumar T Bhat | Visual Effects Compositor">
+  <meta name="twitter:title" content="Prasannakumar T Bhat">
   <meta name="twitter:description" content="Prasannakumar T Bhat - Visual Effects Compositor. CG is not just faking, its adding beautiful layers of lie on the ugly truth.">
   <meta name="twitter:image" content="https://pbhat99.github.io/_engine/images/logo.png">
+  <link rel="preload" as="image" href="pages/01_home/background_00.webp?v=1794718649">
   <!-- Structured Data (JSON-LD) for Google Rich Results -->
   <script type="application/ld+json">
   {
@@ -81,7 +82,7 @@
       font-family: 'Ubuntu', sans-serif;
     }
 
-    /* Seamless Navigation: No borders, no lines, no background */
+    /* Seamless Navigation */
     .site-header {
       position: absolute;
       top: 0;
@@ -108,8 +109,35 @@
       overflow: hidden;
     }
 
-    /* Non-stretching, automatic proportional fit */
-    .home-bg-image {
+    /* Background Slider & Directional Wipe Layer */
+    .home-bg-slider {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .home-bg-slide {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      visibility: hidden;
+      pointer-events: none;
+      z-index: 0;
+      will-change: clip-path;
+    }
+
+    .home-bg-slide.is-active {
+      visibility: visible;
+      z-index: 1;
+    }
+
+    .home-bg-slide-inner {
       position: absolute;
       inset: 0;
       width: 100%;
@@ -117,11 +145,19 @@
       background-size: cover;
       background-position: center center;
       background-repeat: no-repeat;
-      z-index: 0;
+    }
+
+    .home-bg-slide-video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center center;
       pointer-events: none;
     }
 
-    /* Controlled Overlay Layer: opacity 0 = full image, 100 = solid background */
+    /* Single Controlled Fixed Overlay Layer across all images & videos */
     .home-bg-overlay {
       position: absolute;
       inset: 0;
@@ -210,6 +246,59 @@
       letter-spacing: 0.02em;
     }
 
+    @media (max-width: 768px) {
+      .home-fullscreen-container {
+        padding-inline: 14px;
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+      }
+
+      .home-center-stage {
+        max-width: 92vw !important;
+        width: 92vw !important;
+        padding-inline: 8px !important;
+        gap: 8px !important;
+      }
+
+      /* Heading: Half size for mobile */
+      .hero-name-main {
+        font-size: clamp(1.2rem, 5.5vw, 1.55rem) !important;
+        line-height: 1.15 !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        white-space: normal !important;
+      }
+
+      /* Subheading Designation: Half size for mobile */
+      .hero-designation-plain {
+        font-size: clamp(0.7rem, 2.6vw, 0.8rem) !important;
+        line-height: 1.3 !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+      }
+
+      /* Subheading Tagline: Half size and wrap into 2 or 3 lines */
+      .hero-tagline-plain {
+        font-size: clamp(0.65rem, 2.3vw, 0.74rem) !important;
+        line-height: 1.45 !important;
+        max-width: 86vw !important;
+        margin-inline: auto !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        white-space: normal !important;
+      }
+
+      .hero-about-wrap {
+        margin-top: 14px !important;
+      }
+
+      .btn-about {
+        padding: 7px 26px !important;
+        font-size: 0.78rem !important;
+      }
+    }
+
     .btn-about:hover {
       background: var(--accent-hover);
       transform: translateY(-2px);
@@ -242,7 +331,27 @@
 
   <!-- Full-Screen Interactive Viewport -->
   <main class="home-fullscreen-container">
-    <div class="home-bg-image" style="background-image: url('pages/01_home/background.webp?v=1794718649');"></div>
+    <!-- Background Slider & Directional Wipe Layer -->
+    <div class="home-bg-slider" id="home-bg-slider" data-wipe-angle="75" data-wipe-from="75" aria-hidden="true">
+      <div class="home-bg-slide is-active" data-index="0" data-type="image">
+        <div class="home-bg-slide-inner" style="background-image: url('pages/01_home/background_00.webp?v=1794718649');"></div>
+      </div>
+      <div class="home-bg-slide" data-index="1" data-type="image" data-bg="pages/01_home/background_01.webp?v=1795499092">
+        <div class="home-bg-slide-inner"></div>
+      </div>
+      <div class="home-bg-slide" data-index="2" data-type="image" data-bg="pages/01_home/background_02.webp?v=1795498085">
+        <div class="home-bg-slide-inner"></div>
+      </div>
+      <div class="home-bg-slide" data-index="3" data-type="image" data-bg="pages/01_home/background_03.webp?v=1795498085">
+        <div class="home-bg-slide-inner"></div>
+      </div>
+      <div class="home-bg-slide" data-index="4" data-type="image" data-bg="pages/01_home/background_04.webp?v=1795499092">
+        <div class="home-bg-slide-inner"></div>
+      </div>
+      <div class="home-bg-slide" data-index="5" data-type="image" data-bg="pages/01_home/background_05.webp?v=1727944100">
+        <div class="home-bg-slide-inner"></div>
+      </div>
+    </div>
     <div class="home-bg-overlay" style="opacity: 0.25;"></div>
 
     <!-- Interactive Canvas Background -->
@@ -262,8 +371,11 @@
 
   <script type="module">
     import { initInteractiveBackground } from './_engine/js/interactive-bg.js';
+    import { initHomeBackgroundSlider } from './_engine/js/home-bg-slider.js';
     import './_engine/js/main.js';
+
     initInteractiveBackground('bg-canvas');
+    initHomeBackgroundSlider('home-bg-slider');
 
     // Live sync overlay opacity if content.json is edited
     fetch('pages/01_home/content.json')

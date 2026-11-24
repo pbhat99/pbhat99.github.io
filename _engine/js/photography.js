@@ -56,6 +56,22 @@
       });
     }
 
+    // Attach Tab Button Handlers
+    const tabPanos = document.getElementById('tabBtnPanos');
+    const tabPhotos = document.getElementById('tabBtnPhotos');
+    if (tabPanos) {
+      tabPanos.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.switchGalleryTab('panos');
+      });
+    }
+    if (tabPhotos) {
+      tabPhotos.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.switchGalleryTab('photos');
+      });
+    }
+
     // 4. Attach Global Keyboard Navigation (Esc, Left, Right)
     document.addEventListener('keydown', handleKeyNavigation);
   }

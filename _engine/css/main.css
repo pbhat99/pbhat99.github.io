@@ -46,6 +46,8 @@ html {
   scroll-behavior: smooth;
   font-size: 16px;
   color-scheme: dark;
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 body {
@@ -54,34 +56,51 @@ body {
   color: var(--text-main);
   line-height: 1.6;
   min-height: 100vh;
+  min-height: 100dvh;
   overflow-x: hidden;
+  max-width: 100%;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   position: relative;
 }
 
-/* Global Fixed Site Background (Non-stretching, automatic cover without distortion) */
+/* Global Fixed Site Background (Stick to fixed place across all pages, never scrolls on mobile) */
 .site-bg-image {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  background-size: cover;
-  background-position: center center;
-  background-repeat: no-repeat;
-  z-index: 0;
-  pointer-events: none;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  height: 100dvh !important;
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  background-attachment: fixed !important;
+  z-index: -1 !important;
+  pointer-events: none !important;
+  transform: none !important;
+  -webkit-transform: none !important;
+  will-change: auto !important;
 }
 
 /* Controlled Overlay Layer: opacity 0 = full image, 100 = solid background color */
 .site-bg-overlay {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: var(--bg-primary);
-  z-index: 1;
-  pointer-events: none;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  height: 100dvh !important;
+  background-color: var(--bg-primary) !important;
+  z-index: -1 !important;
+  pointer-events: none !important;
+  transform: none !important;
+  -webkit-transform: none !important;
+  will-change: auto !important;
   transition: opacity 0.3s ease;
 }
 
@@ -122,19 +141,28 @@ button {
   margin-inline: auto;
 }
 
-/* Header & Navigation (Transparent, Seamless, Full Screen Width) */
+/* Header & Navigation (Absolute, Not Fixed, Not Pinned, Seamless across all pages) */
 .site-header {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   width: 100%;
-  z-index: 100;
+  z-index: 1000;
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+  transition: none;
+}
+
+.site-header.is-scrolled {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .nav-wrapper {
@@ -216,10 +244,21 @@ button {
 .mobile-nav-toggle {
   display: none;
   flex-direction: column;
-  gap: 5px;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  width: 44px;
+  height: 44px;
   padding: 8px;
   color: var(--text-main);
-  z-index: 101;
+  z-index: 1001;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast);
+}
+
+.mobile-nav-toggle:hover {
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .mobile-nav-toggle span {
@@ -227,7 +266,21 @@ button {
   height: 2px;
   background-color: currentColor;
   border-radius: 2px;
-  transition: transform 0.3s, opacity 0.3s;
+  transition: transform 0.3s ease, opacity 0.3s ease, width 0.3s ease;
+  transform-origin: center;
+}
+
+.mobile-nav-toggle.active span:nth-child(1) {
+  transform: translateY(8px) rotate(45deg);
+}
+
+.mobile-nav-toggle.active span:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+
+.mobile-nav-toggle.active span:nth-child(3) {
+  transform: translateY(-8px) rotate(-45deg);
 }
 
 /* Buttons */
@@ -1213,9 +1266,46 @@ a.company-banner-logo-wrap.is-clickable:hover .company-banner-logo-img {
   }
   .about-bio-col {
     height: auto;
+    padding: clamp(16px, 4vw, 24px) !important;
+  }
+  .about-name {
+    font-size: clamp(1.1rem, 5.2vw, 1.55rem) !important;
+    white-space: nowrap !important;
+    line-height: 1.2 !important;
+    margin-bottom: 6px !important;
+    text-align: center !important;
+  }
+  .about-role-strip {
+    font-size: clamp(0.78rem, 3.4vw, 0.95rem) !important;
+    margin-bottom: 14px !important;
+    text-align: center !important;
+  }
+  .about-paragraphs {
+    font-size: clamp(0.78rem, 3.2vw, 0.9rem) !important;
+    line-height: 1.55 !important;
+    gap: 10px !important;
+  }
+  .about-paragraphs p {
+    margin: 0 !important;
   }
   .about-bio-bottom {
-    margin-top: 28px;
+    margin-top: 18px !important;
+    padding-top: 14px !important;
+    gap: 12px !important;
+  }
+  .about-social-row {
+    gap: clamp(6px, 1.8vw, 10px) !important;
+  }
+  .about-social-row .social-tile {
+    width: clamp(34px, 8vw, 42px) !important;
+    height: clamp(34px, 8vw, 42px) !important;
+  }
+  .about-actions-wrap {
+    gap: 10px !important;
+  }
+  .about-actions-wrap .btn {
+    padding: 8px 18px !important;
+    font-size: 0.82rem !important;
   }
   .known-tools-strip {
     flex-wrap: nowrap !important;
@@ -1249,12 +1339,39 @@ a.company-banner-logo-wrap.is-clickable:hover .company-banner-logo-img {
 }
 
 @media (max-width: 768px) {
-  .contact-content-grid {
-    grid-template-columns: 1fr;
+  .contact-content-grid,
+  .contact-content-grid:has(.contact-image-wrap) {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
   }
   .contact-image-wrap {
-    max-width: 260px;
-    margin-inline: auto;
+    max-width: 220px !important;
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 4 / 3 !important;
+    margin-inline: auto !important;
+  }
+  .contact-info-col {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  .contact-line-item {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 2px !important;
+    width: 100% !important;
+  }
+  .contact-line-label {
+    min-width: 0 !important;
+    font-size: 0.78rem !important;
+    color: var(--text-subtle) !important;
+  }
+  .contact-line-val {
+    width: 100% !important;
+    font-size: 0.88rem !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
   }
 }
 

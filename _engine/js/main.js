@@ -3,26 +3,49 @@ import { initLightbox } from './lightbox.js';
 import { initAccordions } from './accordion.js';
 import { initAllMultiPass } from './multi-pass.js';
 
-document.addEventListener('DOMContentLoaded', () => {
-  // Mobile Nav Toggle
+function initMainApp() {
+  // Mobile Nav Toggle & Unified Header Controller
   const mobileToggle = document.querySelector('.mobile-nav-toggle');
   const navLinks = document.querySelector('.nav-links');
+  const siteHeader = document.querySelector('.site-header');
 
   if (mobileToggle && navLinks) {
-    mobileToggle.addEventListener('click', () => {
-      navLinks.classList.toggle('active');
-      const isOpen = navLinks.classList.contains('active');
-      mobileToggle.setAttribute('aria-expanded', isOpen);
+    function toggleNav(forceState) {
+      const willOpen = typeof forceState === 'boolean' ? forceState : !navLinks.classList.contains('active');
+      navLinks.classList.toggle('active', willOpen);
+      mobileToggle.classList.toggle('active', willOpen);
+      mobileToggle.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+      document.body.classList.toggle('mobile-nav-open', willOpen);
+    }
+
+    mobileToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleNav();
+    });
+
+    // Close when clicking outside
+    document.addEventListener('click', (e) => {
+      if (navLinks.classList.contains('active') && !navLinks.contains(e.target) && !mobileToggle.contains(e.target)) {
+        toggleNav(false);
+      }
+    });
+
+    // Close on Escape key
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && navLinks.classList.contains('active')) {
+        toggleNav(false);
+      }
     });
 
     // Close on link click
     navLinks.querySelectorAll('a').forEach(link => {
       link.addEventListener('click', () => {
-        navLinks.classList.remove('active');
-        mobileToggle.setAttribute('aria-expanded', 'false');
+        toggleNav(false);
       });
     });
   }
+
+  // Navigation bar scrolls naturally with page; zero background blur on scroll
 
   // Portfolio & VFX Tag / Category Filtering
   let currentCategory = 'all';
@@ -201,5 +224,11 @@ document.addEventListener('DOMContentLoaded', () => {
   initLightbox();
   initAccordions();
   initAllMultiPass();
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initMainApp);
+} else {
+  initMainApp();
+}
 

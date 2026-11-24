@@ -128,12 +128,6 @@
               ${tagsHtml}
             </div>
           </div>
-          <div class="blog-card-footer">
-            <button type="button" class="btn-blog-more" onclick="openPostModal('${post.id}')">
-              <span>More...</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </button>
-          </div>
         </div>
       </article>`;
     });
@@ -456,7 +450,8 @@
     }
 
     document.getElementById('readerTitle').textContent = post.title || '';
-    document.getElementById('readerSubheading').textContent = post.subheading || '';
+    const readerSubheading = document.getElementById('readerSubheading');
+    if (readerSubheading) readerSubheading.textContent = '';
     document.getElementById('readerDate').textContent = post.date || '';
     document.getElementById('readerReadTime').textContent = post.readTime || '5 min read';
     document.getElementById('readerAuthor').textContent = post.author || 'Prasannakumar T Bhat';
