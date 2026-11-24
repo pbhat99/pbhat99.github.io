@@ -60,9 +60,8 @@ function initMainApp() {
   let currentCategory = 'all';
   let currentTag = null;
 
-  const filterBtns = document.querySelectorAll('.filter-bar .filter-btn');
-
   function updateCategoryButtons() {
+    const filterBtns = document.querySelectorAll('.filter-bar .filter-btn[data-filter]');
     filterBtns.forEach(b => {
       if (b.getAttribute('data-filter') === currentCategory) {
         b.classList.add('active');
@@ -128,10 +127,10 @@ function initMainApp() {
     }, 220);
   }
 
-  // Category Button Click (Delegated for dynamically generated pills)
+  // Category Button Click (Delegated for dynamically generated pills on VFX page)
   document.addEventListener('click', (e) => {
-    const btn = e.target.closest('.filter-bar .filter-btn');
-    if (btn) {
+    const btn = e.target.closest('.filter-bar .filter-btn[data-filter]');
+    if (btn && document.querySelector('.company-section')) {
       e.preventDefault();
       currentCategory = btn.getAttribute('data-filter') || 'all';
       currentTag = null;

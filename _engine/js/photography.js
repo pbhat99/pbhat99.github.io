@@ -57,45 +57,133 @@
     }
 
     // Attach Tab Button Handlers
+    const tabAll = document.getElementById('tabBtnAll');
     const tabPanos = document.getElementById('tabBtnPanos');
     const tabPhotos = document.getElementById('tabBtnPhotos');
+    if (tabAll) {
+      tabAll.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        window.switchGalleryTab('all', e);
+      });
+    }
     if (tabPanos) {
       tabPanos.addEventListener('click', (e) => {
         e.preventDefault();
-        window.switchGalleryTab('panos');
+        e.stopPropagation();
+        window.switchGalleryTab('panos', e);
       });
     }
     if (tabPhotos) {
       tabPhotos.addEventListener('click', (e) => {
         e.preventDefault();
-        window.switchGalleryTab('photos');
+        e.stopPropagation();
+        window.switchGalleryTab('photos', e);
       });
     }
+
+    // Cache all initial waterfall item elements
+    const itemElements = document.querySelectorAll('.waterfall-item');
+    allWaterfallItems = Array.from(itemElements).map(el => ({
+      element: el,
+      type: el.getAttribute('data-type') || 'photos',
+      aspect: parseFloat(el.getAttribute('data-aspect') || el.style.getPropertyValue('--aspect') || '1.778')
+    }));
+
+    // Attach resize listener with debounce
+    let resizeTimer = null;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        renderWaterfall(currentGalleryTab);
+      }, 100);
+    });
 
     // 4. Attach Global Keyboard Navigation (Esc, Left, Right)
     document.addEventListener('keydown', handleKeyNavigation);
   }
 
   // --------------------------------------------------------------------------
-  // Tab Switching Controller (Pano 1st Tab, Photos 2nd Tab)
+  // Tab Switching & Dynamic Waterfall Controller
   // --------------------------------------------------------------------------
-  window.switchGalleryTab = function (tab) {
-    const panosSec = document.getElementById('panos-section');
-    const photosSec = document.getElementById('photos-section');
+  let currentGalleryTab = 'all';
+  let allWaterfallItems = [];
+
+  function getTargetColumnCount(tab) {
+    const w = window.innerWidth;
+    if (tab === 'panos') {
+      return (w <= 600) ? 1 : 2;
+    }
+    // 'all' or 'photos': 3 columns on desktop, 2 on tablet/mobile
+    if (w <= 640) return 2;
+    return 3;
+  }
+
+  function renderWaterfall(tab) {
+    currentGalleryTab = tab || currentGalleryTab;
+    const container = document.getElementById('photoWaterfallContainer');
+    if (!container || !allWaterfallItems.length) return;
+
+    // Filter items based on tab
+    const items = allWaterfallItems.filter(item => {
+      if (currentGalleryTab === 'all') return true;
+      return item.type === currentGalleryTab;
+    });
+
+    const numCols = getTargetColumnCount(currentGalleryTab);
+
+    // Create column buckets
+    const cols = Array.from({ length: numCols }, () => []);
+    const colHeights = new Array(numCols).fill(0);
+
+    // Greedily place each item into the column with lowest cumulative height
+    items.forEach(item => {
+      let minCol = 0;
+      let minH = colHeights[0];
+      for (let c = 1; c < numCols; c++) {
+        if (colHeights[c] < minH) {
+          minH = colHeights[c];
+          minCol = c;
+        }
+      }
+      cols[minCol].push(item.element);
+      colHeights[minCol] += (1 / (item.aspect || 1.778));
+    });
+
+    // Populate columns
+    container.innerHTML = '';
+    container.className = `waterfall-container waterfall-${numCols}-col`;
+    cols.forEach(colItems => {
+      const colDiv = document.createElement('div');
+      colDiv.className = 'waterfall-col';
+      colItems.forEach(el => {
+        el.style.display = '';
+        colDiv.appendChild(el);
+      });
+      container.appendChild(colDiv);
+    });
+  }
+
+  window.switchGalleryTab = function (tab, e) {
+    if (e && e.stopPropagation) {
+      e.stopPropagation();
+    }
+    const tabAll = document.getElementById('tabBtnAll');
     const tabPanos = document.getElementById('tabBtnPanos');
     const tabPhotos = document.getElementById('tabBtnPhotos');
 
-    if (tab === 'panos') {
-      if (panosSec) panosSec.style.display = 'block';
-      if (photosSec) photosSec.style.display = 'none';
-      if (tabPanos) tabPanos.classList.add('active');
-      if (tabPhotos) tabPhotos.classList.remove('active');
-    } else {
-      if (panosSec) panosSec.style.display = 'none';
-      if (photosSec) photosSec.style.display = 'block';
-      if (tabPanos) tabPanos.classList.remove('active');
-      if (tabPhotos) tabPhotos.classList.add('active');
+    const allButtons = [tabAll, tabPanos, tabPhotos].filter(Boolean);
+    allButtons.forEach(btn => btn.classList.remove('active'));
+
+    if (tab === 'all' && tabAll) {
+      tabAll.classList.add('active');
+    } else if (tab === 'panos' && tabPanos) {
+      tabPanos.classList.add('active');
+    } else if (tab === 'photos' && tabPhotos) {
+      tabPhotos.classList.add('active');
     }
+
+    renderWaterfall(tab);
   };
 
   // --------------------------------------------------------------------------

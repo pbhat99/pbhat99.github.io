@@ -98,7 +98,7 @@ body.lightbox-active .reader-side-nav {
    ========================================================================== */
 .panorama-card {
   background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
+  border: none !important;
   border-radius: var(--radius-lg);
   overflow: hidden;
   margin-bottom: 32px;
@@ -144,7 +144,7 @@ body.lightbox-active .reader-side-nav {
   margin-top: 14px;
   padding: 12px;
   background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
+  border: none !important;
   border-radius: var(--radius-md);
 }
 

@@ -504,7 +504,6 @@ def build_resource_listing_page(page_id, dir_candidates, default_title, default_
         <div class="more-section-header">
           <h2 class="more-section-title">
             <span>{links_section_title}</span>
-            <span class="more-section-badge">{len(links_cards_html)}</span>
           </h2>
         </div>
         <div class="more-links-grid">
@@ -583,7 +582,6 @@ def build_resource_listing_page(page_id, dir_candidates, default_title, default_
         <div class="more-section-header">
           <h2 class="more-section-title">
             <span>{downloads_section_title}</span>
-            <span class="more-section-badge">{len(download_cards_html)}</span>
           </h2>
         </div>
         <div class="more-downloads-grid">
@@ -1386,7 +1384,7 @@ def sync_all(convert_webp=False):
         company_sections_html.append(f'''
         <section class="company-section" id="{comp_slug}" data-company="{comp_slug}">
           {company_banner_html}
-          <div class="portfolio-grid company-project-grid" style="--tile-bg: {tile_bg_rgba};">
+          <div class="portfolio-grid company-project-grid">
             {"".join(tiles_html)}
           </div>
         </section>''')
@@ -1593,25 +1591,15 @@ def sync_all(convert_webp=False):
     photos_json_str = json.dumps(photos_list)
     panos_json_str = json.dumps(panos_list)
 
-    def get_mondrian_class(idx, aspect):
-        if aspect <= 0.82:
-            return "mondrian-tall"
-        elif aspect >= 1.6 and (idx % 2 == 1 or idx == 0):
-            return "mondrian-wide"
-        elif aspect >= 1.9:
-            return "mondrian-wide"
-        else:
-            return "mondrian-standard"
-
-    # 1. Normal Photos HTML (Mondrian Style Mosaic Grid with 3-5 images horizontally)
-    photo_tiles_html = []
+    # Build photo tiles with native aspect ratio embedded (ZERO CROP)
+    photo_tiles = []
     for idx, p in enumerate(photos_list):
-        m_class = get_mondrian_class(idx, p['aspect'])
-        photo_tiles_html.append(f'''
-        <div class="photo-mondrian-item {m_class}">
-          <article class="project-tile photo-tile" onclick="openPhotoViewer({idx})" title="{p['title']}">
+        asp = p.get('aspect', 1.778)
+        tile_html = f'''
+        <div class="waterfall-item" data-type="photos" data-aspect="{asp}" style="--aspect: {asp};">
+          <article class="project-tile photo-tile" onclick="openPhotoViewer({idx})" title="{p['title']}" style="--aspect: {asp}; aspect-ratio: {asp};">
             <div class="tile-circling-border" aria-hidden="true"></div>
-            <div class="tile-inner">
+            <div class="tile-inner" style="aspect-ratio: {asp};">
               <img src="{p['webp']}" alt="{p['title']}" class="tile-img" loading="lazy" decoding="async">
               <div class="tile-hover-overlay">
                 <div class="tile-hover-content">
@@ -1622,32 +1610,67 @@ def sync_all(convert_webp=False):
               </div>
             </div>
           </article>
-        </div>''')
+        </div>'''
+        photo_tiles.append((p, tile_html, idx))
 
-    # 2. 360 Panoramas HTML (2:1 images 2 per row)
-    pano_tiles_html = []
+    # Build pano tiles with native aspect ratio embedded (ZERO CROP)
+    pano_tiles = []
     for idx, p in enumerate(panos_list):
-        pano_tiles_html.append(f'''
-        <article class="project-tile pano-tile" onclick="openPanoViewer({idx})" title="{p['title']}">
-          <div class="tile-circling-border" aria-hidden="true"></div>
-          <div class="tile-inner">
-            <img src="{p['webp']}" alt="{p['title']}" class="tile-img" loading="lazy" decoding="async">
-            <span class="pano-badge">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
-              360° Panorama
-            </span>
-            <div class="pano-center-indicator" aria-hidden="true">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" style="margin-left: 2px;"><polygon points="6 3 20 12 6 21 6 3"/></svg>
-            </div>
-            <div class="tile-hover-overlay">
-              <div class="tile-hover-content">
-                <h3 class="tile-title">
-                  <span>{p['title']}</span>
-                </h3>
+        asp = p.get('aspect', 2.0)
+        tile_html = f'''
+        <div class="waterfall-item" data-type="panos" data-aspect="{asp}" style="--aspect: {asp};">
+          <article class="project-tile pano-tile" onclick="openPanoViewer({idx})" title="{p['title']}" style="--aspect: {asp}; aspect-ratio: {asp};">
+            <div class="tile-circling-border" aria-hidden="true"></div>
+            <div class="tile-inner" style="aspect-ratio: {asp};">
+              <img src="{p['webp']}" alt="{p['title']}" class="tile-img" loading="lazy" decoding="async">
+              <span class="pano-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
+                360° Panorama
+              </span>
+              <div class="pano-center-indicator" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" style="margin-left: 2px;"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+              </div>
+              <div class="tile-hover-overlay">
+                <div class="tile-hover-content">
+                  <h3 class="tile-title">
+                    <span>{p['title']}</span>
+                  </h3>
+                </div>
               </div>
             </div>
-          </div>
-        </article>''')
+          </article>
+        </div>'''
+        pano_tiles.append((p, tile_html, idx))
+
+    # Balanced 3-column distribution for initial static waterfall
+    col1 = [
+        pano_tiles[0][1],     # Atacama 360 (aspect 2.0)
+        photo_tiles[0][1],    # Anjaniputra (aspect 1.333)
+        photo_tiles[1][1],    # Adidas Create (aspect 1.777)
+        photo_tiles[4][1]     # Busch Forest (aspect 1.777)
+    ]
+    col2 = [
+        photo_tiles[5][1],    # Pepsi Super Bowl Tall Vertical (aspect 0.681)
+        pano_tiles[1][1],     # Cerro Toco 360 (aspect 2.0)
+        photo_tiles[2][1]     # Adidas Football (aspect 1.777)
+    ]
+    col3 = [
+        pano_tiles[2][1],     # Baltimore 360 (aspect 2.0)
+        photo_tiles[3][1],    # Busch Mountain (aspect 1.777)
+        photo_tiles[6][1],    # Pepsi The Call (aspect 1.777)
+        pano_tiles[3][1],     # Charles Street 360 (aspect 2.768)
+        photo_tiles[7][1]     # Xbox Forza (aspect 1.777)
+    ]
+    waterfall_cols_html = f'''
+        <div class="waterfall-col">
+          {"".join(col1)}
+        </div>
+        <div class="waterfall-col">
+          {"".join(col2)}
+        </div>
+        <div class="waterfall-col">
+          {"".join(col3)}
+        </div>'''
 
     photo_page_title = photo_page_info.get("pageTitle", f"{photo_title} | Pra - Motions").strip() or f"{photo_title} | Pra - Motions"
     photo_seo_meta = get_seo_meta_tags(
@@ -1686,46 +1709,17 @@ def sync_all(convert_webp=False):
         <p class="section-desc">{photo_desc_inner}</p>
       </div>
 
-      <!-- Gallery Filter Tabs (1st: 360 Panos, 2nd: Photos) -->
-      <div class="gallery-tab-bar">
-        <button type="button" class="gallery-tab-btn active" id="tabBtnPanos" data-tab="panos" onclick="switchGalleryTab('panos')">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
-          <span>360° Panoramas</span>
-          <span class="tab-pill-count">{len(panos_list)}</span>
-        </button>
-
-        <button type="button" class="gallery-tab-btn" id="tabBtnPhotos" data-tab="photos" onclick="switchGalleryTab('photos')">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-          <span>Photos</span>
-          <span class="tab-pill-count">{len(photos_list)}</span>
-        </button>
+      <!-- Gallery Filter Tabs (All, Panoramas, Photos matching VFX page pills) -->
+      <div class="filter-bar filter-bar-center" style="margin-bottom: 32px;">
+        <button type="button" class="filter-btn active" id="tabBtnAll" data-tab="all" onclick="switchGalleryTab('all', event)">All</button>
+        <button type="button" class="filter-btn" id="tabBtnPanos" data-tab="panos" onclick="switchGalleryTab('panos', event)">Panoramas</button>
+        <button type="button" class="filter-btn" id="tabBtnPhotos" data-tab="photos" onclick="switchGalleryTab('photos', event)">Photos</button>
       </div>
 
-      <!-- TAB 1: 360° PANORAMA ENVIRONMENTS (Active by default, 2:1 Grid 2 per Row) -->
-      <section class="photo-gallery-section" id="panos-section">
-        <div class="gallery-section-heading">
-          <h2 class="gallery-section-title">
-            <span>360° Panoramic Environments</span>
-            <span class="gallery-section-count">{len(panos_list)}</span>
-          </h2>
-        </div>
-
-        <div class="pano-grid">
-          {"".join(pano_tiles_html)}
-        </div>
-      </section>
-
-      <!-- TAB 2: STILLS & PHOTOS (Mondrian Grid 3-5 Horizontally) -->
-      <section class="photo-gallery-section" id="photos-section" style="display: none;">
-        <div class="gallery-section-heading">
-          <h2 class="gallery-section-title">
-            <span>Stills & Photography</span>
-            <span class="gallery-section-count">{len(photos_list)}</span>
-          </h2>
-        </div>
-
-        <div class="photo-mondrian-grid">
-          {"".join(photo_tiles_html)}
+      <!-- Unified Waterfall Gallery Grid (3 Columns in All & Photos, 2 Columns in Panoramas) -->
+      <section class="photo-gallery-section" id="gallery-container">
+        <div class="waterfall-container waterfall-3-col" id="photoWaterfallContainer">
+          {waterfall_cols_html}
         </div>
       </section>
 

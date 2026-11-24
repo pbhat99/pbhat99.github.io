@@ -1,0 +1,12 @@
+{
+  "title": "Nuke Pipeline Setup",
+  "description": "Streamlined workfile save and open panels, retime export and import workflow, USD migration along with upstream dipartments.",
+  "category": "films",
+  "year": "2018 - 2023",
+  "tags": [
+    "Nuke",
+    "python",
+    "vibecoding"
+  ],
+  "orientation": "Vertical"
+}

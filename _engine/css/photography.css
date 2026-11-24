@@ -5,233 +5,178 @@
  */
 
 /* ==========================================================================
-   Gallery Tab Bar (Pill Filter Style matching site)
+   Gallery Tab Bar (Matching VFX Page Filter Pills: size, center-align, no icons/counts)
    ========================================================================== */
-.gallery-tab-bar {
+.filter-bar {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 10px;
-  margin-bottom: 34px;
   flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+  margin-bottom: 32px;
 }
 
+.filter-btn,
 .gallery-tab-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 20px;
-  font-size: 0.9rem;
+  padding: 8px 18px;
+  font-size: 0.88rem;
   font-weight: 500;
   font-family: 'Ubuntu', sans-serif;
   border-radius: var(--radius-full);
   background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
   color: var(--text-muted);
-  cursor: pointer;
+  border: 1px solid var(--border-subtle);
   transition: all var(--transition-fast);
+  cursor: pointer;
   user-select: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
+.filter-btn:hover,
 .gallery-tab-btn:hover {
   color: #ffffff;
   border-color: rgba(255, 255, 255, 0.25);
   background: rgba(255, 255, 255, 0.05);
-  transform: translateY(-1px);
 }
 
+.filter-btn.active,
 .gallery-tab-btn.active {
-  background: var(--accent-primary);
-  color: #ffffff;
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 16px rgba(249, 134, 3, 0.45);
+  background: var(--accent-primary) !important;
+  color: #ffffff !important;
+  border-color: var(--accent-primary) !important;
+  box-shadow: 0 0 15px rgba(249, 134, 3, 0.4) !important;
 }
 
-.tab-pill-count {
-  font-size: 0.76rem;
-  font-family: var(--font-mono);
-  padding: 2px 8px;
-  border-radius: var(--radius-full);
-  background: rgba(0, 0, 0, 0.25);
-  color: inherit;
-  font-weight: 600;
-}
-
-.gallery-tab-btn.active .tab-pill-count {
-  background: rgba(0, 0, 0, 0.32);
-  color: #ffffff;
-}
-
-/* Mobile: Both 360 and Photos pills in same row, fit horizontal, 75% size */
-@media (max-width: 768px) {
-  .gallery-tab-bar {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    justify-content: center !important;
-    align-items: center !important;
-    gap: 8px !important;
-    width: 100% !important;
-    max-width: 380px !important;
-    margin-inline: auto !important;
-    margin-top: 6px !important;
-    margin-bottom: 20px !important;
-    box-sizing: border-box !important;
-    padding-inline: 4px !important;
-  }
-
-  .gallery-tab-btn {
-    flex: 1 1 0 !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 6px !important;
-    padding: 6px 12px !important;
-    font-size: 0.76rem !important;
-    white-space: nowrap !important;
-    box-sizing: border-box !important;
-  }
-
-  .gallery-tab-btn svg {
-    width: 13px !important;
-    height: 13px !important;
-    flex-shrink: 0 !important;
-  }
-
-  .gallery-tab-btn span {
-    font-size: 0.76rem !important;
-    white-space: nowrap !important;
-  }
-
-  .tab-pill-count {
-    font-size: 0.68rem !important;
-    padding: 1px 6px !important;
-    flex-shrink: 0 !important;
-  }
+.tab-pill-count,
+.gallery-section-count {
+  display: none !important;
 }
 
 /* ==========================================================================
-   Section Headers
+   Section Headers (Removed per instruction)
    ========================================================================== */
 .photo-gallery-section {
   margin-top: 10px;
 }
 
 .gallery-section-heading {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-  margin-bottom: 24px;
-  border-bottom: 1px solid var(--border-subtle);
-  padding-bottom: 14px;
-}
-
-.gallery-section-title {
-  font-family: 'Ubuntu', sans-serif;
-  font-size: clamp(1.3rem, 2.2vw, 1.7rem);
-  font-weight: 700;
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 0;
-}
-
-.gallery-section-count {
-  font-size: 0.85rem;
-  font-family: var(--font-mono);
-  font-weight: 600;
-  color: var(--accent-primary);
-  background: rgba(249, 134, 3, 0.12);
-  border: 1px solid rgba(249, 134, 3, 0.35);
-  border-radius: var(--radius-full);
-  padding: 2px 10px;
+  display: none !important;
 }
 
 /* ==========================================================================
-   1. Normal Photos: Mondrian Style Mosaic Grid (3-5 Images Horizontally)
+   1. Waterfall Photography Layout (3 Columns in All & Photos, 2 Columns in Panoramas)
    ========================================================================== */
-.photo-mondrian-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-auto-rows: 240px;
-  grid-auto-flow: dense;
-  gap: 16px;
+.waterfall-container {
+  display: flex;
+  gap: 14px;
   width: 100%;
+  align-items: flex-start;
+  box-sizing: border-box;
 }
 
-@media (min-width: 1400px) {
-  .photo-mondrian-grid {
-    grid-template-columns: repeat(5, 1fr);
-    grid-auto-rows: 230px;
-    gap: 18px;
+.waterfall-col {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.waterfall-item {
+  width: 100%;
+  display: block;
+  position: relative;
+  box-sizing: border-box;
+}
+
+/* Waterfall Tiles */
+.waterfall-item .photo-tile,
+.waterfall-item .pano-tile {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+  border: none !important;
+  outline: none !important;
+  cursor: pointer;
+  position: relative;
+  display: block;
+  overflow: visible;
+  box-sizing: border-box;
+}
+
+/* Tile Inner Container: Strictly reflects native image aspect-ratio with ZERO crop */
+.waterfall-item .tile-inner {
+  width: 100%;
+  aspect-ratio: var(--aspect, 1.778);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  position: relative;
+  background-color: var(--bg-card);
+  border: none !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease;
+  z-index: 1;
+}
+
+/* Image fills true-aspect container without any cropping */
+.waterfall-item .tile-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Since container aspect-ratio == image native aspect, NO cropping occurs! */
+  display: block;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.waterfall-item:hover .tile-inner {
+  transform: scale(1.025);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.65), 0 0 22px rgba(249, 134, 3, 0.28);
+}
+
+.waterfall-item:hover .tile-img {
+  transform: scale(1.04);
+}
+
+/* Circling outline on hover */
+.waterfall-item .tile-circling-border {
+  position: absolute;
+  inset: -2px;
+  border-radius: calc(var(--radius-md) + 2px);
+  z-index: 2;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  padding: 2px;
+  box-sizing: border-box;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.waterfall-item:hover .tile-circling-border {
+  opacity: 1;
+}
+
+/* Responsive Gaps */
+@media (max-width: 900px) {
+  .waterfall-container {
+    gap: 10px;
+  }
+  .waterfall-col {
+    gap: 10px;
   }
 }
 
-@media (max-width: 1100px) {
-  .photo-mondrian-grid {
-    grid-template-columns: repeat(3, 1fr);
-    grid-auto-rows: 220px;
-  }
-}
-
-@media (max-width: 768px) {
-  .photo-mondrian-grid {
-    grid-template-columns: repeat(2, 1fr);
-    grid-auto-rows: 180px;
-    gap: 12px;
-  }
-}
-
-@media (max-width: 480px) {
-  .photo-mondrian-grid {
-    grid-template-columns: repeat(2, 1fr);
-    grid-auto-rows: 140px;
+@media (max-width: 600px) {
+  .waterfall-container {
     gap: 8px;
   }
-}
-
-/* Mondrian Grid Item Spans */
-.photo-mondrian-item {
-  position: relative;
-  border-radius: var(--radius-md);
-  overflow: visible;
-}
-
-.photo-mondrian-item.mondrian-wide {
-  grid-column: span 2;
-  grid-row: span 1;
-}
-
-.photo-mondrian-item.mondrian-tall {
-  grid-column: span 1;
-  grid-row: span 2;
-}
-
-.photo-mondrian-item.mondrian-feature {
-  grid-column: span 2;
-  grid-row: span 2;
-}
-
-.photo-mondrian-item.mondrian-standard {
-  grid-column: span 1;
-  grid-row: span 1;
-}
-
-@media (max-width: 640px) {
-  .photo-mondrian-item.mondrian-wide {
-    grid-column: span 2;
-    grid-row: span 1;
-  }
-  .photo-mondrian-item.mondrian-tall {
-    grid-column: span 1;
-    grid-row: span 2;
-  }
-  .photo-mondrian-item.mondrian-feature {
-    grid-column: span 2;
-    grid-row: span 1;
+  .waterfall-col {
+    gap: 8px;
   }
 }
 
@@ -241,8 +186,11 @@
   position: relative;
   display: block;
   width: 100%;
-  height: 100%;
+  height: auto;
+  aspect-ratio: var(--aspect, 1.778);
   border-radius: var(--radius-md);
+  border: none !important;
+  outline: none !important;
   overflow: visible;
   box-sizing: border-box;
 }
@@ -254,10 +202,11 @@
 .photo-tile .tile-inner {
   width: 100%;
   height: 100%;
+  aspect-ratio: var(--aspect, 1.778);
   border-radius: var(--radius-md);
   overflow: hidden;
   background-color: var(--bg-card);
-  border: 1px solid var(--border-subtle);
+  border: none !important;
   position: relative;
   z-index: 1;
 }
@@ -321,9 +270,11 @@
 
 .pano-tile {
   position: relative;
-  aspect-ratio: 2 / 1;
+  aspect-ratio: var(--aspect, 2 / 1);
   cursor: pointer;
   border-radius: var(--radius-md);
+  border: none !important;
+  outline: none !important;
   overflow: visible;
   box-sizing: border-box;
 }
@@ -336,10 +287,13 @@
   border-radius: var(--radius-md);
   overflow: hidden;
   background-color: var(--bg-card);
-  border: 1px solid var(--border-subtle);
+  border: none !important;
   position: relative;
   z-index: 1;
   width: 100%;
+  height: 100%;
+  aspect-ratio: var(--aspect, 2 / 1);
+}
   height: 100%;
 }
 
