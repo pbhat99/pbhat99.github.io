@@ -162,9 +162,9 @@
     pointer-events: none !important;
   }
 
-  /* Section Title & Subheading: Half size to fit better and wrap 2-3 lines */
+  /* Section Title & Subheading: Harmonized unified scale across all mobile pages */
   .section-title {
-    font-size: clamp(1.15rem, 4.5vw, 1.4rem) !important;
+    font-size: clamp(1.35rem, 5.5vw, 1.65rem) !important;
     line-height: 1.25 !important;
     word-break: break-word !important;
     overflow-wrap: break-word !important;
@@ -174,7 +174,7 @@
   }
 
   .section-desc {
-    font-size: clamp(0.68rem, 2.4vw, 0.78rem) !important;
+    font-size: clamp(0.82rem, 3.2vw, 0.92rem) !important;
     line-height: 1.45 !important;
     max-width: 88vw !important;
     margin-inline: auto !important;
@@ -183,9 +183,10 @@
     white-space: normal !important;
     text-align: center !important;
     padding-inline: 8px !important;
+    color: var(--text-muted) !important;
   }
 
-  /* Home Center Stage: Half size headings, 2-3 line wrapping */
+  /* Home Center Stage: Harmonized headings matching unified scale */
   .home-center-stage {
     max-width: 92vw !important;
     width: 92vw !important;
@@ -194,28 +195,30 @@
   }
 
   .hero-name-main {
-    font-size: clamp(1.2rem, 5.5vw, 1.55rem) !important;
-    line-height: 1.15 !important;
+    font-size: clamp(1.35rem, 5.5vw, 1.65rem) !important;
+    line-height: 1.2 !important;
     word-break: break-word !important;
     overflow-wrap: break-word !important;
     white-space: normal !important;
   }
 
   .hero-designation-plain {
-    font-size: clamp(0.7rem, 2.6vw, 0.8rem) !important;
-    line-height: 1.3 !important;
+    font-size: clamp(0.82rem, 3.2vw, 0.92rem) !important;
+    line-height: 1.35 !important;
     word-break: break-word !important;
     overflow-wrap: break-word !important;
+    color: var(--accent-primary) !important;
   }
 
   .hero-tagline-plain {
-    font-size: clamp(0.65rem, 2.3vw, 0.74rem) !important;
+    font-size: clamp(0.8rem, 2.8vw, 0.88rem) !important;
     line-height: 1.45 !important;
     max-width: 86vw !important;
     margin-inline: auto !important;
     word-break: break-word !important;
     overflow-wrap: break-word !important;
     white-space: normal !important;
+    color: var(--text-muted) !important;
   }
 
   .hero-about-wrap {
@@ -223,8 +226,8 @@
   }
 
   .btn-about {
-    padding: 7px 24px !important;
-    font-size: 0.78rem !important;
+    padding: 8px 24px !important;
+    font-size: 0.84rem !important;
   }
 
   /* Home Page Mobile: Single Static Background Image, No Wipe / No Video */
@@ -295,28 +298,29 @@
     overflow-wrap: break-word !important;
   }
 
-  /* About Bio / Info Mobile Proportional Scaling & Single-Line Name */
+  /* About Bio / Info Mobile Harmonized Scale & Single-Line Name */
   .about-bio-col {
-    padding: clamp(16px, 4vw, 24px) !important;
+    padding: clamp(18px, 4vw, 26px) !important;
     height: auto !important;
   }
 
   .about-name {
-    font-size: clamp(1.1rem, 5.2vw, 1.55rem) !important;
+    font-size: clamp(1.35rem, 5.5vw, 1.65rem) !important;
     white-space: nowrap !important;
-    line-height: 1.2 !important;
+    line-height: 1.25 !important;
     margin-bottom: 6px !important;
     text-align: center !important;
   }
 
   .about-role-strip {
-    font-size: clamp(0.78rem, 3.4vw, 0.95rem) !important;
+    font-size: clamp(0.82rem, 3.2vw, 0.92rem) !important;
     margin-bottom: 12px !important;
     text-align: center !important;
+    color: var(--accent-primary) !important;
   }
 
   .about-paragraphs {
-    font-size: clamp(0.78rem, 3.2vw, 0.88rem) !important;
+    font-size: clamp(0.82rem, 3vw, 0.88rem) !important;
     line-height: 1.55 !important;
     gap: 10px !important;
   }
@@ -346,7 +350,7 @@
 
   .about-actions-wrap .btn {
     padding: 8px 18px !important;
-    font-size: 0.82rem !important;
+    font-size: 0.84rem !important;
   }
 
   /* VFX Category Pills: 2 rows wrapped and centered on mobile */
@@ -365,9 +369,42 @@
 
   .filter-btn {
     padding: 6px 14px !important;
-    font-size: 0.78rem !important;
+    font-size: 0.76rem !important;
     white-space: nowrap !important;
     flex-shrink: 0 !important;
+  }
+
+  /* Harmonized VFX Project Tiles & Company Headers */
+  .company-name {
+    font-size: clamp(1.12rem, 4.2vw, 1.3rem) !important;
+    line-height: 1.3 !important;
+  }
+
+  .company-period {
+    font-size: 0.74rem !important;
+  }
+
+  .tile-title {
+    font-size: clamp(0.94rem, 3.5vw, 1.05rem) !important;
+    line-height: 1.35 !important;
+  }
+
+  .tile-desc {
+    font-size: clamp(0.82rem, 3vw, 0.88rem) !important;
+    line-height: 1.5 !important;
+  }
+
+  .tile-year {
+    font-size: 0.74rem !important;
+  }
+
+  .tile-tag,
+  .tile-category-pill {
+    font-size: 0.74rem !important;
+  }
+
+  .gallery-section-title {
+    font-size: clamp(1.12rem, 4.2vw, 1.3rem) !important;
   }
 
   .portfolio-grid:not(.company-project-grid) {
@@ -454,9 +491,42 @@
 
   .filter-btn {
     padding: 6px 14px !important;
-    font-size: 0.78rem !important;
+    font-size: 0.76rem !important;
     white-space: nowrap !important;
     flex-shrink: 0 !important;
+  }
+
+  /* Harmonized VFX Project Tiles & Company Headers */
+  .company-name {
+    font-size: clamp(1.12rem, 4.2vw, 1.3rem) !important;
+    line-height: 1.3 !important;
+  }
+
+  .company-period {
+    font-size: 0.74rem !important;
+  }
+
+  .tile-title {
+    font-size: clamp(0.94rem, 3.5vw, 1.05rem) !important;
+    line-height: 1.35 !important;
+  }
+
+  .tile-desc {
+    font-size: clamp(0.82rem, 3vw, 0.88rem) !important;
+    line-height: 1.5 !important;
+  }
+
+  .tile-year {
+    font-size: 0.74rem !important;
+  }
+
+  .tile-tag,
+  .tile-category-pill {
+    font-size: 0.74rem !important;
+  }
+
+  .gallery-section-title {
+    font-size: clamp(1.12rem, 4.2vw, 1.3rem) !important;
   }
 }
 

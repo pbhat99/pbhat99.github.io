@@ -86,26 +86,26 @@
     align-items: center !important;
     justify-content: center !important;
     gap: 6px !important;
-    padding: 6px 10px !important; /* 75% scale */
-    font-size: 0.72rem !important; /* 75% scale */
+    padding: 6px 12px !important;
+    font-size: 0.76rem !important;
     white-space: nowrap !important;
     box-sizing: border-box !important;
   }
 
   .gallery-tab-btn svg {
-    width: 12px !important;
-    height: 12px !important;
+    width: 13px !important;
+    height: 13px !important;
     flex-shrink: 0 !important;
   }
 
   .gallery-tab-btn span {
-    font-size: 0.72rem !important;
+    font-size: 0.76rem !important;
     white-space: nowrap !important;
   }
 
   .tab-pill-count {
-    font-size: 0.6rem !important;
-    padding: 1px 5px !important;
+    font-size: 0.68rem !important;
+    padding: 1px 6px !important;
     flex-shrink: 0 !important;
   }
 }

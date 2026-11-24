@@ -1266,22 +1266,23 @@ a.company-banner-logo-wrap.is-clickable:hover .company-banner-logo-img {
   }
   .about-bio-col {
     height: auto;
-    padding: clamp(16px, 4vw, 24px) !important;
+    padding: clamp(18px, 4vw, 26px) !important;
   }
   .about-name {
-    font-size: clamp(1.1rem, 5.2vw, 1.55rem) !important;
+    font-size: clamp(1.35rem, 5.5vw, 1.65rem) !important;
     white-space: nowrap !important;
-    line-height: 1.2 !important;
+    line-height: 1.25 !important;
     margin-bottom: 6px !important;
     text-align: center !important;
   }
   .about-role-strip {
-    font-size: clamp(0.78rem, 3.4vw, 0.95rem) !important;
+    font-size: clamp(0.82rem, 3.2vw, 0.92rem) !important;
     margin-bottom: 14px !important;
     text-align: center !important;
+    color: var(--accent-primary) !important;
   }
   .about-paragraphs {
-    font-size: clamp(0.78rem, 3.2vw, 0.9rem) !important;
+    font-size: clamp(0.82rem, 3vw, 0.88rem) !important;
     line-height: 1.55 !important;
     gap: 10px !important;
   }
@@ -1305,7 +1306,7 @@ a.company-banner-logo-wrap.is-clickable:hover .company-banner-logo-img {
   }
   .about-actions-wrap .btn {
     padding: 8px 18px !important;
-    font-size: 0.82rem !important;
+    font-size: 0.84rem !important;
   }
   .known-tools-strip {
     flex-wrap: nowrap !important;
