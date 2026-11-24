@@ -1,5 +1,10 @@
 [
   {
+    "name": "Whatsapp",
+    "image": "whatsapp.webp",
+    "link": "https://wa.me/+919449267068"
+  },
+  {
     "name": "Gmail",
     "image": "gmail.webp",
     "link": "mailto:pbhat99@gmail.com"
