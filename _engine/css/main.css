@@ -42,6 +42,30 @@
   padding: 0;
 }
 
+:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 3px;
+  box-shadow: 0 0 10px rgba(249, 134, 3, 0.4);
+}
+
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 20px;
+  background: var(--bg-card);
+  color: var(--accent-primary);
+  padding: 10px 16px;
+  border: 1px solid var(--accent-primary);
+  border-radius: var(--radius-sm);
+  z-index: 99999;
+  font-weight: 600;
+  text-decoration: none;
+  transition: top 0.2s ease;
+}
+.skip-link:focus {
+  top: 20px;
+}
+
 html {
   scroll-behavior: smooth;
   font-size: 16px;
@@ -104,9 +128,7 @@ body {
   transition: opacity 0.3s ease;
 }
 
-.site-header,
-main,
-.site-footer {
+main {
   position: relative;
   z-index: 10;
 }
@@ -412,126 +434,7 @@ button {
   gap: 28px;
 }
 
-/* Card */
-.project-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  transition: transform var(--transition-smooth), border-color var(--transition-smooth), box-shadow var(--transition-smooth);
-}
 
-.project-card:hover {
-  transform: translateY(-4px);
-  border-color: var(--border-active);
-  box-shadow: var(--shadow-subtle), var(--shadow-glow);
-}
-
-.project-thumb-wrapper {
-  position: relative;
-  aspect-ratio: 16 / 9;
-  overflow: hidden;
-  background: var(--bg-secondary);
-}
-
-.project-thumb {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.project-card:hover .project-thumb {
-  transform: scale(1.05);
-}
-
-.card-overlay-badge {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  padding: 4px 10px;
-  border-radius: var(--radius-sm);
-  background: rgba(14, 23, 51, 0.85);
-  backdrop-filter: blur(8px);
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--accent-primary);
-  border: 1px solid rgba(249, 134, 3, 0.35);
-}
-
-.card-content {
-  padding: 22px;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-}
-
-.card-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 0.8rem;
-  color: var(--text-subtle);
-  margin-bottom: 8px;
-}
-
-.card-client {
-  font-weight: 600;
-  color: var(--accent-primary);
-}
-
-.card-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin-bottom: 8px;
-  line-height: 1.3;
-}
-
-.card-desc {
-  font-size: 0.9rem;
-  color: var(--text-muted);
-  margin-bottom: 16px;
-  flex-grow: 1;
-}
-
-.card-tools {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 18px;
-}
-
-.tool-tag {
-  font-size: 0.72rem;
-  font-family: var(--font-mono);
-  padding: 3px 8px;
-  border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: var(--text-muted);
-}
-
-/* Footer */
-.site-footer {
-  margin-top: clamp(60px, 10vw, 120px);
-  border-top: 1px solid var(--border-subtle);
-  background: var(--bg-secondary);
-  padding-block: 48px 32px;
-}
-
-.footer-bottom {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-top: 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  font-size: 0.82rem;
-  color: var(--text-subtle);
-}
 
 /* ==========================================================================
    VFX COMPANY SHOWCASE BANNERS & SECTIONS
@@ -864,7 +767,8 @@ a.company-banner-logo-wrap.is-clickable:hover .company-banner-logo-img {
   box-shadow: 0 0 12px rgba(249, 134, 3, 0.5);
 }
 
-.project-tile:hover .tile-more-link {
+.project-tile:hover .tile-more-link,
+.project-tile:focus-within .tile-more-link {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
@@ -1447,24 +1351,7 @@ a.company-banner-logo-wrap.is-clickable:hover .company-banner-logo-img {
   display: block;
 }
 
-/* Bottom Center Aligned Social Media Icons */
-.contact-social-section {
-  border-top: 1px solid var(--border-subtle);
-  padding-top: 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-}
 
-.contact-social-strip {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-}
 
 /* Social Tile: Clean, Transparent, Subtle Zoom on Hover (No BG, No Circling Line) */
 .social-tile {
@@ -1609,6 +1496,9 @@ a.company-banner-logo-wrap.is-clickable:hover .company-banner-logo-img {
   }
   .tile-more-link {
     right: 8px;
+    opacity: 0.95;
+    transform: translateY(0);
+    pointer-events: auto;
   }
 
   .tile-hover-overlay {

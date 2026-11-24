@@ -103,7 +103,7 @@
       const pCat = (post.category || '').toLowerCase();
       const isCatActive = selectedCategories.has(pCat) ? 'active' : '';
 
-      const tagsHtml = (post.tags || []).slice(0, 3).map(t => {
+      const tagsHtml = (post.tags || []).map(t => {
         const isTagActive = selectedTags.has(t.toLowerCase()) ? 'active' : '';
         return `<span class="blog-tag-pill ${isTagActive}" onclick="event.stopPropagation(); filterByTag('${escapeHtml(t)}');" title="Filter by tag: ${escapeHtml(t)}">${escapeHtml(t)}</span>`;
       }).join('');
@@ -479,6 +479,32 @@
     const bodyEl = document.getElementById('readerBody');
     if (bodyEl) {
       bodyEl.innerHTML = post.rendered_html || '';
+
+      // Auto-wrap any standard pre code blocks with code-block-card and copy button
+      bodyEl.querySelectorAll('pre').forEach(pre => {
+        if (!pre.closest('.code-block-card') && !pre.querySelector('.btn-code-copy')) {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'code-block-card';
+          const header = document.createElement('div');
+          header.className = 'code-block-header';
+          const codeEl = pre.querySelector('code');
+          let lang = 'code';
+          if (codeEl) {
+            const m = codeEl.className.match(/language-(\w+)/);
+            if (m) lang = m[1];
+          }
+          header.innerHTML = `
+            <span class="code-lang-badge">${lang}</span>
+            <div class="code-actions">
+              <button type="button" class="btn-code-copy" onclick="copyCodeBlock(this)">Copy</button>
+            </div>
+          `;
+          pre.parentNode.insertBefore(wrapper, pre);
+          wrapper.appendChild(header);
+          wrapper.appendChild(pre);
+        }
+      });
+
       // Trigger Prism highlighting on code elements
       if (window.Prism) {
         window.Prism.highlightAllUnder(bodyEl);
@@ -491,8 +517,11 @@
     // Update Bottom Prev/Next Buttons & Fixed Flank Tiles
     updateReaderNavButtons();
 
-    // Show modal & set URL hash
+    // Show modal & lock background scrolling without creating double scrollbars
     overlay.classList.add('active');
+    document.documentElement.classList.add('blog-reader-active');
+    document.body.classList.add('blog-reader-active');
+    document.documentElement.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
     window.location.hash = '#' + (post.slug || post.id);
 
@@ -518,6 +547,9 @@
     const overlay = document.getElementById('blogReaderOverlay');
     if (overlay) {
       overlay.classList.remove('active');
+      document.documentElement.classList.remove('blog-reader-active');
+      document.body.classList.remove('blog-reader-active');
+      document.documentElement.style.overflow = '';
       document.body.style.overflow = '';
     }
     // Remove hash without scrolling
@@ -701,10 +733,10 @@
     navigator.clipboard.writeText(text).then(() => {
       const origText = btn.textContent;
       btn.textContent = 'Copied!';
-      btn.style.color = 'var(--accent-primary)';
+      btn.classList.add('is-copied');
       setTimeout(() => {
         btn.textContent = origText;
-        btn.style.color = '';
+        btn.classList.remove('is-copied');
       }, 2000);
     }).catch(err => {
       console.error('Could not copy code:', err);

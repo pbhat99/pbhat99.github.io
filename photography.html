@@ -38,6 +38,11 @@
   <meta name="twitter:description" content="High-resolution 360° environment captures, HDRI light probes, and cinematic stills gallery.">
   <meta name="twitter:image" content="https://pbhat99.github.io/_engine/images/logo.png">
   <link rel="icon" type="image/png" href="_engine/images/logo.png">
+  <!-- Local Pre-Compressed WOFF2 Typography (Zero Network Roundtrips) -->
+  <link rel="stylesheet" href="_engine/css/fonts.css">
+  <!-- Fallback Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,700&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="_engine/css/main.css">
   <link rel="stylesheet" href="_engine/css/components.css">
@@ -106,7 +111,7 @@
         <article class="project-tile pano-tile" onclick="openPanoViewer(0)" title="Atacama Large Millimeter Array">
           <div class="tile-circling-border" aria-hidden="true"></div>
           <div class="tile-inner">
-            <img src="pages/04_photography/panos/001_Atacama Large Millimeter Array.webp" alt="Atacama Large Millimeter Array" class="tile-img" loading="lazy">
+            <img src="pages/04_photography/panos/001_Atacama Large Millimeter Array.webp" alt="Atacama Large Millimeter Array" class="tile-img" loading="lazy" decoding="async">
             <span class="pano-badge">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
               360° Panorama
@@ -126,7 +131,7 @@
         <article class="project-tile pano-tile" onclick="openPanoViewer(1)" title="Cerro Toco High Altitude Observatory">
           <div class="tile-circling-border" aria-hidden="true"></div>
           <div class="tile-inner">
-            <img src="pages/04_photography/panos/002_Cerro Toco High Altitude Observatory.webp" alt="Cerro Toco High Altitude Observatory" class="tile-img" loading="lazy">
+            <img src="pages/04_photography/panos/002_Cerro Toco High Altitude Observatory.webp" alt="Cerro Toco High Altitude Observatory" class="tile-img" loading="lazy" decoding="async">
             <span class="pano-badge">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
               360° Panorama
@@ -146,7 +151,7 @@
         <article class="project-tile pano-tile" onclick="openPanoViewer(2)" title="Baltimore Museum of Art Sculpture Garden">
           <div class="tile-circling-border" aria-hidden="true"></div>
           <div class="tile-inner">
-            <img src="pages/04_photography/panos/003_Baltimore Museum of Art Sculpture Garden.webp" alt="Baltimore Museum of Art Sculpture Garden" class="tile-img" loading="lazy">
+            <img src="pages/04_photography/panos/003_Baltimore Museum of Art Sculpture Garden.webp" alt="Baltimore Museum of Art Sculpture Garden" class="tile-img" loading="lazy" decoding="async">
             <span class="pano-badge">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
               360° Panorama
@@ -166,7 +171,7 @@
         <article class="project-tile pano-tile" onclick="openPanoViewer(3)" title="Charles Street Historic Center">
           <div class="tile-circling-border" aria-hidden="true"></div>
           <div class="tile-inner">
-            <img src="pages/04_photography/panos/004_Charles Street Historic Center.webp" alt="Charles Street Historic Center" class="tile-img" loading="lazy">
+            <img src="pages/04_photography/panos/004_Charles Street Historic Center.webp" alt="Charles Street Historic Center" class="tile-img" loading="lazy" decoding="async">
             <span class="pano-badge">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
               360° Panorama
@@ -201,7 +206,7 @@
           <article class="project-tile photo-tile" onclick="openPhotoViewer(0)" title="Anjaniputra Release Poster">
             <div class="tile-circling-border" aria-hidden="true"></div>
             <div class="tile-inner">
-              <img src="pages/04_photography/photos/001_Anjaniputra Release Poster.webp" alt="Anjaniputra Release Poster" class="tile-img" loading="lazy">
+              <img src="pages/04_photography/photos/001_Anjaniputra Release Poster.webp" alt="Anjaniputra Release Poster" class="tile-img" loading="lazy" decoding="async">
               <div class="tile-hover-overlay">
                 <div class="tile-hover-content">
                   <h3 class="tile-title">
@@ -216,7 +221,7 @@
           <article class="project-tile photo-tile" onclick="openPhotoViewer(1)" title="Adidas Create The Answer">
             <div class="tile-circling-border" aria-hidden="true"></div>
             <div class="tile-inner">
-              <img src="pages/04_photography/photos/002_Adidas Create The Answer.webp" alt="Adidas Create The Answer" class="tile-img" loading="lazy">
+              <img src="pages/04_photography/photos/002_Adidas Create The Answer.webp" alt="Adidas Create The Answer" class="tile-img" loading="lazy" decoding="async">
               <div class="tile-hover-overlay">
                 <div class="tile-hover-content">
                   <h3 class="tile-title">
@@ -231,7 +236,7 @@
           <article class="project-tile photo-tile" onclick="openPhotoViewer(2)" title="Adidas Football Still">
             <div class="tile-circling-border" aria-hidden="true"></div>
             <div class="tile-inner">
-              <img src="pages/04_photography/photos/003_Adidas Football Still.webp" alt="Adidas Football Still" class="tile-img" loading="lazy">
+              <img src="pages/04_photography/photos/003_Adidas Football Still.webp" alt="Adidas Football Still" class="tile-img" loading="lazy" decoding="async">
               <div class="tile-hover-overlay">
                 <div class="tile-hover-content">
                   <h3 class="tile-title">
@@ -246,7 +251,7 @@
           <article class="project-tile photo-tile" onclick="openPhotoViewer(3)" title="Busch Light Mountain Expedition">
             <div class="tile-circling-border" aria-hidden="true"></div>
             <div class="tile-inner">
-              <img src="pages/04_photography/photos/004_Busch Light Mountain Expedition.webp" alt="Busch Light Mountain Expedition" class="tile-img" loading="lazy">
+              <img src="pages/04_photography/photos/004_Busch Light Mountain Expedition.webp" alt="Busch Light Mountain Expedition" class="tile-img" loading="lazy" decoding="async">
               <div class="tile-hover-overlay">
                 <div class="tile-hover-content">
                   <h3 class="tile-title">
@@ -261,7 +266,7 @@
           <article class="project-tile photo-tile" onclick="openPhotoViewer(4)" title="Busch Light Forest Camp">
             <div class="tile-circling-border" aria-hidden="true"></div>
             <div class="tile-inner">
-              <img src="pages/04_photography/photos/005_Busch Light Forest Camp.webp" alt="Busch Light Forest Camp" class="tile-img" loading="lazy">
+              <img src="pages/04_photography/photos/005_Busch Light Forest Camp.webp" alt="Busch Light Forest Camp" class="tile-img" loading="lazy" decoding="async">
               <div class="tile-hover-overlay">
                 <div class="tile-hover-content">
                   <h3 class="tile-title">
@@ -276,7 +281,7 @@
           <article class="project-tile photo-tile" onclick="openPhotoViewer(5)" title="Pepsi Super Bowl Commercial">
             <div class="tile-circling-border" aria-hidden="true"></div>
             <div class="tile-inner">
-              <img src="pages/04_photography/photos/006_Pepsi Super Bowl Commercial.webp" alt="Pepsi Super Bowl Commercial" class="tile-img" loading="lazy">
+              <img src="pages/04_photography/photos/006_Pepsi Super Bowl Commercial.webp" alt="Pepsi Super Bowl Commercial" class="tile-img" loading="lazy" decoding="async">
               <div class="tile-hover-overlay">
                 <div class="tile-hover-content">
                   <h3 class="tile-title">
@@ -291,7 +296,7 @@
           <article class="project-tile photo-tile" onclick="openPhotoViewer(6)" title="Pepsi The Call Cinematic Still">
             <div class="tile-circling-border" aria-hidden="true"></div>
             <div class="tile-inner">
-              <img src="pages/04_photography/photos/007_Pepsi The Call Cinematic Still.webp" alt="Pepsi The Call Cinematic Still" class="tile-img" loading="lazy">
+              <img src="pages/04_photography/photos/007_Pepsi The Call Cinematic Still.webp" alt="Pepsi The Call Cinematic Still" class="tile-img" loading="lazy" decoding="async">
               <div class="tile-hover-overlay">
                 <div class="tile-hover-content">
                   <h3 class="tile-title">
@@ -306,7 +311,7 @@
           <article class="project-tile photo-tile" onclick="openPhotoViewer(7)" title="Xbox Forza Horizon Getaway">
             <div class="tile-circling-border" aria-hidden="true"></div>
             <div class="tile-inner">
-              <img src="pages/04_photography/photos/008_Xbox Forza Horizon Getaway.webp" alt="Xbox Forza Horizon Getaway" class="tile-img" loading="lazy">
+              <img src="pages/04_photography/photos/008_Xbox Forza Horizon Getaway.webp" alt="Xbox Forza Horizon Getaway" class="tile-img" loading="lazy" decoding="async">
               <div class="tile-hover-overlay">
                 <div class="tile-hover-content">
                   <h3 class="tile-title">

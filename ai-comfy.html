@@ -39,7 +39,9 @@
   <meta name="twitter:description" content="Production generative AI workflows, custom inpainting nodes, and next-gen VFX pipelines.">
   <meta name="twitter:image" content="https://pbhat99.github.io/_engine/images/logo.png">
   <link rel="icon" type="image/png" href="_engine/images/logo.png">
-  
+  <!-- Local Pre-Compressed WOFF2 Typography (Zero Network Roundtrips) -->
+  <link rel="stylesheet" href="_engine/css/fonts.css">
+  <!-- Fallback Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,700&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -94,35 +96,6 @@
         </div>
         <div style="border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border-subtle); background: #000;">
           <img src="pages/03_ai-comfy/workflows/comfyui-production-pipeline.webp" alt="ComfyUI Production Pipeline Architecture" style="width: 100%; object-fit: contain; cursor: zoom-in;" data-lightbox data-caption="ComfyUI Master VFX Production Workflow Architecture">
-        </div>
-      </div>
-
-      <!-- Before & After Wipe Slider: AI Inpainting Demo -->
-      <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: clamp(20px, 4vw, 36px); margin-bottom: 48px;">
-        <div style="margin-bottom: 20px;">
-          <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent-primary); text-transform: uppercase;">Interactive Demo</span>
-          <h2 style="font-size: 1.4rem; font-weight: 700;">Plate Inpainting: Rig Removal with ControlNet + LaMa</h2>
-          <p style="font-size: 0.9rem; color: var(--text-muted);">
-            Slide to compare the raw live-action plate with tracking markers against the AI generative inpaint with preserved film grain.
-          </p>
-        </div>
-
-        <div style="max-width: 900px; margin-inline: auto;">
-          <div class="before-after-container">
-            <div class="ba-image-layer ba-before-layer">
-              <img src="pages/02_VFX/02_The-Mill/04_directv-goatbusters/projectImage.webp" alt="Raw Live Plate with Markers">
-              <span class="ba-badge ba-badge-before">Raw Plate + Tracking Markers</span>
-            </div>
-            <div class="ba-image-layer ba-after-layer">
-              <img src="pages/02_VFX/02_The-Mill/11_gmc-hummer-ev-quiet-revolution/projectImage.webp" alt="AI Inpainted Clean Plate">
-              <span class="ba-badge ba-badge-after">AI Inpainted Clean Plate</span>
-            </div>
-            <div class="ba-handle">
-              <div class="ba-handle-circle">
-                <div class="ba-handle-arrows"><span>&#9664;</span><span>&#9654;</span></div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 

@@ -10,7 +10,79 @@
  * - Non-priority progressive lazy loading
  */
 
+export function initHomeHeaderScroll() {
+  const header = document.querySelector('.site-header');
+  if (!header) return;
+
+  // On mobile version: do not hide or animate (reverted back to static visible header)
+  if (window.matchMedia('(max-width: 860px)').matches) {
+    header.classList.remove('header-hidden');
+    return;
+  }
+
+  let isHeaderHidden = false;
+
+  function setHeaderVisibility(show) {
+    // Keep visible if on mobile
+    if (window.matchMedia('(max-width: 860px)').matches) {
+      if (isHeaderHidden) {
+        header.classList.remove('header-hidden');
+        isHeaderHidden = false;
+      }
+      return;
+    }
+
+    if (show && isHeaderHidden) {
+      header.classList.remove('header-hidden');
+      isHeaderHidden = false;
+    } else if (!show && !isHeaderHidden) {
+      // Don't hide if mobile nav drawer is open
+      const navLinks = document.querySelector('.nav-links');
+      if (navLinks && navLinks.classList.contains('active')) return;
+
+      header.classList.add('header-hidden');
+      isHeaderHidden = true;
+    }
+  }
+
+  // Hide ONLY on scroll down. Do NOT unhide on scroll up per user instruction.
+  window.addEventListener('wheel', (e) => {
+    if (e.deltaY > 3) {
+      setHeaderVisibility(false); // Scroll down -> hide header
+    }
+    // Do NOT unhide on scroll up (deltaY < 0)
+  }, { passive: true });
+
+  // Keyboard: hide on scroll down keys ONLY. Do NOT unhide on ArrowUp or PageUp.
+  window.addEventListener('keydown', (e) => {
+    if (['ArrowDown', 'PageDown', ' '].includes(e.key)) {
+      setHeaderVisibility(false);
+    }
+  });
+
+  // Unhide on mouse move anywhere across the entire viewport (full area, all coordinates)
+  let lastMouseX = -1;
+  let lastMouseY = -1;
+  window.addEventListener('mousemove', (e) => {
+    if (lastMouseX === e.clientX && lastMouseY === e.clientY) return;
+    lastMouseX = e.clientX;
+    lastMouseY = e.clientY;
+    setHeaderVisibility(true); // Bring header back on mouse move anywhere
+  }, { passive: true });
+
+  // Handle window resize cleanly
+  window.addEventListener('resize', () => {
+    if (window.matchMedia('(max-width: 860px)').matches) {
+      header.classList.remove('header-hidden');
+      isHeaderHidden = false;
+    }
+  }, { passive: true });
+}
+
 export function initHomeBackgroundSlider(containerId = 'home-bg-slider') {
+  // Initialize auto-hiding header for full screen immersion on both desktop & mobile
+  initHomeHeaderScroll();
+
   const container = document.getElementById(containerId);
   if (!container) return;
 

@@ -450,15 +450,6 @@
   .panorama-viewport {
     height: 340px;
   }
-
-  .before-after-container {
-    aspect-ratio: 16 / 10;
-  }
-
-  .ba-handle-circle {
-    width: 32px;
-    height: 32px;
-  }
 }
 
 /* Small mobile (<= 480px) */

@@ -347,17 +347,11 @@
 
   .blog-card-tags {
     display: flex !important;
-    flex-wrap: nowrap !important;
-    overflow-x: auto !important;
-    white-space: nowrap !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
     gap: 6px !important;
-    scrollbar-width: none !important;
-    -ms-overflow-style: none !important;
     margin-top: 8px !important;
-  }
-
-  .blog-card-tags::-webkit-scrollbar {
-    display: none !important;
+    width: 100% !important;
   }
 }
 
@@ -828,6 +822,12 @@
 /* --------------------------------------------------------------------------
    Expanded Reader View (Full Modal Article Reader)
    -------------------------------------------------------------------------- */
+html.blog-reader-active,
+body.blog-reader-active {
+  overflow: hidden !important;
+  height: 100% !important;
+}
+
 .blog-reader-overlay {
   position: fixed;
   inset: 0;
@@ -1044,6 +1044,22 @@
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   padding: 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(249, 134, 3, 0.45) rgba(14, 23, 51, 0.7);
+}
+
+.blog-reader-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.blog-reader-scroll::-webkit-scrollbar-track {
+  background: rgba(14, 23, 51, 0.7);
+}
+.blog-reader-scroll::-webkit-scrollbar-thumb {
+  background: rgba(249, 134, 3, 0.45);
+  border-radius: 4px;
+}
+.blog-reader-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-primary);
 }
 
 .blog-reader-dialog {
@@ -1268,10 +1284,11 @@
 }
 
 .btn-code-toggle:hover,
-.btn-code-copy:hover {
-  color: #fff;
-  background: var(--accent-primary);
-  border-color: var(--accent-primary);
+.btn-code-copy:hover,
+.btn-code-copy.is-copied {
+  color: #fff !important;
+  background: var(--accent-primary) !important;
+  border-color: var(--accent-primary) !important;
 }
 
 .code-block-card pre {

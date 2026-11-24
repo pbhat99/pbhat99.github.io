@@ -1,7 +1,4 @@
-import { initAllBeforeAfter } from './before-after.js';
 import { initLightbox } from './lightbox.js';
-import { initAccordions } from './accordion.js';
-import { initAllMultiPass } from './multi-pass.js';
 
 function initMainApp() {
   // Mobile Nav Toggle & Unified Header Controller
@@ -30,10 +27,22 @@ function initMainApp() {
       }
     });
 
-    // Close on Escape key
+    // Close on Escape key (Universal Modal & Drawer Closer)
     window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && navLinks.classList.contains('active')) {
-        toggleNav(false);
+      if (e.key === 'Escape') {
+        if (navLinks.classList.contains('active')) {
+          toggleNav(false);
+        }
+        const blogModal = document.getElementById('blogModalReader');
+        if (blogModal && blogModal.classList.contains('active')) {
+          const closeBtn = document.getElementById('readerCloseBtn');
+          if (closeBtn) closeBtn.click();
+        }
+        const photoViewer = document.getElementById('photoViewer');
+        if (photoViewer && photoViewer.classList.contains('active')) {
+          const closeViewer = document.getElementById('photoViewerClose');
+          if (closeViewer) closeViewer.click();
+        }
       }
     });
 
@@ -219,11 +228,8 @@ function initMainApp() {
     });
   });
 
-  // Initialize all interactive modules
-  initAllBeforeAfter();
+  // Initialize active interactive modules
   initLightbox();
-  initAccordions();
-  initAllMultiPass();
 }
 
 if (document.readyState === 'loading') {
