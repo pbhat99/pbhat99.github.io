@@ -1,7 +1,7 @@
 /**
  * Photography & 360 Panorama Interactive Controller
- * Tab Switching (Panos / Photos), Fullscreen Photo Viewer & Fullscreen 360 WebGL Panorama Viewer
- * with Bottom Filmstrips and Bulletproof Close Triggers
+ * Dynamic Flex Waterfall (3 cols for All/Photos, 2 cols for Panoramas),
+ * Unified Photo & 360 WebGL Panorama Viewers with Filmstrips
  */
 
 (function () {
@@ -9,114 +9,72 @@
 
   let photos = [];
   let panos = [];
-  let currentPhotoIdx = 0;
-  let currentPanoIdx = 0;
   let activePannellumViewer = null;
-
-  function initPhotography() {
-    // 1. Read JSON data embedded in page
-    const photosEl = document.getElementById('photosData');
-    if (photosEl) {
-      try {
-        photos = JSON.parse(photosEl.textContent);
-      } catch (e) {
-        console.error('Failed to parse photosData:', e);
-      }
-    }
-
-    const panosEl = document.getElementById('panosData');
-    if (panosEl) {
-      try {
-        panos = JSON.parse(panosEl.textContent);
-      } catch (e) {
-        console.error('Failed to parse panosData:', e);
-      }
-    }
-
-    // 2. Build Filmstrips
-    buildPhotoFilmstrip();
-    buildPanoFilmstrip();
-
-    // 3. Attach Direct Close Button Click Handlers
-    const photoCloseBtn = document.getElementById('photoViewerCloseBtn');
-    if (photoCloseBtn) {
-      photoCloseBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        closePhotoViewer();
-      });
-    }
-
-    const panoCloseBtn = document.getElementById('panoViewerCloseBtn');
-    if (panoCloseBtn) {
-      panoCloseBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        closePanoViewer();
-      });
-    }
-
-    // Attach Tab Button Handlers
-    const tabAll = document.getElementById('tabBtnAll');
-    const tabPanos = document.getElementById('tabBtnPanos');
-    const tabPhotos = document.getElementById('tabBtnPhotos');
-    if (tabAll) {
-      tabAll.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        window.switchGalleryTab('all', e);
-      });
-    }
-    if (tabPanos) {
-      tabPanos.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        window.switchGalleryTab('panos', e);
-      });
-    }
-    if (tabPhotos) {
-      tabPhotos.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        window.switchGalleryTab('photos', e);
-      });
-    }
-
-    // Cache all initial waterfall item elements
-    const itemElements = document.querySelectorAll('.waterfall-item');
-    allWaterfallItems = Array.from(itemElements).map(el => ({
-      element: el,
-      type: el.getAttribute('data-type') || 'photos',
-      aspect: parseFloat(el.getAttribute('data-aspect') || el.style.getPropertyValue('--aspect') || '1.778')
-    }));
-
-    // Attach resize listener with debounce
-    let resizeTimer = null;
-    window.addEventListener('resize', () => {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(() => {
-        renderWaterfall(currentGalleryTab);
-      }, 100);
-    });
-
-    // 4. Attach Global Keyboard Navigation (Esc, Left, Right)
-    document.addEventListener('keydown', handleKeyNavigation);
-  }
-
-  // --------------------------------------------------------------------------
-  // Tab Switching & Dynamic Waterfall Controller
-  // --------------------------------------------------------------------------
   let currentGalleryTab = 'all';
   let allWaterfallItems = [];
 
+  const viewers = {
+    photos: {
+      items: () => photos,
+      index: 0,
+      modalId: 'photoViewerModal',
+      titleId: 'photoViewerTitle',
+      counterId: 'photoViewerCounter',
+      trackId: 'photoFilmstripTrack',
+      itemClass: 'filmstrip-item',
+      onDisplay(item) {
+        const img = document.getElementById('photoViewerImg');
+        if (img) {
+          img.style.opacity = '0.4';
+          img.src = item.webp;
+          img.alt = item.title;
+          img.onload = () => { img.style.opacity = '1'; };
+        }
+      },
+      onClose() {}
+    },
+    panos: {
+      items: () => panos,
+      index: 0,
+      modalId: 'panoViewerModal',
+      titleId: 'panoViewerTitle',
+      counterId: 'panoViewerCounter',
+      trackId: 'panoFilmstripTrack',
+      itemClass: 'filmstrip-pano-item',
+      onDisplay(item) {
+        loadPannellumScene(item.webp);
+      },
+      onClose() {
+        destroyPannellumViewer();
+      }
+    }
+  };
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function parseJsonScript(id) {
+    const el = document.getElementById(id);
+    if (!el) return [];
+    try {
+      return JSON.parse(el.textContent);
+    } catch (e) {
+      console.error(`Failed to parse ${id}:`, e);
+      return [];
+    }
+  }
+
   function getTargetColumnCount(tab) {
     const w = window.innerWidth;
-    if (tab === 'panos') {
-      return (w <= 600) ? 1 : 2;
-    }
-    // 'all' or 'photos': 3 columns on desktop, 2 on tablet/mobile
-    if (w <= 640) return 2;
-    return 3;
+    if (tab === 'panos') return w <= 600 ? 1 : 2;
+    return w <= 640 ? 2 : 3;
   }
 
   function renderWaterfall(tab) {
@@ -124,39 +82,26 @@
     const container = document.getElementById('photoWaterfallContainer');
     if (!container || !allWaterfallItems.length) return;
 
-    // Filter items based on tab
-    const items = allWaterfallItems.filter(item => {
-      if (currentGalleryTab === 'all') return true;
-      return item.type === currentGalleryTab;
-    });
-
+    const items = allWaterfallItems.filter((item) => currentGalleryTab === 'all' || item.type === currentGalleryTab);
     const numCols = getTargetColumnCount(currentGalleryTab);
-
-    // Create column buckets
     const cols = Array.from({ length: numCols }, () => []);
     const colHeights = new Array(numCols).fill(0);
 
-    // Greedily place each item into the column with lowest cumulative height
-    items.forEach(item => {
+    items.forEach((item) => {
       let minCol = 0;
-      let minH = colHeights[0];
       for (let c = 1; c < numCols; c++) {
-        if (colHeights[c] < minH) {
-          minH = colHeights[c];
-          minCol = c;
-        }
+        if (colHeights[c] < colHeights[minCol]) minCol = c;
       }
       cols[minCol].push(item.element);
-      colHeights[minCol] += (1 / (item.aspect || 1.778));
+      colHeights[minCol] += 1 / (item.aspect || 1.778);
     });
 
-    // Populate columns
-    container.innerHTML = '';
+    container.textContent = '';
     container.className = `waterfall-container waterfall-${numCols}-col`;
-    cols.forEach(colItems => {
+    cols.forEach((colItems) => {
       const colDiv = document.createElement('div');
       colDiv.className = 'waterfall-col';
-      colItems.forEach(el => {
+      colItems.forEach((el) => {
         el.style.display = '';
         colDiv.appendChild(el);
       });
@@ -164,236 +109,111 @@
     });
   }
 
-  window.switchGalleryTab = function (tab, e) {
-    if (e && e.stopPropagation) {
-      e.stopPropagation();
-    }
-    const tabAll = document.getElementById('tabBtnAll');
-    const tabPanos = document.getElementById('tabBtnPanos');
-    const tabPhotos = document.getElementById('tabBtnPhotos');
+  function buildFilmstrip(key) {
+    const cfg = viewers[key];
+    const items = cfg.items();
+    const track = document.getElementById(cfg.trackId);
+    if (!track || !items.length) return;
 
-    const allButtons = [tabAll, tabPanos, tabPhotos].filter(Boolean);
-    allButtons.forEach(btn => btn.classList.remove('active'));
-
-    if (tab === 'all' && tabAll) {
-      tabAll.classList.add('active');
-    } else if (tab === 'panos' && tabPanos) {
-      tabPanos.classList.add('active');
-    } else if (tab === 'photos' && tabPhotos) {
-      tabPhotos.classList.add('active');
-    }
-
-    renderWaterfall(tab);
-  };
-
-  // --------------------------------------------------------------------------
-  // Filmstrip Builders
-  // --------------------------------------------------------------------------
-  function buildPhotoFilmstrip() {
-    const track = document.getElementById('photoFilmstripTrack');
-    if (!track || !photos.length) return;
-
-    track.innerHTML = photos.map((p, idx) => `
-      <div class="filmstrip-item ${idx === 0 ? 'active' : ''}" data-idx="${idx}" onclick="switchPhoto(${idx})" title="${escapeHtml(p.title)}">
-        <img src="${p.webp}" alt="${escapeHtml(p.title)}" loading="lazy">
+    track.innerHTML = items.map((item, idx) => `
+      <div class="${cfg.itemClass} ${idx === 0 ? 'active' : ''}" data-viewer="${key}" data-idx="${idx}" title="${escapeHtml(item.title)}">
+        <img src="${item.thumb || item.webp}" alt="${escapeHtml(item.title)}" loading="lazy" decoding="async">
       </div>
     `).join('');
   }
 
-  function buildPanoFilmstrip() {
-    const track = document.getElementById('panoFilmstripTrack');
-    if (!track || !panos.length) return;
+  function updateViewerDisplay(key) {
+    const cfg = viewers[key];
+    const list = cfg.items();
+    const item = list[cfg.index];
+    if (!item) return;
 
-    track.innerHTML = panos.map((p, idx) => `
-      <div class="filmstrip-pano-item ${idx === 0 ? 'active' : ''}" data-idx="${idx}" onclick="switchPano(${idx})" title="${escapeHtml(p.title)}">
-        <img src="${p.webp}" alt="${escapeHtml(p.title)}" loading="lazy">
-      </div>
-    `).join('');
-  }
+    const titleEl = document.getElementById(cfg.titleId);
+    const counterEl = document.getElementById(cfg.counterId);
+    const prevArrow = document.querySelector(`#${cfg.modalId} .viewer-prev-arrow`);
+    const nextArrow = document.querySelector(`#${cfg.modalId} .viewer-next-arrow`);
 
-  // --------------------------------------------------------------------------
-  // 1. Fullscreen Photo Viewer Controller
-  // --------------------------------------------------------------------------
-  window.openPhotoViewer = function (idx) {
-    if (!photos.length) return;
-    currentPhotoIdx = Math.max(0, Math.min(photos.length - 1, idx));
-    updatePhotoViewerDisplay();
+    if (titleEl) titleEl.textContent = item.title;
+    if (counterEl) counterEl.textContent = `${cfg.index + 1} / ${list.length}`;
+    if (prevArrow) prevArrow.style.display = cfg.index > 0 ? 'flex' : 'none';
+    if (nextArrow) nextArrow.style.display = cfg.index < list.length - 1 ? 'flex' : 'none';
 
-    const modal = document.getElementById('photoViewerModal');
-    if (modal) {
-      modal.style.display = 'flex';
-      requestAnimationFrame(() => {
-        modal.classList.add('active');
-      });
-      document.body.style.overflow = 'hidden';
-    }
-  };
-
-  window.closePhotoViewer = function () {
-    const modal = document.getElementById('photoViewerModal');
-    if (modal) {
-      modal.classList.remove('active');
-      setTimeout(() => {
-        modal.style.display = 'none';
-      }, 200);
-      document.body.style.overflow = '';
-    }
-  };
-
-  window.navPhotoViewer = function (delta) {
-    if (!photos.length) return;
-    const newIdx = currentPhotoIdx + delta;
-    if (newIdx >= 0 && newIdx < photos.length) {
-      currentPhotoIdx = newIdx;
-      updatePhotoViewerDisplay();
-    }
-  };
-
-  window.switchPhoto = function (idx) {
-    if (idx >= 0 && idx < photos.length) {
-      currentPhotoIdx = idx;
-      updatePhotoViewerDisplay();
-    }
-  };
-
-  function updatePhotoViewerDisplay() {
-    const photo = photos[currentPhotoIdx];
-    if (!photo) return;
-
-    const img = document.getElementById('photoViewerImg');
-    const title = document.getElementById('photoViewerTitle');
-    const counter = document.getElementById('photoViewerCounter');
-    const prevArrow = document.querySelector('#photoViewerModal .viewer-prev-arrow');
-    const nextArrow = document.querySelector('#photoViewerModal .viewer-next-arrow');
-
-    if (img) {
-      img.style.opacity = '0.4';
-      img.src = photo.webp;
-      img.alt = photo.title;
-      img.onload = () => { img.style.opacity = '1'; };
-    }
-
-    if (title) title.textContent = photo.title;
-    if (counter) counter.textContent = `${currentPhotoIdx + 1} / ${photos.length}`;
-
-    // Hide arrows at boundaries
-    if (prevArrow) prevArrow.style.display = currentPhotoIdx > 0 ? 'flex' : 'none';
-    if (nextArrow) nextArrow.style.display = currentPhotoIdx < photos.length - 1 ? 'flex' : 'none';
-
-    // Update active thumbnail in filmstrip
-    const track = document.getElementById('photoFilmstripTrack');
+    const track = document.getElementById(cfg.trackId);
     if (track) {
-      const items = track.querySelectorAll('.filmstrip-item');
-      items.forEach((item, i) => {
-        if (i === currentPhotoIdx) {
-          item.classList.add('active');
-          item.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-        } else {
-          item.classList.remove('active');
+      track.querySelectorAll(`.${cfg.itemClass}`).forEach((thumb, i) => {
+        const isCurrent = i === cfg.index;
+        thumb.classList.toggle('active', isCurrent);
+        if (isCurrent) {
+          thumb.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
         }
       });
     }
+
+    cfg.onDisplay(item);
   }
 
-  // --------------------------------------------------------------------------
-  // 2. Fullscreen 360 Panorama Viewer Controller
-  // --------------------------------------------------------------------------
-  window.openPanoViewer = function (idx) {
-    if (!panos.length) return;
-    currentPanoIdx = Math.max(0, Math.min(panos.length - 1, idx));
+  function openViewer(key, idx) {
+    const cfg = viewers[key];
+    const list = cfg.items();
+    if (!list.length) return;
 
-    const modal = document.getElementById('panoViewerModal');
+    cfg.index = Math.max(0, Math.min(list.length - 1, idx));
+    const modal = document.getElementById(cfg.modalId);
     if (modal) {
+      clearTimeout(modal._closeTimer);
       modal.style.display = 'flex';
-      requestAnimationFrame(() => {
-        modal.classList.add('active');
-      });
+      modal.setAttribute('aria-hidden', 'false');
+      requestAnimationFrame(() => modal.classList.add('active'));
       document.body.style.overflow = 'hidden';
     }
+    updateViewerDisplay(key);
+  }
 
-    updatePanoViewerDisplay();
-  };
-
-  window.closePanoViewer = function () {
-    const modal = document.getElementById('panoViewerModal');
+  function closeViewer(key) {
+    const cfg = viewers[key];
+    const modal = document.getElementById(cfg.modalId);
     if (modal) {
+      clearTimeout(modal._closeTimer);
       modal.classList.remove('active');
-      setTimeout(() => {
-        modal.style.display = 'none';
-      }, 200);
+      modal.setAttribute('aria-hidden', 'true');
+      modal._closeTimer = setTimeout(() => { modal.style.display = 'none'; }, 200);
       document.body.style.overflow = '';
     }
+    cfg.onClose();
+  }
 
+  function navViewer(key, delta) {
+    const cfg = viewers[key];
+    const list = cfg.items();
+    const nextIdx = cfg.index + delta;
+    if (nextIdx >= 0 && nextIdx < list.length) {
+      cfg.index = nextIdx;
+      updateViewerDisplay(key);
+    }
+  }
+
+  function switchViewerItem(key, idx) {
+    const cfg = viewers[key];
+    const list = cfg.items();
+    if (idx >= 0 && idx < list.length) {
+      cfg.index = idx;
+      updateViewerDisplay(key);
+    }
+  }
+
+  function destroyPannellumViewer() {
     if (activePannellumViewer) {
-      try {
-        activePannellumViewer.destroy();
-      } catch (e) {}
+      try { activePannellumViewer.destroy(); } catch (e) {}
       activePannellumViewer = null;
     }
-  };
-
-  window.navPanoViewer = function (delta) {
-    if (!panos.length) return;
-    const newIdx = currentPanoIdx + delta;
-    if (newIdx >= 0 && newIdx < panos.length) {
-      currentPanoIdx = newIdx;
-      updatePanoViewerDisplay();
-    }
-  };
-
-  window.switchPano = function (idx) {
-    if (idx >= 0 && idx < panos.length) {
-      currentPanoIdx = idx;
-      updatePanoViewerDisplay();
-    }
-  };
-
-  function updatePanoViewerDisplay() {
-    const pano = panos[currentPanoIdx];
-    if (!pano) return;
-
-    const title = document.getElementById('panoViewerTitle');
-    const counter = document.getElementById('panoViewerCounter');
-    const prevArrow = document.querySelector('#panoViewerModal .viewer-prev-arrow');
-    const nextArrow = document.querySelector('#panoViewerModal .viewer-next-arrow');
-
-    if (title) title.textContent = pano.title;
-    if (counter) counter.textContent = `${currentPanoIdx + 1} / ${panos.length}`;
-
-    if (prevArrow) prevArrow.style.display = currentPanoIdx > 0 ? 'flex' : 'none';
-    if (nextArrow) nextArrow.style.display = currentPanoIdx < panos.length - 1 ? 'flex' : 'none';
-
-    // Update filmstrip active state
-    const track = document.getElementById('panoFilmstripTrack');
-    if (track) {
-      const items = track.querySelectorAll('.filmstrip-pano-item');
-      items.forEach((item, i) => {
-        if (i === currentPanoIdx) {
-          item.classList.add('active');
-          item.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-        } else {
-          item.classList.remove('active');
-        }
-      });
-    }
-
-    // Load Pannellum Scene
-    loadPannellumScene(pano.webp);
   }
 
   function loadPannellumScene(imageSrc) {
     const container = document.getElementById('fullscreenPanoContainer');
     if (!container) return;
 
-    if (activePannellumViewer) {
-      try {
-        activePannellumViewer.destroy();
-      } catch (e) {}
-      activePannellumViewer = null;
-    }
-
-    // Clear container
-    container.innerHTML = '';
+    destroyPannellumViewer();
+    container.textContent = '';
 
     if (window.pannellum) {
       try {
@@ -410,48 +230,144 @@
       } catch (err) {
         console.error('Error starting Pannellum viewer:', err);
       }
-    } else {
-      console.warn('Pannellum library not loaded yet');
     }
   }
 
-  // --------------------------------------------------------------------------
-  // Keyboard Navigation
-  // --------------------------------------------------------------------------
-  function handleKeyNavigation(e) {
-    const photoModal = document.getElementById('photoViewerModal');
-    const panoModal = document.getElementById('panoViewerModal');
+  window.switchGalleryTab = function (tab, e) {
+    if (e && e.stopPropagation) e.stopPropagation();
 
-    const photoActive = photoModal && photoModal.classList.contains('active');
-    const panoActive = panoModal && panoModal.classList.contains('active');
+    document.querySelectorAll('.filter-bar [data-tab]').forEach((btn) => {
+      btn.classList.toggle('active', btn.getAttribute('data-tab') === tab);
+    });
 
-    if (!photoActive && !panoActive) return;
+    renderWaterfall(tab);
+  };
 
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      if (photoActive) closePhotoViewer();
-      if (panoActive) closePanoViewer();
-    } else if (e.key === 'ArrowLeft') {
-      e.preventDefault();
-      if (photoActive) navPhotoViewer(-1);
-      if (panoActive) navPanoViewer(-1);
-    } else if (e.key === 'ArrowRight') {
-      e.preventDefault();
-      if (photoActive) navPhotoViewer(1);
-      if (panoActive) navPanoViewer(1);
+  window.openPhotoViewer = (idx) => openViewer('photos', idx);
+  window.closePhotoViewer = () => closeViewer('photos');
+  window.navPhotoViewer = (delta) => navViewer('photos', delta);
+  window.switchPhoto = (idx) => switchViewerItem('photos', idx);
+
+  window.openPanoViewer = (idx) => openViewer('panos', idx);
+  window.closePanoViewer = () => closeViewer('panos');
+  window.navPanoViewer = (delta) => navViewer('panos', delta);
+  window.switchPano = (idx) => switchViewerItem('panos', idx);
+
+  function getActiveViewerKey() {
+    for (const key of ['photos', 'panos']) {
+      const modal = document.getElementById(viewers[key].modalId);
+      if (modal && modal.classList.contains('active')) return key;
     }
+    return null;
   }
 
-  function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  function initPhotography() {
+    photos = parseJsonScript('photosData');
+    panos = parseJsonScript('panosData');
+
+    buildFilmstrip('photos');
+    buildFilmstrip('panos');
+
+    // Cache waterfall items from static HTML
+    allWaterfallItems = Array.from(document.querySelectorAll('.waterfall-item')).map((el) => ({
+      element: el,
+      type: el.getAttribute('data-type') || 'photos',
+      aspect: parseFloat(el.getAttribute('data-aspect') || el.style.getPropertyValue('--aspect') || '1.778')
+    }));
+
+    // Ensure mobile viewports start with responsive column count immediately
+    if (getTargetColumnCount('all') !== 3) {
+      renderWaterfall('all');
+    }
+
+    // Filter pill click delegation
+    const filterBar = document.querySelector('.filter-bar');
+    if (filterBar) {
+      filterBar.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-tab]');
+        if (!btn) return;
+        e.preventDefault();
+        e.stopPropagation();
+        window.switchGalleryTab(btn.getAttribute('data-tab'), e);
+      });
+    }
+
+    // Waterfall tile click & keyboard activation delegation
+    const container = document.getElementById('photoWaterfallContainer');
+    if (container) {
+      const activateTile = (tile) => {
+        if (!tile) return;
+        const photoIdx = tile.getAttribute('data-photo-idx');
+        const panoIdx = tile.getAttribute('data-pano-idx');
+        if (photoIdx !== null) openViewer('photos', parseInt(photoIdx, 10));
+        else if (panoIdx !== null) openViewer('panos', parseInt(panoIdx, 10));
+      };
+
+      container.addEventListener('click', (e) => {
+        activateTile(e.target.closest('[data-photo-idx], [data-pano-idx]'));
+      });
+
+      container.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          const tile = e.target.closest('[data-photo-idx], [data-pano-idx]');
+          if (tile) {
+            e.preventDefault();
+            activateTile(tile);
+          }
+        }
+      });
+    }
+
+    // Filmstrip click delegation
+    document.addEventListener('click', (e) => {
+      const thumb = e.target.closest('[data-viewer][data-idx]');
+      if (!thumb) return;
+      switchViewerItem(thumb.getAttribute('data-viewer'), parseInt(thumb.getAttribute('data-idx'), 10));
+    });
+
+    // Modal backdrop click on photo stage closes viewer
+    const photoStage = document.getElementById('photoViewerStage');
+    if (photoStage) {
+      photoStage.addEventListener('click', (e) => {
+        if (e.target === photoStage) closeViewer('photos');
+      });
+    }
+
+    // Debounced resize redistribution (only when column count changes)
+    let lastCols = getTargetColumnCount(currentGalleryTab);
+    let resizeTimer = null;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        const nextCols = getTargetColumnCount(currentGalleryTab);
+        if (nextCols !== lastCols) {
+          lastCols = nextCols;
+          renderWaterfall(currentGalleryTab);
+        }
+      }, 100);
+    }, { passive: true });
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      const activeKey = getActiveViewerKey();
+      if (!activeKey) return;
+
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closeViewer(activeKey);
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        navViewer(activeKey, -1);
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        navViewer(activeKey, 1);
+      }
+    });
   }
 
-  // DOM ready init
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initPhotography);
   } else {
     initPhotography();
   }
-
 })();

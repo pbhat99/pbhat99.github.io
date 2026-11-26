@@ -21,8 +21,8 @@ del /s /q /f *.pyc >nul 2>&1
 echo       Cache cleared.
 echo.
 
-echo [2/3] Converting and optimizing images across pages/ to WebP...
-"%PY_EXE%" tools\build.py --convert-webp
+echo [2/3] Converting to WebP, generating photography thumbs, and checking asset sizes...
+"%PY_EXE%" tools\build.py --convert-webp --thumbs --check-assets --prompt-resize
 if %ERRORLEVEL% neq 0 (
     echo.
     echo [ERROR] WebP conversion and build failed!

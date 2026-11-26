@@ -1,192 +1,225 @@
+"""Site compiler for Pra - Motions portfolio (WebP conversion, static HTML generation, sitemap/robots)."""
+
+import datetime
+import html
+import json
 import os
+import re
 import sys
 import urllib.parse
+
+import markdown
+import yaml
 
 # Ensure script working directory is always repository root
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if os.path.abspath(os.getcwd()) != PROJECT_ROOT:
     os.chdir(PROJECT_ROOT)
 
-import re
-import json
-import html
-import yaml
-import markdown
-import glob
-import datetime
+VALID_IMG_EXTS = {'.jpg', '.jpeg', '.jfif', '.png', '.avif', '.gif', '.bmp', '.tiff'}
+PAGE_IMG_EXTS = {'.webp', '.jpg', '.jpeg', '.jfif', '.png', '.avif'}
+DISPLAY_IMG_EXTS = {'.jpg', '.jpeg', '.png', '.webp', '.avif', '.gif'}
+
+_SITE_CONFIG_CACHE = None
+
+
+# ------------------------------------------------------------------------------
+# Shared Utilities
+# ------------------------------------------------------------------------------
+def esc(text):
+    """HTML-escape text including quotes for safe attribute interpolation."""
+    return html.escape(str(text or ""), quote=True)
+
+
+def natural_sort_key(filename):
+    """Sort key splitting digit runs numerically for deterministic folder/file order."""
+    return [int(c) if c.isdigit() else c.lower() for c in re.split(r'(\d+)', filename)]
+
 
 def slugify(text):
-    text = text.lower()
-    text = re.sub(r'[^a-z0-9]+', '-', text).strip('-')
-    return text
+    return re.sub(r'[^a-z0-9]+', '-', str(text).lower()).strip('-')
+
 
 def format_title_from_filename(filename):
     name = os.path.splitext(filename)[0]
     name = re.sub(r'^[0-9]+[-_]', '', name)
     name = name.replace('_orig', '').replace('_', ' ').replace('-', ' ')
-    name = re.sub(r'\s+', ' ', name).strip()
-    return name.title()
+    return re.sub(r'\s+', ' ', name).strip().title()
+
+
+def load_json(path, defaults=None):
+    """Load JSON safely, optionally merging into a shallow copy of defaults dict."""
+    data = dict(defaults) if isinstance(defaults, dict) else defaults
+    if not path or not os.path.exists(path):
+        return data
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            loaded = json.load(f)
+        if isinstance(data, dict) and isinstance(loaded, dict):
+            data.update(loaded)
+            return data
+        return loaded
+    except Exception as e:
+        print(f"Notice reading {path}: {e}")
+        return data
+
+
+def get_site_config():
+    """Load siteConfig.json once per process."""
+    global _SITE_CONFIG_CACHE
+    if _SITE_CONFIG_CACHE is not None:
+        return _SITE_CONFIG_CACHE
+
+    cfg = {}
+    for cand in ("tools/siteConfig.json", "siteConfig.json", "config.json"):
+        if os.path.exists(cand):
+            loaded = load_json(cand, {})
+            if isinstance(loaded, dict):
+                cfg.update(loaded)
+                break
+    _SITE_CONFIG_CACHE = cfg
+    return cfg
+
+
+def hex_to_rgba(hex_str, opacity_val=100):
+    """Convert #RRGGBB/#RGB + opacity (0-100 or 0.0-1.0) to CSS rgba()."""
+    if not hex_str:
+        return "rgba(14, 23, 51, 0.85)"
+    s = hex_str.strip().lstrip('#')
+    if len(s) == 3:
+        s = ''.join(c * 2 for c in s)
+    try:
+        r, g, b = int(s[0:2], 16), int(s[2:4], 16), int(s[4:6], 16)
+    except Exception:
+        return "rgba(14, 23, 51, 0.85)"
+    try:
+        op = float(opacity_val)
+        if op > 1.0:
+            op /= 100.0
+        op = max(0.0, min(1.0, op))
+    except Exception:
+        op = 0.85
+    return f"rgba({r}, {g}, {b}, {op:.2f})"
+
+
+def with_mtime_query(rel_path):
+    """Append ?v=<mtime> cache-buster if file exists locally."""
+    if rel_path and os.path.exists(rel_path):
+        try:
+            return f"{rel_path}?v={int(os.path.getmtime(rel_path))}"
+        except OSError:
+            pass
+    return rel_path
+
+
+def quote_asset_url(url):
+    """Percent-encode spaces/reserved path characters while keeping ?v= query intact."""
+    if not url:
+        return url
+    path, sep, query = url.partition("?")
+    encoded = urllib.parse.quote(path, safe="/")
+    return f"{encoded}{sep}{query}" if sep else encoded
+
+
+def find_first_existing(base_dir, filenames):
+    """Return forward-slash relative path for first existing candidate filename."""
+    for name in filenames:
+        p = os.path.join(base_dir, name)
+        if os.path.exists(p):
+            return p.replace("\\", "/")
+    return None
+
+
+def _find_background_in_dir(target_dir):
+    if not os.path.exists(target_dir):
+        return None
+    exact = find_first_existing(target_dir, ["background.webp", "background.jpg", "background.jpeg", "background.png", "background.jfif"])
+    if exact:
+        return exact
+    for f in sorted(os.listdir(target_dir), key=natural_sort_key):
+        if f.lower().startswith("background") and os.path.splitext(f)[1].lower() in PAGE_IMG_EXTS:
+            return os.path.join(target_dir, f).replace("\\", "/")
+    return None
+
 
 def get_page_background_and_overlay(page_dir):
-    """
-    Finds the background image for a page folder, falling back to pages/01_home backgrounds.
-    Also resolves overlayOpacity (0 = full image display, 100 = solid dark #0e1733), falling back to home's setting.
-    """
-    bg_candidates = ["background.webp", "background.jpg", "background.jpeg", "background.png", "background.jfif"]
-    resolved_bg = None
-    
-    # 1. Look in page_dir first
-    for cand in bg_candidates:
-        path = os.path.join(page_dir, cand)
-        if os.path.exists(path):
-            resolved_bg = path.replace("\\", "/")
-            break
-            
-    # 2. Check for numbered or prefixed backgrounds in page_dir (e.g. background_00.webp)
-    if not resolved_bg and os.path.exists(page_dir):
-        img_exts = {'.webp', '.jpg', '.jpeg', '.jfif', '.png', '.avif'}
-        cand_files = sorted(os.listdir(page_dir), key=lambda x: [int(c) if c.isdigit() else c.lower() for c in re.split(r'(\d+)', x)])
-        for f in cand_files:
-            if f.lower().startswith("background") and os.path.splitext(f)[1].lower() in img_exts:
-                resolved_bg = os.path.join(page_dir, f).replace("\\", "/")
-                break
+    """Resolve page background image and overlay alpha (falling back to pages/01_home)."""
+    resolved_bg = _find_background_in_dir(page_dir) or _find_background_in_dir("pages/01_home")
 
-    # 3. Fall back to pages/01_home
-    if not resolved_bg:
-        home_dir = "pages/01_home"
-        if os.path.exists(home_dir):
-            for cand in bg_candidates:
-                path = os.path.join(home_dir, cand)
-                if os.path.exists(path):
-                    resolved_bg = path.replace("\\", "/")
-                    break
-            if not resolved_bg:
-                img_exts = {'.webp', '.jpg', '.jpeg', '.jfif', '.png', '.avif'}
-                home_files = sorted(os.listdir(home_dir), key=lambda x: [int(c) if c.isdigit() else c.lower() for c in re.split(r'(\d+)', x)])
-                for f in home_files:
-                    if f.lower().startswith("background") and os.path.splitext(f)[1].lower() in img_exts:
-                        resolved_bg = os.path.join(home_dir, f).replace("\\", "/")
-                        break
-
-    # 4. Resolve overlayOpacity
     raw_opacity = None
-    page_content = os.path.join(page_dir, "content.json")
-    if os.path.exists(page_content):
-        try:
-            with open(page_content, "r", encoding="utf-8") as f:
-                d = json.load(f)
-                raw_opacity = d.get("overlayOpacity") or d.get("bgOverlayOpacity") or d.get("opacity")
-        except Exception:
-            pass
-
-    if raw_opacity is None:
-        home_content = "pages/01_home/content.json"
-        if os.path.exists(home_content):
-            try:
-                with open(home_content, "r", encoding="utf-8") as f:
-                    d = json.load(f)
-                    raw_opacity = d.get("overlayOpacity") or d.get("bgOverlayOpacity") or d.get("opacity")
-            except Exception:
-                pass
+    for json_path in (os.path.join(page_dir, "content.json"), "pages/01_home/content.json"):
+        data = load_json(json_path, {})
+        if isinstance(data, dict):
+            val = data.get("overlayOpacity") or data.get("bgOverlayOpacity") or data.get("opacity")
+            if val is not None:
+                raw_opacity = val
+                break
 
     try:
         opacity_num = float(raw_opacity) if raw_opacity is not None else 65.0
         if 0.0 < opacity_num < 1.0:
-            opacity_num = opacity_num * 100.0
+            opacity_num *= 100.0
         opacity_num = max(0.0, min(100.0, opacity_num))
     except (ValueError, TypeError):
         opacity_num = 65.0
 
     overlay_alpha = round(opacity_num / 100.0, 3)
+    resolved_bg_url = with_mtime_query(resolved_bg)
 
-    # Append cache-busting timestamp query parameter so browsers/CDNs always fetch updated images
-    resolved_bg_url = resolved_bg
-    if resolved_bg and os.path.exists(resolved_bg):
-        try:
-            mtime = int(os.path.getmtime(resolved_bg))
-            resolved_bg_url = f"{resolved_bg}?v={mtime}"
-        except OSError:
-            pass
-
-    bg_img_html = f'<div class="site-bg-image" style="background-image: url(\'{resolved_bg_url}\');"></div>' if resolved_bg else ''
-    bg_overlay_html = f'<div class="site-bg-overlay" style="opacity: {overlay_alpha};"></div>' if resolved_bg else ''
-
+    bg_img_html = f'<div class="site-bg-image" style="background-image: url(\'{resolved_bg_url}\');"></div>' if resolved_bg_url else ''
+    bg_overlay_html = f'<div class="site-bg-overlay" style="opacity: {overlay_alpha};"></div>' if resolved_bg_url else ''
     return bg_img_html, bg_overlay_html, resolved_bg_url, overlay_alpha
 
+
 def get_home_background_list(home_dir="pages/01_home"):
-    """
-    Returns a list of tuples: [(rel_path, url_with_mtime, media_type), ...]
-    where media_type is 'video' or 'image', sorted numerically.
-    Supports images (.webp, .jpg, .jpeg, .jfif, .png, .avif) and videos (.mp4, .webm).
-    """
+    """Return sorted [(rel_path, url_with_mtime, media_type), ...] for home backgrounds."""
     if not os.path.exists(home_dir):
         return []
-    img_exts = {'.webp', '.jpg', '.jpeg', '.jfif', '.png', '.avif'}
     video_exts = {'.mp4', '.webm'}
-    media_exts = img_exts | video_exts
-
-    home_files = sorted(os.listdir(home_dir), key=lambda x: [int(c) if c.isdigit() else c.lower() for c in re.split(r'(\d+)', x)])
+    media_exts = PAGE_IMG_EXTS | video_exts
     results = []
-    for f in home_files:
+
+    for f in sorted(os.listdir(home_dir), key=natural_sort_key):
         ext = os.path.splitext(f)[1].lower()
         if f.lower().startswith("background") and ext in media_exts:
             path = os.path.join(home_dir, f).replace("\\", "/")
             media_type = 'video' if ext in video_exts else 'image'
-            try:
-                mtime = int(os.path.getmtime(path))
-                url = f"{path}?v={mtime}"
-            except OSError:
-                url = path
-            results.append((path, url, media_type))
+            results.append((path, with_mtime_query(path), media_type))
     return results
 
+
+# ------------------------------------------------------------------------------
+# Tracking, SEO, Navigation & Shared HTML Document Shell
+# ------------------------------------------------------------------------------
 def get_tracking_tags():
-    """
-    Resolves Google Analytics (GA4) ID and Google Tag Manager (GTM) ID
-    from siteConfig.json, config.json, or pages/01_home/content.json.
-    Returns (head_tracking_html, body_tracking_html).
-    """
+    """Resolve Google Analytics (GA4) and Google Tag Manager (GTM) snippets."""
+    cfg = get_site_config()
+    home_cfg = load_json("pages/01_home/content.json", {})
+    sources = [cfg, home_cfg]
+
     ga_id = None
     gtm_id = None
+    for src in sources:
+        if not isinstance(src, dict):
+            continue
+        if not ga_id:
+            for k in ("googleAnalyticsId", "gaId", "analyticsId", "googleAnalytics", "ga_id"):
+                val = src.get(k)
+                if isinstance(val, str) and val.strip():
+                    ga_id = val.strip()
+                    break
+        if not gtm_id:
+            for k in ("googleTagManagerId", "gtmId", "tagManagerId", "googleTagManager", "gtm_id"):
+                val = src.get(k)
+                if isinstance(val, str) and val.strip():
+                    gtm_id = val.strip()
+                    break
 
-    for cand_file in ["tools/siteConfig.json", "siteConfig.json", "config.json", "pages/01_home/content.json"]:
-        if os.path.exists(cand_file):
-            try:
-                with open(cand_file, "r", encoding="utf-8") as f:
-                    d = json.load(f)
-                    if not ga_id:
-                        val = (
-                            d.get("googleAnalyticsId")
-                            or d.get("gaId")
-                            or d.get("analyticsId")
-                            or d.get("googleAnalytics")
-                            or d.get("ga_id")
-                        )
-                        if val and isinstance(val, str) and val.strip():
-                            ga_id = val.strip()
-                    if not gtm_id:
-                        val = (
-                            d.get("googleTagManagerId")
-                            or d.get("gtmId")
-                            or d.get("tagManagerId")
-                            or d.get("googleTagManager")
-                            or d.get("gtm_id")
-                        )
-                        if val and isinstance(val, str) and val.strip():
-                            gtm_id = val.strip()
-            except Exception:
-                pass
+    ga_id = ga_id or "G-PTGZPG59ZS"
+    gtm_id = gtm_id or "GTM-WZLPRH6G"
 
-    if not ga_id:
-        ga_id = "G-PTGZPG59ZS"
-    if not gtm_id:
-        gtm_id = "GTM-WZLPRH6G"
-
-    head_snippets = []
-    body_snippets = []
-
-    # 1. Google Tag Manager (Script in <head> and noscript in <body>)
-    if gtm_id and gtm_id != "GTM-XXXXXXXX":
+    head_snippets, body_snippets = [], []
+    if gtm_id != "GTM-XXXXXXXX":
         head_snippets.append(f'''  <!-- Google Tag Manager -->
   <script>(function(w,d,s,l,i){{w[l]=w[l]||[];w[l].push({{'gtm.start':
   new Date().getTime(),event:'gtm.js'}});var f=d.getElementsByTagName(s)[0],
@@ -194,67 +227,47 @@ def get_tracking_tags():
   'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
   }})(window,document,'script','dataLayer','{gtm_id}');</script>
   <!-- End Google Tag Manager -->''')
-
         body_snippets.append(f'''  <!-- Google Tag Manager (noscript) -->
   <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={gtm_id}"
   height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <!-- End Google Tag Manager (noscript) -->''')
 
-    # 2. Google Analytics 4 (gtag.js script in <head>)
-    if ga_id and ga_id != "G-XXXXXXXXXX":
+    if ga_id != "G-XXXXXXXXXX":
         head_snippets.append(f'''  <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id={ga_id}"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){{dataLayer.push(arguments);}}
     gtag('js', new Date());
-
     gtag('config', '{ga_id}');
   </script>''')
 
-    head_html = "\n".join(head_snippets)
-    body_html = "\n".join(body_snippets)
-    return head_html, body_html
+    return "\n".join(head_snippets), "\n".join(body_snippets)
 
-def get_google_analytics_tag():
-    head_html, _ = get_tracking_tags()
-    return head_html
 
 def get_seo_meta_tags(page_url, page_title, page_desc, is_private=False, image_url=None):
-    """
-    Generates standard SEO meta tags, Open Graph tags, Twitter Card tags, and canonical link.
-    If is_private=True, sets robots to noindex, nofollow, noarchive and omits canonical/OG.
-    """
-    site_url = "https://pbhat99.github.io"
-    for cand_file in ["tools/siteConfig.json", "siteConfig.json", "config.json"]:
-        if os.path.exists(cand_file):
-            try:
-                with open(cand_file, "r", encoding="utf-8") as f:
-                    d = json.load(f)
-                    val = d.get("siteUrl") or d.get("url")
-                    if val and isinstance(val, str) and val.strip():
-                        site_url = val.strip().rstrip('/')
-            except Exception:
-                pass
-
+    """Generate robots, canonical, Open Graph, and Twitter Card meta tags."""
     if is_private:
         return '''  <!-- SEO: Strictly Private Page (Excluded from Google Indexing) -->
   <meta name="robots" content="noindex, nofollow, noarchive">'''
 
+    cfg = get_site_config()
+    site_url = str(cfg.get("siteUrl") or cfg.get("url") or "https://pbhat99.github.io").strip().rstrip('/')
     canonical_url = f"{site_url}/{page_url}" if page_url else site_url
+
     if not image_url:
         image_url = f"{site_url}/_engine/images/logo.png"
     elif not image_url.startswith("http"):
         image_url = f"{site_url}/{image_url.lstrip('/')}"
 
-    clean_title = (page_title or "").replace('"', '&quot;').strip()
-    clean_desc = (page_desc or "").replace('"', '&quot;').strip()
+    clean_title = esc(str(page_title or "").strip())
+    clean_desc = esc(str(page_desc or "").strip())
 
     return f'''  <!-- SEO & Canonical Link -->
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="{canonical_url}">
 
-  <!-- Open Graph / Social Media Sharing (Facebook, LinkedIn, Discord) -->
+  <!-- Open Graph / Social Media Sharing -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="{canonical_url}">
   <meta property="og:title" content="{clean_title}">
@@ -268,26 +281,1722 @@ def get_seo_meta_tags(page_url, page_title, page_desc, is_private=False, image_u
   <meta name="twitter:description" content="{clean_desc}">
   <meta name="twitter:image" content="{image_url}">'''
 
-def generate_sitemap_and_robots():
-    """
-    Generates robots.txt and sitemap.xml.
-    Excludes private pages (/more and /extra) from indexing.
-    """
-    site_url = "https://pbhat99.github.io"
-    for cand_file in ["tools/siteConfig.json", "siteConfig.json", "config.json"]:
-        if os.path.exists(cand_file):
+
+def generate_nav_html(active_page="home"):
+    """Render unified header navigation bar."""
+    nav_items = [
+        ("index.html", "home", "Home"),
+        ("vfx.html", "vfx", "VFX"),
+        ("ai-comfy.html", "ai-comfy", "AI / Comfy"),
+        ("photography.html", "photography", "Photography"),
+        ("about.html", "about", "About"),
+        ("blog.html", "blog", "Blog"),
+    ]
+    links_html = "".join(
+        f'<li><a href="{href}"{" class=\"active\"" if key == active_page else ""}>{label}</a></li>'
+        for href, key, label in nav_items
+    )
+    return f'''  <header class="site-header">
+    <div class="nav-wrapper">
+      <a href="index.html" class="brand-logo">
+        <img src="_engine/images/logo.png" alt="Pra Motions Logo" width="34" height="34">
+        <span>Pra - <span class="brand-badge">Motions</span></span>
+      </a>
+
+      <button type="button" class="mobile-nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+
+      <ul class="nav-links">
+        {links_html}
+      </ul>
+    </div>
+  </header>'''
+
+
+BACK_TO_TOP_HTML = '''  <button type="button" id="back-to-top" class="back-to-top" aria-label="Jump to top" title="Jump to top">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="18 15 12 9 6 15"></polyline>
+    </svg>
+  </button>'''
+
+PERSON_JSON_LD = '''  <!-- Structured Data (JSON-LD) for Google Rich Results -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Prasannakumar T Bhat",
+    "jobTitle": "Visual Effects Compositor",
+    "url": "https://pbhat99.github.io",
+    "image": "https://pbhat99.github.io/_engine/images/logo.png",
+    "sameAs": [
+      "https://github.com/pbhat99",
+      "https://www.imdb.com/name/nm9329447/",
+      "https://www.linkedin.com/in/pbhat99",
+      "https://vimeo.com/662339422"
+    ]
+  }
+  </script>'''
+
+
+def render_document(
+    *,
+    page_title,
+    meta_desc,
+    seo_meta,
+    nav_active,
+    stylesheets,
+    main_html,
+    tracking_tags,
+    extra_head="",
+    extra_body_html="",
+    body_scripts="",
+    bg_img_html="",
+    bg_overlay_html="",
+    wrap_standard_main=True,
+    include_back_to_top=True,
+):
+    """Render shared HTML5 shell across all pages."""
+    ga_head_tag, ga_body_tag = tracking_tags
+    css_links = "\n".join(f'  <link rel="stylesheet" href="_engine/css/{s}">' for s in stylesheets)
+
+    if wrap_standard_main:
+        main_block = f'''  <main id="main-content" class="page-main">
+    <div class="container-wide">
+{main_html}
+    </div>
+  </main>'''
+    else:
+        main_block = main_html
+
+    bg_block = "\n".join(x for x in (f"  {bg_img_html}" if bg_img_html else "", f"  {bg_overlay_html}" if bg_overlay_html else "") if x)
+    extra_head_block = f"\n{extra_head}" if extra_head else ""
+    extra_body_block = f"\n{extra_body_html}" if extra_body_html else ""
+    scripts_block = f"\n{body_scripts}" if body_scripts else ""
+    back_to_top_block = f"\n{BACK_TO_TOP_HTML}" if include_back_to_top else ""
+
+    return f'''<!DOCTYPE html>
+<html lang="en">
+<head>
+{ga_head_tag}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{esc(page_title)}</title>
+  <meta name="description" content="{esc(meta_desc)}">
+{seo_meta}{extra_head_block}
+  <link rel="icon" type="image/png" href="_engine/images/logo.png">
+  <link rel="stylesheet" href="_engine/css/fonts.css">
+{css_links}
+</head>
+<body>
+{ga_body_tag}
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+{bg_block}
+
+{generate_nav_html(nav_active)}
+
+{main_block}{extra_body_block}{scripts_block}
+{back_to_top_block}
+</body>
+</html>
+'''
+
+
+# ------------------------------------------------------------------------------
+# WebP Optimization
+# ------------------------------------------------------------------------------
+def convert_image_to_webp(src_path, webp_path, delete_source=True):
+    """Convert a raster source image to optimized WebP preserving alpha transparency."""
+    from PIL import Image
+    with Image.open(src_path) as im:
+        has_alpha = im.mode in ('RGBA', 'LA') or (im.mode == 'P' and 'transparency' in im.info)
+        im_conv = im.convert('RGBA' if has_alpha else 'RGB')
+        im_conv.save(webp_path, 'WEBP', quality=(90 if has_alpha else 85), method=6)
+
+    if delete_source and os.path.exists(src_path) and os.path.abspath(src_path) != os.path.abspath(webp_path):
+        try:
+            os.remove(src_path)
+        except OSError as rm_err:
+            print(f"  [Warning] Could not remove {src_path}: {rm_err}")
+
+
+def convert_all_pages_images_to_webp(root_dir="pages"):
+    """Convert non-WebP images across pages/ (excluding forDownload/) and rewrite JSON/MD refs."""
+    if not os.path.exists(root_dir):
+        return
+
+    replacements = {}
+    for current_root, _, files in os.walk(root_dir):
+        if "fordownload" in current_root.replace("\\", "/").lower():
+            continue
+        for f in files:
+            if f.startswith('.'):
+                continue
+            base, ext = os.path.splitext(f)
+            if ext.lower() in VALID_IMG_EXTS:
+                src_path = os.path.join(current_root, f)
+                webp_path = os.path.join(current_root, f"{base}.webp")
+                try:
+                    convert_image_to_webp(src_path, webp_path, delete_source=True)
+                    replacements[f] = f"{base}.webp"
+                    print(f"  [Site WebP] Converted & replaced: {src_path} -> {base}.webp")
+                except Exception as err:
+                    print(f"  [WebP Error] {src_path}: {err}")
+
+    if not replacements:
+        return
+
+    for current_root, _, files in os.walk(root_dir):
+        for f in files:
+            if f.lower().endswith(('.json', '.md')):
+                file_path = os.path.join(current_root, f)
+                try:
+                    with open(file_path, "r", encoding="utf-8") as rf:
+                        content = rf.read()
+                    new_content = content
+                    for old_name, new_name in replacements.items():
+                        if old_name in new_content:
+                            new_content = new_content.replace(old_name, new_name)
+                    if new_content != content:
+                        with open(file_path, "w", encoding="utf-8") as wf:
+                            wf.write(new_content)
+                        print(f"  [Ref Update] Updated references in {file_path}")
+                except Exception as ref_err:
+                    print(f"  [Ref Update Error] {file_path}: {ref_err}")
+
+
+def _ensure_resized_webp(src_path, out_webp, max_dim=900, quality=82):
+    """Create or refresh a proportionally resized WebP derivative when missing or outdated."""
+    from PIL import Image
+
+    if os.path.exists(out_webp):
+        try:
+            if os.path.getmtime(out_webp) >= os.path.getmtime(src_path):
+                return False
+        except OSError:
+            pass
+
+    os.makedirs(os.path.dirname(out_webp), exist_ok=True)
+    with Image.open(src_path) as im:
+        has_alpha = im.mode in ('RGBA', 'LA') or (im.mode == 'P' and 'transparency' in im.info)
+        w, h = im.size
+        target = im
+        if max(w, h) > max_dim:
+            scale = max_dim / float(max(w, h))
+            new_size = (max(1, int(round(w * scale))), max(1, int(round(h * scale))))
+            target = im.resize(new_size, Image.Resampling.LANCZOS)
+        target = target.convert('RGBA' if has_alpha else 'RGB')
+        target.save(out_webp, 'WEBP', quality=quality, method=6)
+    return True
+
+
+# ------------------------------------------------------------------------------
+# Page Builders
+# ------------------------------------------------------------------------------
+def build_home_page(tracking_tags, generate_thumbs=True):
+    home_dir = "pages/01_home"
+    home_data = load_json(os.path.join(home_dir, "content.json"), {
+        "designation": "Senior Visual Effects Compositor @ DNEG",
+        "tagline": "CG is not just faking, its adding beautiful layers of lie on the ugly truth.",
+        "overlayOpacity": 60
+    })
+
+    fixed_name = "Prasannakumar T Bhat"
+    page_title = str(home_data.get("pageTitle", fixed_name)).strip() or fixed_name
+    designation = str(home_data.get("designation", "")).strip()
+    tagline = str(home_data.get("tagline", "")).strip()
+    wipe_angle = str(home_data.get("wipeAngle", home_data.get("wipeFrom", "45"))).strip() or "45"
+
+    _, _, fallback_bg, home_alpha = get_page_background_and_overlay(home_dir)
+    home_bgs = get_home_background_list(home_dir)
+    if not home_bgs and fallback_bg:
+        home_bgs = [(fallback_bg.split('?')[0], fallback_bg, 'image')]
+
+    # Generate mobile-only proxy strictly for slide 0 (background_00) so mobile avoids full 4K download
+    home_proxy_dir = os.path.join("_engine", "proxies", "home")
+    mobile_bg0_url = None
+    if home_bgs and home_bgs[0][2] == 'image':
+        bg0_path = home_bgs[0][0]
+        proxy_name = os.path.splitext(os.path.basename(bg0_path))[0] + ".webp"
+        proxy_fs = os.path.join(home_proxy_dir, proxy_name)
+        if os.path.exists(home_proxy_dir):
+            for stale in os.listdir(home_proxy_dir):
+                if stale != proxy_name:
+                    try:
+                        os.remove(os.path.join(home_proxy_dir, stale))
+                    except OSError:
+                        pass
+        if generate_thumbs:
             try:
-                with open(cand_file, "r", encoding="utf-8") as f:
-                    d = json.load(f)
-                    val = d.get("siteUrl") or d.get("url")
-                    if val and isinstance(val, str) and val.strip():
-                        site_url = val.strip().rstrip('/')
+                if _ensure_resized_webp(bg0_path, proxy_fs, max_dim=1280, quality=82):
+                    print(f"  -> [Home Mobile Proxy] Generated {proxy_fs.replace(chr(92), '/')}")
+            except Exception as err:
+                print(f"  [Proxy Warning] {bg0_path}: {err}")
+        if os.path.exists(proxy_fs):
+            mobile_bg0_url = with_mtime_query(proxy_fs.replace("\\", "/"))
+
+    slides_html = []
+    for idx, (bg_path, bg_url, media_type) in enumerate(home_bgs):
+        if media_type == 'video':
+            ext_name = os.path.splitext(bg_path)[1].lower().lstrip('.')
+            mime_type = f"video/{ext_name}"
+            if idx == 0:
+                slides_html.append(
+                    f'      <div class="home-bg-slide is-active" data-index="{idx}" data-type="video" data-loaded="true">\n'
+                    f'        <video class="home-bg-slide-video" autoplay loop muted playsinline preload="metadata">\n'
+                    f'          <source src="{bg_url}" type="{mime_type}">\n'
+                    f'        </video>\n'
+                    f'      </div>'
+                )
+            else:
+                slides_html.append(
+                    f'      <div class="home-bg-slide" data-index="{idx}" data-type="video" data-video-src="{bg_url}" data-video-type="{mime_type}">\n'
+                    f'        <video class="home-bg-slide-video" loop muted playsinline preload="none"></video>\n'
+                    f'      </div>'
+                )
+        else:
+            if idx == 0:
+                desktop_bg_url = quote_asset_url(bg_url)
+                mobile_srcset = quote_asset_url(mobile_bg0_url) if mobile_bg0_url else None
+                if mobile_srcset:
+                    media_html = (
+                        f'          <picture>\n'
+                        f'            <source media="(max-width: 860px)" srcset="{esc(mobile_srcset)}">\n'
+                        f'            <img src="{esc(desktop_bg_url)}" alt="" class="home-bg-slide-img" fetchpriority="high" decoding="async">\n'
+                        f'          </picture>'
+                    )
+                else:
+                    media_html = f'          <img src="{esc(desktop_bg_url)}" alt="" class="home-bg-slide-img" fetchpriority="high" decoding="async">'
+                slides_html.append(
+                    f'      <div class="home-bg-slide is-active" data-index="{idx}" data-type="image" data-loaded="true">\n'
+                    f'        <div class="home-bg-slide-inner">\n'
+                    f'{media_html}\n'
+                    f'        </div>\n'
+                    f'      </div>'
+                )
+            else:
+                slides_html.append(
+                    f'      <div class="home-bg-slide" data-index="{idx}" data-type="image" data-bg="{bg_url}">\n'
+                    f'        <div class="home-bg-slide-inner"></div>\n'
+                    f'      </div>'
+                )
+
+    slider_html = (
+        f'    <div class="home-bg-slider" id="home-bg-slider" data-wipe-angle="{esc(wipe_angle)}" data-wipe-from="{esc(wipe_angle)}" aria-hidden="true">\n'
+        + "\n".join(slides_html)
+        + "\n    </div>"
+    ) if home_bgs else ""
+    overlay_html = f'<div class="home-bg-overlay" style="opacity: {home_alpha};"></div>' if home_bgs else ""
+
+    designation_html = f'<p class="hero-designation-plain">{esc(designation)}</p>' if designation else ""
+    tagline_html = f'<p class="hero-tagline-plain">"{esc(tagline)}"</p>' if tagline else ""
+
+    home_desc = f"{fixed_name} - {designation}. {tagline}".strip()
+    preload_tags = []
+    if home_bgs and home_bgs[0][2] == 'image':
+        desktop_preload = quote_asset_url(home_bgs[0][1])
+        if mobile_bg0_url:
+            preload_tags.append(f'  <link rel="preload" as="image" href="{esc(desktop_preload)}" fetchpriority="high" media="(min-width: 861px)">')
+            preload_tags.append(f'  <link rel="preload" as="image" href="{esc(quote_asset_url(mobile_bg0_url))}" fetchpriority="high" media="(max-width: 860px)">')
+        else:
+            preload_tags.append(f'  <link rel="preload" as="image" href="{esc(desktop_preload)}" fetchpriority="high">')
+    extra_head = "\n".join(preload_tags + [PERSON_JSON_LD])
+
+    main_html = f'''  <main id="main-content" class="home-fullscreen-container">
+{slider_html}
+    {overlay_html}
+    <canvas id="bg-canvas"></canvas>
+    <div class="home-center-stage">
+      <h1 class="hero-name-main">{fixed_name}</h1>
+      {designation_html}
+      {tagline_html}
+      <div class="hero-about-wrap">
+        <a href="about.html" class="btn-about">About</a>
+      </div>
+    </div>
+  </main>'''
+
+    body_scripts = '''  <script type="module">
+    import { initInteractiveBackground } from './_engine/js/interactive-bg.js';
+    import { initHomeBackgroundSlider } from './_engine/js/home-bg-slider.js';
+    import './_engine/js/main.js';
+
+    initInteractiveBackground('bg-canvas');
+    initHomeBackgroundSlider('home-bg-slider');
+
+    fetch('pages/01_home/content.json')
+      .then((r) => r.json())
+      .then((d) => {
+        const raw = d.overlayOpacity ?? d.bgOverlayOpacity ?? d.opacity;
+        if (raw !== undefined) {
+          let num = parseFloat(raw);
+          if (num > 1) num /= 100;
+          const overlay = document.querySelector('.home-bg-overlay');
+          if (overlay) overlay.style.opacity = Math.max(0, Math.min(1, num));
+        }
+      })
+      .catch(() => {});
+  </script>'''
+
+    index_html = render_document(
+        page_title=page_title,
+        meta_desc=f"{fixed_name} - {designation}",
+        seo_meta=get_seo_meta_tags("", page_title, home_desc),
+        nav_active="home",
+        stylesheets=["main.css", "components.css", "home.css", "responsive.css"],
+        main_html=main_html,
+        tracking_tags=tracking_tags,
+        extra_head=extra_head,
+        body_scripts=body_scripts,
+        wrap_standard_main=False,
+        include_back_to_top=False,
+    )
+    with open("index.html", "w", encoding="utf-8") as f:
+        f.write(index_html)
+    print("  -> Updated index.html")
+
+
+def build_vfx_page(tracking_tags, generate_thumbs=True):
+    vfx_dir = "pages/02_VFX"
+    vfx_thumbs_root = os.path.join("_engine", "thumbs", "vfx")
+    vfx_content = load_json(os.path.join(vfx_dir, "content.json"), {
+        "title": "Visual Effects & Compositing",
+        "description": "Production shots, feature film breakdowns, and commercials across world-class visual effects studios."
+    })
+
+    vfx_title = str(vfx_content.get("title", "Visual Effects & Compositing")).strip()
+    vfx_desc = str(vfx_content.get("description", "")).strip()
+    vfx_bg_img_html, vfx_bg_overlay_html, _, _ = get_page_background_and_overlay(vfx_dir)
+
+    company_subdirs = sorted(
+        [d for d in os.listdir(vfx_dir) if os.path.isdir(os.path.join(vfx_dir, d)) and not d.startswith('.')],
+        reverse=True
+    ) if os.path.exists(vfx_dir) else []
+
+    company_sections_html = []
+    total_projects_count = 0
+    vfx_thumbs_updated = 0
+    active_vfx_thumbs = set()
+    all_categories = set()
+
+    for comp_idx, comp_folder in enumerate(company_subdirs):
+        comp_path = os.path.join(vfx_dir, comp_folder)
+        comp_slug = slugify(comp_folder)
+
+        comp_defaults = {
+            "companyName": format_title_from_filename(comp_folder),
+            "period": "Aug-2021 to Present",
+            "designation": "",
+            "description": "",
+            "color": "#0e1733",
+            "link": ""
+        }
+        comp_info_file = os.path.join(comp_path, "companyInfo.json")
+        if not os.path.exists(comp_info_file):
+            comp_info_file = os.path.join(comp_path, "company.json")
+        comp_info = load_json(comp_info_file, comp_defaults)
+
+        company_name = comp_info.get("companyName") or comp_info.get("name") or comp_defaults["companyName"]
+        comp_period = comp_info.get("period", "")
+        comp_designation = comp_info.get("designation", "")
+        comp_description = comp_info.get("description", "")
+        comp_color = comp_info.get("color", "#0e1733")
+        comp_link = (comp_info.get("link") or "").strip()
+        if not comp_link or comp_link == "#":
+            comp_link = f"https://www.google.com/search?q={urllib.parse.quote_plus(company_name)}"
+
+        banner_path = None
+        for f in os.listdir(comp_path):
+            if os.path.isfile(os.path.join(comp_path, f)) and os.path.splitext(f)[1].lower() in DISPLAY_IMG_EXTS:
+                if 'banner' in f.lower() or 'logo' in f.lower():
+                    banner_path = f"{comp_path}/{f}".replace("\\", "/")
+                    break
+
+        proj_subdirs = sorted(
+            [d for d in os.listdir(comp_path) if os.path.isdir(os.path.join(comp_path, d)) and not d.startswith('.')],
+            reverse=True
+        )
+
+        tiles_html = []
+        for p_idx, p_folder in enumerate(proj_subdirs):
+            p_folder_path = os.path.join(comp_path, p_folder)
+            files_in_proj = os.listdir(p_folder_path)
+
+            proj_img_path = None
+            for f in files_in_proj:
+                if os.path.splitext(f)[1].lower() in DISPLAY_IMG_EXTS:
+                    if any(k in f.lower() for k in ('projectimage', 'thumb', 'image')):
+                        proj_img_path = f"{p_folder_path}/{f}".replace("\\", "/")
+                        break
+            if not proj_img_path:
+                for f in files_in_proj:
+                    if os.path.splitext(f)[1].lower() in DISPLAY_IMG_EXTS:
+                        proj_img_path = f"{p_folder_path}/{f}".replace("\\", "/")
+                        break
+            if not proj_img_path:
+                continue
+
+            # Mobile-only thumbnail derivative (desktop keeps original full-resolution image)
+            thumb_name = os.path.splitext(os.path.basename(proj_img_path))[0] + ".webp"
+            thumb_fs_path = os.path.join(vfx_thumbs_root, comp_folder, p_folder, thumb_name)
+            if generate_thumbs:
+                try:
+                    if _ensure_resized_webp(proj_img_path, thumb_fs_path, max_dim=720, quality=80):
+                        vfx_thumbs_updated += 1
+                except Exception as thumb_err:
+                    print(f"  [VFX Thumb Warning] {proj_img_path}: {thumb_err}")
+
+            mobile_thumb_rel = thumb_fs_path.replace("\\", "/") if os.path.exists(thumb_fs_path) else None
+            if mobile_thumb_rel:
+                active_vfx_thumbs.add(os.path.abspath(thumb_fs_path))
+
+            proj_info_file = os.path.join(p_folder_path, "projectInfo.json")
+            if not os.path.exists(proj_info_file):
+                proj_info_file = os.path.join(p_folder_path, "info.json")
+            proj_info = load_json(proj_info_file, {
+                "title": format_title_from_filename(p_folder),
+                "description": "",
+                "category": "commercials",
+                "year": "",
+                "tags": [],
+                "orientation": "horizontal",
+                "link": ""
+            })
+
+            p_title = proj_info.get("title") or format_title_from_filename(p_folder)
+            p_desc = proj_info.get("description", "")
+            p_category = (proj_info.get("category") or "commercials").strip().lower()
+            all_categories.add(p_category)
+            p_year = proj_info.get("year", "")
+            p_orientation = str(proj_info.get("orientation", "horizontal")).lower()
+            if p_orientation not in ("horizontal", "vertical", "square"):
+                p_orientation = "horizontal"
+
+            p_link = (proj_info.get("link") or "").strip()
+            if not p_link or p_link == "#":
+                p_link = f"https://www.google.com/search?q={urllib.parse.quote_plus(p_title)}"
+
+            raw_tags = proj_info.get("tags") or proj_info.get("tools") or []
+            p_tags = (
+                [t.strip() for t in raw_tags.split(",") if t.strip()]
+                if isinstance(raw_tags, str)
+                else [str(t).strip() for t in raw_tags if str(t).strip()]
+            )
+
+            cat_label = p_category.replace('-', ' ').replace('_', ' ').title()
+            year_span = f'<span class="tile-year">{esc(p_year)}</span>' if p_year else ''
+            desc_html = f'<p class="tile-desc">{esc(p_desc)}</p>' if p_desc else ''
+            tags_csv = esc(",".join(p_tags))
+            tags_buttons = "".join(f'<button type="button" class="tile-tag" data-tag="{esc(t)}">{esc(t)}</button>' for t in p_tags)
+            tags_html = f'<div class="tile-tags-wrap">{tags_buttons}</div>' if p_tags else ''
+
+            loading_attr = "eager" if comp_idx == 0 and p_idx < 3 else "lazy"
+            img_tag = f'<img src="{esc(proj_img_path)}" alt="{esc(p_title)}" class="tile-img" loading="{loading_attr}" decoding="async">'
+            mobile_srcset = quote_asset_url(mobile_thumb_rel) if mobile_thumb_rel else None
+            media_html = (
+                f'<picture>\n                  <source media="(max-width: 860px)" srcset="{esc(mobile_srcset)}">\n                  {img_tag}\n                </picture>'
+                if mobile_srcset else img_tag
+            )
+
+            tiles_html.append(f'''
+            <article class="project-tile aspect-{p_orientation}" data-category="{esc(p_category)}" data-tags="{tags_csv}">
+              <div class="tile-circling-border" aria-hidden="true"></div>
+              <div class="tile-inner">
+                {media_html}
+                <button type="button" class="tile-category-pill" data-filter-category="{esc(p_category)}" title="Filter by {esc(cat_label)}">{esc(cat_label)}</button>
+                <a href="{esc(p_link)}" target="_blank" rel="noopener noreferrer" class="tile-more-link" title="More information on {esc(p_title)}">more...</a>
+                <div class="tile-hover-overlay">
+                  <div class="tile-hover-content">
+                    <h3 class="tile-title">
+                      <span>{esc(p_title)}</span>
+                      {year_span}
+                    </h3>
+                    {desc_html}
+                    {tags_html}
+                  </div>
+                </div>
+              </div>
+            </article>''')
+            total_projects_count += 1
+
+        meta_items = []
+        if comp_period:
+            meta_items.append(f'<span class="company-banner-period">{esc(comp_period)}</span>')
+        if comp_designation:
+            meta_items.append(f'<span class="company-banner-designation">{esc(comp_designation)}</span>')
+        meta_html = f'<div class="company-banner-meta">{"<span class=\"company-banner-sep\"> - </span>".join(meta_items)}</div>' if meta_items else ''
+        description_html = f'<div class="company-banner-desc">{esc(comp_description)}</div>' if comp_description else ''
+
+        logo_html = (
+            f'\n        <a href="{esc(comp_link)}" target="_blank" rel="noopener noreferrer" class="company-banner-logo-wrap is-clickable" title="Visit {esc(company_name)}">'
+            f'\n          <img src="{esc(banner_path)}" alt="{esc(company_name)} Logo" class="company-banner-logo-img" loading="{"eager" if comp_idx == 0 else "lazy"}" decoding="async">'
+            f'\n        </a>'
+        ) if banner_path else ''
+
+        company_sections_html.append(f'''
+        <section class="company-section" id="{comp_slug}" data-company="{comp_slug}">
+          <div class="company-banner-strip" style="background-color: {esc(comp_color)};">
+            <div class="company-banner-info">
+              <h2 class="company-banner-heading">{esc(company_name)}</h2>
+              {meta_html}
+              {description_html}
+            </div>{logo_html}
+          </div>
+          <div class="company-project-grid">
+            {"".join(tiles_html)}
+          </div>
+        </section>''')
+
+    if generate_thumbs and os.path.exists(vfx_thumbs_root):
+        for cur_root, _, files in os.walk(vfx_thumbs_root, topdown=False):
+            for tf in files:
+                tp = os.path.join(cur_root, tf)
+                if os.path.abspath(tp) not in active_vfx_thumbs:
+                    try:
+                        os.remove(tp)
+                    except OSError:
+                        pass
+            if not os.listdir(cur_root) and cur_root != vfx_thumbs_root:
+                try:
+                    os.rmdir(cur_root)
+                except OSError:
+                    pass
+    if vfx_thumbs_updated:
+        print(f"  -> [VFX Mobile Thumbs] Generated/updated {vfx_thumbs_updated} mobile card thumbnails")
+
+    preferred_order = ["commercials", "films", "feature films", "series", "music-videos", "other"]
+    sorted_categories = [c for c in preferred_order if c in all_categories]
+    sorted_categories.extend(c for c in sorted(all_categories) if c not in sorted_categories)
+
+    filter_buttons = ['<button type="button" class="filter-btn active" data-filter="all">All</button>']
+    for cat in sorted_categories:
+        label = cat.replace('-', ' ').replace('_', ' ').title()
+        filter_buttons.append(f'<button type="button" class="filter-btn" data-filter="{esc(cat)}">{esc(label)}</button>')
+
+    vfx_page_title = str(vfx_content.get("pageTitle", "VFX | Pra - Motions")).strip() or "VFX | Pra - Motions"
+    vfx_seo_desc = "Visual Effects & Compositing portfolio of Prasannakumar T Bhat across DNEG, The Mill, and feature film productions."
+    vfx_json_ld = '''  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "Visual Effects Portfolio - Prasannakumar T Bhat",
+    "description": "Visual Effects & Compositing portfolio of Prasannakumar T Bhat across DNEG, The Mill, and feature film productions.",
+    "author": {
+      "@type": "Person",
+      "name": "Prasannakumar T Bhat",
+      "jobTitle": "Lead Compositor & VFX Artist"
+    }
+  }
+  </script>'''
+
+    main_html = f'''      <div class="section-header">
+        <h1 class="section-title">{esc(vfx_title) or "&nbsp;"}</h1>
+        <p class="section-desc">{esc(vfx_desc) or "&nbsp;"}</p>
+      </div>
+      <div class="filter-bar filter-bar-center">
+        {"".join(filter_buttons)}
+        <span class="tag-filter-status" style="display: none;"></span>
+      </div>
+      <div class="vfx-companies-container">
+        {"".join(company_sections_html)}
+      </div>'''
+
+    vfx_html = render_document(
+        page_title=vfx_page_title,
+        meta_desc=vfx_seo_desc,
+        seo_meta=get_seo_meta_tags("vfx.html", vfx_page_title, vfx_seo_desc),
+        nav_active="vfx",
+        stylesheets=["main.css", "components.css", "responsive.css"],
+        main_html=main_html,
+        tracking_tags=tracking_tags,
+        extra_head=vfx_json_ld,
+        body_scripts='  <script type="module" src="_engine/js/main.js"></script>',
+        bg_img_html=vfx_bg_img_html,
+        bg_overlay_html=vfx_bg_overlay_html,
+    )
+    with open("vfx.html", "w", encoding="utf-8") as f:
+        f.write(vfx_html)
+    print(f"  -> Updated vfx.html ({len(company_subdirs)} companies, {total_projects_count} projects)")
+
+
+def build_photography_page(tracking_tags, generate_thumbs=True):
+    from PIL import Image
+
+    photo_dir = "pages/04_photography"
+    photos_dir = os.path.join(photo_dir, "photos")
+    panos_dir = os.path.join(photo_dir, "panos")
+    thumbs_root = os.path.join("_engine", "thumbs", "photography")
+    os.makedirs(photos_dir, exist_ok=True)
+    os.makedirs(panos_dir, exist_ok=True)
+    photo_bg_img_html, photo_bg_overlay_html, _, _ = get_page_background_and_overlay(photo_dir)
+
+    photo_info = load_json(os.path.join(photo_dir, "content.json"), {
+        "title": "Photography & Panoramas",
+        "description": "High-resolution 360° environment captures, HDRI light probes, and cinematic stills gallery."
+    })
+    photo_title = str(photo_info.get("title", "Photography & Panoramas")).strip()
+    photo_desc = str(photo_info.get("description", "")).strip()
+
+    def clean_photo_title(filename):
+        base = os.path.splitext(filename)[0]
+        clean = re.sub(r'^\d+[\s_-]*', '', base).replace('_', ' ').replace('-', ' ')
+        return ' '.join(clean.split()).strip() or base
+
+    thumbs_updated = 0
+
+    def index_collection(dir_path, sub_kind):
+        nonlocal thumbs_updated
+        if not os.path.exists(dir_path):
+            return []
+
+        thumb_dir = os.path.join(thumbs_root, sub_kind)
+        source_files = sorted(f for f in os.listdir(dir_path) if f.lower().endswith('.webp') and not f.startswith('.'))
+
+        # Prune deleted photo/pano thumbnails so stale thumbs never linger
+        if os.path.exists(thumb_dir):
+            valid_names = set(source_files)
+            for existing_t in os.listdir(thumb_dir):
+                if existing_t not in valid_names:
+                    try:
+                        os.remove(os.path.join(thumb_dir, existing_t))
+                    except OSError:
+                        pass
+
+        items = []
+        for f in source_files:
+            webp_path = os.path.join(dir_path, f)
+            thumb_fs_path = os.path.join(thumb_dir, f)
+            w, h, aspect = 1920, 1080, 1.778
+            try:
+                with Image.open(webp_path) as im:
+                    w, h = im.size
+                    if h > 0:
+                        aspect = round(w / h, 3)
             except Exception:
                 pass
 
+            if generate_thumbs:
+                try:
+                    if _ensure_resized_webp(webp_path, thumb_fs_path, max_dim=900, quality=82):
+                        thumbs_updated += 1
+                except Exception as thumb_err:
+                    print(f"  [Thumb Warning] {webp_path}: {thumb_err}")
+
+            resolved_thumb = thumb_fs_path.replace("\\", "/") if os.path.exists(thumb_fs_path) else webp_path.replace("\\", "/")
+            items.append({
+                "id": slugify(os.path.splitext(f)[0]),
+                "filename": f,
+                "title": clean_photo_title(f),
+                "webp": webp_path.replace("\\", "/"),
+                "thumb": resolved_thumb,
+                "width": w,
+                "height": h,
+                "aspect": aspect
+            })
+        return items
+
+    photos_list = index_collection(photos_dir, "photos")
+    panos_list = index_collection(panos_dir, "panos")
+    if thumbs_updated:
+        print(f"  -> [Thumbs] Generated/updated {thumbs_updated} photography thumbnails in _engine/thumbs/photography/")
+
+    def make_tile(item, idx, kind):
+        asp = item.get("aspect", 2.0 if kind == "panos" else 1.778)
+        tile_cls = "pano-tile" if kind == "panos" else "photo-tile"
+        data_idx_attr = f'data-pano-idx="{idx}"' if kind == "panos" else f'data-photo-idx="{idx}"'
+        thumb_src = item.get("thumb") or item["webp"]
+        pano_extras = '''
+              <span class="pano-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
+                360° Panorama
+              </span>
+              <div class="pano-center-indicator" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" style="margin-left: 2px;"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+              </div>''' if kind == "panos" else ""
+
+        html_chunk = f'''
+        <div class="waterfall-item" data-type="{kind}" data-aspect="{asp}" style="--aspect: {asp};">
+          <article class="project-tile {tile_cls}" {data_idx_attr} tabindex="0" role="button" aria-label="{esc(item['title'])}" title="{esc(item['title'])}" style="--aspect: {asp}; aspect-ratio: {asp};">
+            <div class="tile-circling-border" aria-hidden="true"></div>
+            <div class="tile-inner" style="aspect-ratio: {asp};">
+              <img src="{esc(thumb_src)}" alt="{esc(item['title'])}" class="tile-img" loading="lazy" decoding="async">{pano_extras}
+              <div class="tile-hover-overlay">
+                <div class="tile-hover-content">
+                  <h3 class="tile-title"><span>{esc(item['title'])}</span></h3>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>'''
+        return (asp, html_chunk)
+
+    photo_tiles = [make_tile(p, idx, "photos") for idx, p in enumerate(photos_list)]
+    pano_tiles = [make_tile(p, idx, "panos") for idx, p in enumerate(panos_list)]
+
+    # Dynamically interleave panoramas and photos across 3 shortest-height columns (never IndexError on item count changes)
+    interleaved = []
+    pi, ph = 0, 0
+    while pi < len(pano_tiles) or ph < len(photo_tiles):
+        if pi < len(pano_tiles):
+            interleaved.append(pano_tiles[pi])
+            pi += 1
+        for _ in range(2):
+            if ph < len(photo_tiles):
+                interleaved.append(photo_tiles[ph])
+                ph += 1
+
+    cols = [[], [], []]
+    col_heights = [0.0, 0.0, 0.0]
+    for asp, tile_html in interleaved:
+        min_col = min(range(3), key=lambda c: col_heights[c])
+        cols[min_col].append(tile_html)
+        col_heights[min_col] += 1.0 / max(asp or 1.778, 0.2)
+
+    waterfall_cols_html = "".join(
+        f'\n        <div class="waterfall-col">{"".join(c)}\n        </div>'
+        for c in cols
+    )
+
+    photo_page_title = str(photo_info.get("pageTitle", f"{photo_title} | Pra - Motions")).strip() or f"{photo_title} | Pra - Motions"
+    photo_seo_desc = photo_desc or "Photography and 360 interactive panoramas by Prasannakumar T Bhat."
+
+    main_html = f'''      <div class="section-header">
+        <h1 class="section-title">{esc(photo_title) or "&nbsp;"}</h1>
+        <p class="section-desc">{esc(photo_desc) or "&nbsp;"}</p>
+      </div>
+      <div class="filter-bar filter-bar-center">
+        <button type="button" class="filter-btn active" id="tabBtnAll" data-tab="all">All</button>
+        <button type="button" class="filter-btn" id="tabBtnPanos" data-tab="panos">Panoramas</button>
+        <button type="button" class="filter-btn" id="tabBtnPhotos" data-tab="photos">Photos</button>
+      </div>
+      <section class="photo-gallery-section" id="gallery-container">
+        <div class="waterfall-container waterfall-3-col" id="photoWaterfallContainer">{waterfall_cols_html}
+        </div>
+      </section>'''
+
+    modals_html = f'''
+  <!-- Fullscreen Photo Viewer Modal with Bottom Filmstrip -->
+  <div id="photoViewerModal" class="fullscreen-viewer-modal" aria-hidden="true" role="dialog">
+    <div class="viewer-top-bar">
+      <div class="viewer-title-wrap">
+        <h3 class="viewer-title" id="photoViewerTitle">Photo</h3>
+        <span class="viewer-counter" id="photoViewerCounter">1 / 1</span>
+      </div>
+      <div class="viewer-top-actions">
+        <button type="button" class="viewer-close-btn" id="photoViewerCloseBtn" onclick="closePhotoViewer()" aria-label="Close viewer" title="Close (Esc)">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="viewer-stage" id="photoViewerStage">
+      <button type="button" class="viewer-side-arrow viewer-prev-arrow" onclick="navPhotoViewer(-1)" aria-label="Previous photo" title="Previous photo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      </button>
+      <div class="viewer-img-container"><img id="photoViewerImg" src="" alt="Photo" class="viewer-main-img"></div>
+      <button type="button" class="viewer-side-arrow viewer-next-arrow" onclick="navPhotoViewer(1)" aria-label="Next photo" title="Next photo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </button>
+    </div>
+    <div class="viewer-filmstrip-bar"><div class="filmstrip-track" id="photoFilmstripTrack"></div></div>
+  </div>
+
+  <!-- Fullscreen 360 Panorama Viewer Modal with Bottom Filmstrip -->
+  <div id="panoViewerModal" class="fullscreen-viewer-modal" aria-hidden="true" role="dialog">
+    <div class="viewer-top-bar">
+      <div class="viewer-title-wrap">
+        <span class="pano-modal-tag">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
+          360° Photosphere
+        </span>
+        <h3 class="viewer-title" id="panoViewerTitle">Panorama</h3>
+        <span class="viewer-counter" id="panoViewerCounter">1 / 1</span>
+      </div>
+      <div class="viewer-top-actions">
+        <button type="button" class="viewer-close-btn" id="panoViewerCloseBtn" onclick="closePanoViewer()" aria-label="Close viewer" title="Close (Esc)">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="pano-stage">
+      <div id="fullscreenPanoContainer" class="pano-webgl-viewport"></div>
+      <button type="button" class="viewer-side-arrow viewer-prev-arrow" onclick="navPanoViewer(-1)" aria-label="Previous panorama" title="Previous panorama">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      </button>
+      <button type="button" class="viewer-side-arrow viewer-next-arrow" onclick="navPanoViewer(1)" aria-label="Next panorama" title="Next panorama">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </button>
+    </div>
+    <div class="viewer-filmstrip-bar"><div class="filmstrip-track" id="panoFilmstripTrack"></div></div>
+  </div>
+
+  <script id="photosData" type="application/json">{json.dumps(photos_list)}</script>
+  <script id="panosData" type="application/json">{json.dumps(panos_list)}</script>'''
+
+    body_scripts = '''  <script src="_engine/js/pannellum.js"></script>
+  <script src="_engine/js/photography.js"></script>
+  <script type="module" src="_engine/js/main.js"></script>'''
+
+    photography_html = render_document(
+        page_title=photo_page_title,
+        meta_desc=photo_seo_desc,
+        seo_meta=get_seo_meta_tags("photography.html", photo_page_title, photo_seo_desc),
+        nav_active="photography",
+        stylesheets=["main.css", "components.css", "pannellum.css", "photography.css", "responsive.css"],
+        main_html=main_html,
+        tracking_tags=tracking_tags,
+        extra_body_html=modals_html,
+        body_scripts=body_scripts,
+        bg_img_html=photo_bg_img_html,
+        bg_overlay_html=photo_bg_overlay_html,
+    )
+    with open("photography.html", "w", encoding="utf-8") as f:
+        f.write(photography_html)
+    print(f"  -> Updated photography.html ({len(photos_list)} stills, {len(panos_list)} 360 panos)")
+
+
+def build_about_page(tracking_tags):
+    about_dir = "pages/05_about" if os.path.exists("pages/05_about") else "pages/05_about-me"
+    about_bg_img_html, about_bg_overlay_html, _, _ = get_page_background_and_overlay(about_dir)
+
+    about_data = {
+        "name": "Prasannakumar T Bhat",
+        "designation": "Visual Effects Compositor",
+        "experience": "",
+        "info": "For <strong>10+ years</strong>, I've been weaving magic with pixels in the world of visual effects.",
+        "showreelLink": "https://vimeo.com/835414002"
+    }
+    for cand_json in ("content.json", "aboutMe.json"):
+        p = os.path.join(about_dir, cand_json)
+        if os.path.exists(p):
+            about_data = load_json(p, about_data)
+
+    name = str(about_data.get("name", "Prasannakumar T Bhat"))
+    designation = str(about_data.get("designation", "Visual Effects Compositor"))
+    experience = str(about_data.get("experience", ""))
+    info_raw = str(about_data.get("info", ""))
+    resume_link = about_data.get("resumeLink") or (f"{about_dir}/resume.pdf" if os.path.exists(f"{about_dir}/resume.pdf") else "#")
+    cover_letter_link = about_data.get("coverLetterLink") or (f"{about_dir}/coverLetter.pdf" if os.path.exists(f"{about_dir}/coverLetter.pdf") else "#")
+    showreel_title = str(
+        about_data.get("showreelTitle") or about_data.get("showreel title")
+        or about_data.get("showreelHeading") or about_data.get("videoTitle") or ""
+    ).strip()
+
+    info_bg_color = about_data.get("infoBGcolor") or about_data.get("infoBgColor") or "#131e42"
+    info_bg_opacity = about_data.get("infoBGopacity", about_data.get("infoBgOpacity", about_data.get("info_bg_opacity", 75)))
+    info_bg_rgba = hex_to_rgba(info_bg_color, info_bg_opacity)
+
+    showreel_url = str(
+        about_data.get("showreelLink") or about_data.get("showreel link") or about_data.get("showreel")
+        or about_data.get("showreelUrl") or about_data.get("showreel url")
+        or about_data.get("vimeoUrl") or about_data.get("vimeoLink") or about_data.get("vimeo") or ""
+    ).strip()
+
+    info_paras = [p.strip() for p in info_raw.split("\n\n") if p.strip()] or ([info_raw.strip()] if info_raw else [])
+    paragraphs_html = "\n".join(f"<p>{p.replace(chr(10), '<br>')}</p>" for p in info_paras)
+
+    profile_img = find_first_existing(about_dir, ["profilePic.webp", "profilePic.jpg", "profilePic.png", "profile.webp", "profile.jpg", "profile.png"]) or "_engine/images/logo.png"
+
+    # Known Tools strip
+    known_tools_dir = os.path.join(about_dir, "knownTools")
+    tools_cards_html = []
+    if os.path.exists(known_tools_dir):
+        tool_files = sorted(f for f in os.listdir(known_tools_dir) if os.path.splitext(f)[1].lower() in DISPLAY_IMG_EXTS)
+        for tf in tool_files:
+            tf_path = f"{known_tools_dir}/{tf}".replace("\\", "/")
+            raw_name = os.path.splitext(tf)[0]
+            tool_name = re.sub(r'^\d+[\s_-]*', '', raw_name).replace('_', ' ').replace('-', ' ').title()
+            tools_cards_html.append(f'''
+          <div class="known-tool-card" title="{esc(tool_name)}">
+            <img src="{esc(tf_path)}" alt="{esc(tool_name)}" class="known-tool-img" loading="lazy" decoding="async">
+            <div class="known-tool-hover"><span class="known-tool-name">{esc(tool_name)}</span></div>
+          </div>''')
+
+    tools_section_html = ""
+    if tools_cards_html:
+        num_tools = len(tools_cards_html)
+        if num_tools <= 4:
+            tool_gap, tool_pad = "clamp(24px, 3.5vw, 42px)", "12px"
+        elif num_tools <= 7:
+            tool_gap, tool_pad = "clamp(16px, 2.2vw, 26px)", "9px"
+        elif num_tools <= 10:
+            tool_gap, tool_pad = "clamp(10px, 1.5vw, 18px)", "7px"
+        elif num_tools <= 12:
+            tool_gap, tool_pad = "clamp(7px, 1.1vw, 13px)", "5px"
+        else:
+            tool_gap, tool_pad = "clamp(4px, 0.8vw, 8px)", "4px"
+        tools_section_html = f'''
+      <section class="known-tools-section">
+        <div class="known-tools-strip" style="--tool-count: {num_tools}; --tool-gap: {tool_gap}; --tool-pad: {tool_pad};">
+          {"".join(tools_cards_html)}
+        </div>
+      </section>'''
+
+    # Showreel Embed
+    showreel_section_html = ""
+    if showreel_url:
+        embed_src, allow_attr = None, "autoplay; fullscreen; picture-in-picture"
+        yt_match = re.search(r'(?:youtube\.com\/(?:watch\?.*?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})', showreel_url)
+        if yt_match:
+            embed_src = f"https://www.youtube.com/embed/{yt_match.group(1)}?rel=0"
+            allow_attr = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        else:
+            vimeo_match = re.search(r'vimeo\.com\/(?:video\/|channels\/[^\/]+\/|manage\/videos\/)?(\d{6,})', showreel_url)
+            if not vimeo_match and "vimeo" in showreel_url.lower():
+                vimeo_match = re.search(r'(\d{6,})', showreel_url)
+            if vimeo_match:
+                embed_src = f"https://player.vimeo.com/video/{vimeo_match.group(1)}?title=0&byline=0&portrait=0"
+            elif "embed" in showreel_url:
+                embed_src = showreel_url
+
+        if embed_src:
+            video_header_html = f'<div class="about-video-header"><h2 class="about-video-heading">{esc(showreel_title)}</h2></div>' if showreel_title else ""
+            showreel_section_html = f'''
+      <section class="about-video-card" style="--info-bg: {info_bg_rgba};">
+        {video_header_html}
+        <div class="about-video-container">
+          <iframe src="{esc(embed_src)}" allow="{allow_attr}" allowfullscreen loading="lazy" title="{esc(showreel_title or 'VFX Showreel')} - {esc(name)}"></iframe>
+        </div>
+      </section>'''
+
+    # Contact lines
+    contact_lines_data = about_data.get("contactInfoLines") or about_data.get("contactLines") or about_data.get("infoLines")
+    contact_lines_html = []
+    if isinstance(contact_lines_data, list):
+        for item in contact_lines_data:
+            if isinstance(item, dict):
+                label = str(item.get("label") or item.get("key") or "")
+                val = str(item.get("value") or item.get("text") or item.get("val") or "")
+                link = str(item.get("link") or item.get("url") or "")
+                label_html = f'<span class="contact-line-label">{esc(label)}:</span>' if label else ''
+                if link:
+                    val_html = f'<a href="{esc(link)}" target="_blank" rel="noopener noreferrer">{esc(val)}</a>'
+                elif '@' in val and not val.startswith('http'):
+                    val_html = f'<a href="mailto:{esc(val)}">{esc(val)}</a>'
+                else:
+                    val_html = f'<strong>{esc(val)}</strong>' if 'phone' in label.lower() else esc(val)
+                contact_lines_html.append(f'<div class="contact-line-item">{label_html}<span class="contact-line-val">{val_html}</span></div>')
+            elif isinstance(item, str) and item.strip():
+                contact_lines_html.append(f'<div class="contact-line-item"><span class="contact-line-val">{esc(item.strip())}</span></div>')
+
+    contact_img_path = find_first_existing(about_dir, ["contact.webp", "contact.jpg", "contact.png", "contact.jpeg"])
+    contact_img_html = (
+        f'\n          <div class="contact-image-wrap">\n            <img src="{esc(contact_img_path)}" alt="Contact Visual" class="contact-img" loading="lazy" decoding="async">\n          </div>'
+    ) if contact_img_path else ""
+
+    # Social Media Tiles
+    social_tiles_html = []
+    social_folder = next((os.path.join(about_dir, d) for d in ("social", "socialMedia") if os.path.isdir(os.path.join(about_dir, d))), None)
+    if social_folder:
+        social_json = next((os.path.join(social_folder, j) for j in ("social.json", "socialMedia.json", "links.json") if os.path.exists(os.path.join(social_folder, j))), None)
+        social_items = load_json(social_json, []) if social_json else []
+        if isinstance(social_items, list):
+            for s_item in social_items:
+                img_name = s_item.get("image") or s_item.get("image name") or s_item.get("icon") or ""
+                s_link = (s_item.get("link") or s_item.get("url") or "").strip()
+                s_name = s_item.get("name") or s_item.get("title") or os.path.splitext(img_name)[0].title()
+                if not s_link or s_link == "#":
+                    s_link = f"https://www.google.com/search?q={urllib.parse.quote_plus(s_name)}"
+
+                img_base = os.path.splitext(img_name)[0]
+                resolved_img = next((f"{img_base}{ext}" for ext in (".webp", ".png", ".jpg", ".jpeg") if os.path.exists(os.path.join(social_folder, f"{img_base}{ext}"))), img_name)
+                if os.path.exists(os.path.join(social_folder, resolved_img)):
+                    s_img_path = f"{social_folder}/{resolved_img}".replace("\\", "/")
+                    social_tiles_html.append(f'''
+            <a href="{esc(s_link)}" target="_blank" rel="noopener noreferrer" class="social-tile" title="{esc(s_name)}">
+              <img src="{esc(s_img_path)}" alt="{esc(s_name)}" class="social-icon-img" loading="lazy" decoding="async">
+            </a>''')
+
+    social_section_html = f'<div class="about-social-row">{"".join(social_tiles_html)}</div>' if social_tiles_html else ""
+    meta_role = f"{designation} &bull; {experience}" if experience else designation
+
+    page_title = str(about_data.get("title", "")).strip()
+    page_desc = str(about_data.get("description", "")).strip()
+    header_html = "" if not (page_title or page_desc) else f'''      <div class="section-header">
+        <p class="section-title">{esc(page_title) or "&nbsp;"}</p>
+        <p class="section-desc">{esc(page_desc) or "&nbsp;"}</p>
+      </div>\n'''
+
+    about_page_title = str(about_data.get("pageTitle", f"About | {name}")).strip() or f"About | {name}"
+    about_seo_desc = f"{name} - {designation}. {experience}. Production visual effects, compositing breakdown, and workflow automation."
+
+    main_html = f'''{header_html}      <div class="about-grid">
+        <div class="about-profile-col">
+          <div class="project-tile aspect-vertical about-profile-tile">
+            <div class="tile-circling-border" aria-hidden="true"></div>
+            <div class="tile-inner">
+              <img src="{esc(profile_img)}" alt="{esc(name)}" class="tile-img" decoding="async">
+            </div>
+          </div>
+        </div>
+
+        <div class="about-bio-col" style="--info-bg: {info_bg_rgba};">
+          <div class="about-bio-top">
+            <h1 class="about-name">{esc(name)}</h1>
+            <div class="about-role-strip">{meta_role}</div>
+            <div class="about-paragraphs">{paragraphs_html}</div>
+          </div>
+          <div class="about-bio-bottom">
+            {social_section_html}
+            <div class="about-actions-wrap">
+              <a href="{esc(resume_link)}" class="btn btn-primary" download>Resume</a>
+              <a href="{esc(cover_letter_link)}" class="btn btn-primary" download>Cover Letter</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      {showreel_section_html}
+      {tools_section_html}
+      <section id="contact" class="contact-card">
+        <div class="contact-content-grid">
+          <div class="contact-info-col">
+            <h2 class="contact-heading">Contact Information</h2>
+            <div class="contact-lines-list">{"".join(contact_lines_html)}</div>
+          </div>{contact_img_html}
+        </div>
+      </section>'''
+
+    about_html = render_document(
+        page_title=about_page_title,
+        meta_desc=f"{name} - {designation}. {experience}.",
+        seo_meta=get_seo_meta_tags("about.html", about_page_title, about_seo_desc, image_url=profile_img),
+        nav_active="about",
+        stylesheets=["main.css", "components.css", "responsive.css"],
+        main_html=main_html,
+        tracking_tags=tracking_tags,
+        extra_head=PERSON_JSON_LD,
+        body_scripts='  <script type="module" src="_engine/js/main.js"></script>',
+        bg_img_html=about_bg_img_html,
+        bg_overlay_html=about_bg_overlay_html,
+    )
+    with open("about.html", "w", encoding="utf-8") as f:
+        f.write(about_html)
+    print("  -> Updated about.html")
+
+    about_redirect_html = '''<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="0; url=about.html">
+  <title>Redirecting to About...</title>
+  <link rel="canonical" href="about.html">
+</head>
+<body>
+  <p>Redirecting to <a href="about.html">About</a>...</p>
+</body>
+</html>'''
+    with open("about-me.html", "w", encoding="utf-8") as f:
+        f.write(about_redirect_html)
+
+
+def build_ai_comfy_page(tracking_tags):
+    ai_dir = "pages/03_ai-comfy"
+    ai_bg_img_html, ai_bg_overlay_html, _, _ = get_page_background_and_overlay(ai_dir)
+
+    ai_info = load_json(os.path.join(ai_dir, "content.json"), {
+        "title": "ComfyUI Pipelines & AI Toolsets",
+        "description": "Bridging the gap between cutting-edge Diffusion models and film-grade visual effects pipelines."
+    })
+    ai_title = str(ai_info.get("title", "ComfyUI Pipelines & AI Toolsets")).strip()
+    ai_desc = str(ai_info.get("description", "")).strip()
+
+    workflow_img = "pages/03_ai-comfy/workflows/comfyui-production-pipeline.webp"
+    if not os.path.exists(workflow_img):
+        workflow_img = "pages/03_ai-comfy/workflows/comfyui-production-pipeline.png"
+
+    ai_page_title = str(ai_info.get("pageTitle", f"{ai_title} | Pra - Motions")).strip() or f"{ai_title} | Pra - Motions"
+    ai_seo_desc = ai_desc or "ComfyUI pipelines, automated cleanup nodes, and custom AI VFX workflows."
+
+    main_html = f'''      <div class="section-header">
+        <h1 class="section-title">{esc(ai_title) or "&nbsp;"}</h1>
+        <p class="section-desc">{esc(ai_desc) or "&nbsp;"}</p>
+      </div>
+
+      <div class="ai-graph-card">
+        <div class="ai-graph-header">
+          <span class="ai-graph-eyebrow">Production Workflow Graph</span>
+          <h2 class="ai-graph-title">ComfyUI VFX Production Pipeline Graph</h2>
+          <p class="ai-graph-subtitle">Full interactive visual graph. Click image to open high-resolution zoom in Lightbox.</p>
+        </div>
+        <div class="ai-graph-media">
+          <img src="{esc(workflow_img)}" alt="ComfyUI Production Pipeline Architecture" class="ai-graph-img" data-lightbox data-caption="ComfyUI Master VFX Production Workflow Architecture" decoding="async">
+        </div>
+      </div>
+
+      <h2 class="ai-section-heading">Production ComfyUI Workflows</h2>
+      <div class="ai-workflows-grid">
+        <div class="ai-workflow-card">
+          <div class="ai-workflow-top">
+            <span class="ai-workflow-badge">PLATE INPAINTING</span>
+            <span class="ai-workflow-stack">ComfyUI + LaMa</span>
+          </div>
+          <h3 class="ai-workflow-title">Automated 4K Clean-Plate Generator</h3>
+          <p class="ai-workflow-desc">Converts roto tracking markers and harness wires into seamless 4K background textures without seam artifacts or optical degradation.</p>
+          <div class="ai-workflow-io">
+            <div><strong>Inputs:</strong> Live Plate + Roto Matte</div>
+            <div><strong>Outputs:</strong> 16-bit Float EXR Clean Plate</div>
+          </div>
+          <a href="blog.html#comfyui-portable-custom-nodes" class="btn btn-secondary ai-workflow-btn"><span>Read Setup Tutorial</span></a>
+        </div>
+
+        <div class="ai-workflow-card">
+          <div class="ai-workflow-top">
+            <span class="ai-workflow-badge badge-alt">RELIGHTING / COMP</span>
+            <span class="ai-workflow-stack">Marigold + IC-Light</span>
+          </div>
+          <h3 class="ai-workflow-title">Depth-Guided Shot Relighting</h3>
+          <p class="ai-workflow-desc">Derives photoreal metric depth maps and surface normals directly from 2D footage to cast directional rim lights, specular glints, and volume fog.</p>
+          <div class="ai-workflow-io">
+            <div><strong>Nodes:</strong> Marigold Depth, IC-Light, VHS</div>
+            <div><strong>Outputs:</strong> Normal Pass + Rim Key Light</div>
+          </div>
+          <a href="blog.html#facefusion-windows-portable" class="btn btn-secondary ai-workflow-btn"><span>View Implementation</span></a>
+        </div>
+      </div>'''
+
+    body_scripts = '''  <script src="_engine/js/glightbox.min.js"></script>
+  <script type="module" src="_engine/js/main.js"></script>'''
+
+    ai_html = render_document(
+        page_title=ai_page_title,
+        meta_desc=ai_seo_desc,
+        seo_meta=get_seo_meta_tags("ai-comfy.html", ai_page_title, ai_seo_desc),
+        nav_active="ai-comfy",
+        stylesheets=["main.css", "components.css", "glightbox.min.css", "responsive.css"],
+        main_html=main_html,
+        tracking_tags=tracking_tags,
+        body_scripts=body_scripts,
+        bg_img_html=ai_bg_img_html,
+        bg_overlay_html=ai_bg_overlay_html,
+    )
+    with open("ai-comfy.html", "w", encoding="utf-8") as f:
+        f.write(ai_html)
+    print("  -> Updated ai-comfy.html")
+
+
+def build_blog_page(tracking_tags):
+    blog_dir = "pages/06_blog"
+    blog_bg_img_html, blog_bg_overlay_html, blog_resolved_bg, blog_overlay_alpha = get_page_background_and_overlay(blog_dir)
+    reader_bg_html = (
+        f'<div class="reader-bg-image" style="background-image: url(\'{blog_resolved_bg}\');"></div>\n'
+        f'    <div class="reader-bg-overlay" style="opacity: {blog_overlay_alpha};"></div>'
+    ) if blog_resolved_bg else ''
+
+    blog_info = load_json(os.path.join(blog_dir, "content.json"), {
+        "title": "Technical Blog & Guides",
+        "description": "Practical setups, automation scripts, compositing breakdowns, and workflow optimization for VFX & AI artists."
+    })
+    blog_title = str(blog_info.get("title", "Technical Blog & Guides")).strip()
+    blog_desc = str(blog_info.get("description", "")).strip()
+
+    posts_base_dir = os.path.join(blog_dir, "posts")
+    parsed_posts = []
+    month_names = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ]
+
+    def resolve_post_asset_path(folder_path, raw_src):
+        clean = raw_src.split('?')[0].strip()
+        if clean.startswith(("http", "/", "pages/")):
+            return clean
+        base, _ = os.path.splitext(clean)
+        webp_path = os.path.join(folder_path, f"{base}.webp")
+        if os.path.exists(webp_path):
+            return f"{folder_path}/{base}.webp".replace("\\", "/")
+        return f"{folder_path}/{clean}".replace("\\", "/")
+
+    if os.path.exists(posts_base_dir):
+        post_subdirs = sorted(
+            [d for d in os.listdir(posts_base_dir) if os.path.isdir(os.path.join(posts_base_dir, d))],
+            reverse=True
+        )
+        for folder_name in post_subdirs:
+            folder_path = os.path.join(posts_base_dir, folder_name)
+            date_match = re.match(r'^(\d{4})-(\d{2})-(\d{2})', folder_name)
+            post_date = f"{date_match.group(1)}-{date_match.group(2)}-{date_match.group(3)}" if date_match else "2026-01-01"
+
+            post_meta = load_json(os.path.join(folder_path, "post.json"), {
+                "title": format_title_from_filename(folder_name),
+                "date": post_date,
+                "category": "General",
+                "tags": [],
+                "subheading": "",
+                "thumbnail": "",
+                "author": "Prasannakumar T Bhat",
+                "readTime": "5 min read"
+            })
+            post_meta["date"] = post_date
+
+            md_content = ""
+            for md_cand in ("post.md", "index.md", "article.md", "README.md"):
+                md_p = os.path.join(folder_path, md_cand)
+                if os.path.exists(md_p):
+                    with open(md_p, "r", encoding="utf-8") as f:
+                        md_content = f.read()
+                    break
+
+            if md_content.startswith("---"):
+                parts = md_content.split("---", 2)
+                if len(parts) >= 3:
+                    try:
+                        fm = yaml.safe_load(parts[1])
+                        if isinstance(fm, dict):
+                            fm.pop("date", None)
+                            post_meta.update(fm)
+                            md_content = parts[2].strip()
+                    except Exception:
+                        pass
+
+            extracted_title = ""
+            extracted_subheading = ""
+            extracted_thumb = ""
+            if md_content:
+                m_title = re.search(r'^\s*#\s+(.+)$', md_content, re.MULTILINE)
+                if m_title:
+                    extracted_title = m_title.group(1).strip()
+
+                for raw_p in re.split(r'\r?\n\s*\r?\n', md_content):
+                    p_clean = raw_p.strip()
+                    if not p_clean or p_clean.startswith(('#', '![', '<', '```', '>', '---')):
+                        continue
+                    clean_excerpt = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', p_clean)
+                    clean_excerpt = ' '.join(re.sub(r'[*_`]', '', clean_excerpt).split())
+                    if clean_excerpt:
+                        extracted_subheading = clean_excerpt
+                        break
+
+                md_img = re.search(r'!\[([^\]]*)\]\(([^)]+)\)', md_content)
+                html_img = re.search(r'<img[^>]+src=[\'"]([^\'"]+)[\'"]', md_content)
+                first_src = None
+                if md_img and html_img:
+                    first_src = md_img.group(2) if md_img.start() < html_img.start() else html_img.group(1)
+                elif md_img:
+                    first_src = md_img.group(2)
+                elif html_img:
+                    first_src = html_img.group(1)
+                if first_src:
+                    cand = resolve_post_asset_path(folder_path, first_src)
+                    if cand.startswith(("http", "/")) or os.path.exists(cand):
+                        extracted_thumb = cand
+
+            post_title = extracted_title or post_meta.get("title") or format_title_from_filename(folder_name)
+            post_subheading = extracted_subheading or post_meta.get("subheading") or ""
+
+            thumbnail_path = extracted_thumb or ""
+            if not thumbnail_path and post_meta.get("thumbnail"):
+                cand = resolve_post_asset_path(folder_path, post_meta["thumbnail"])
+                if os.path.exists(cand):
+                    thumbnail_path = cand
+            if not thumbnail_path:
+                thumbnail_path = find_first_existing(folder_path, ["cover.webp", "cover.jpg", "cover.png", "thumbnail.webp", "thumbnail.jpg", "thumbnail.png"]) or ""
+            if not thumbnail_path:
+                for f in sorted(os.listdir(folder_path)):
+                    if os.path.splitext(f)[1].lower() in DISPLAY_IMG_EXTS:
+                        thumbnail_path = f"{folder_path}/{f}".replace("\\", "/")
+                        break
+
+            d_parts = post_date.split("-")
+            year_str = d_parts[0] if d_parts else "2026"
+            month_idx = int(d_parts[1]) - 1 if len(d_parts) > 1 and d_parts[1].isdigit() else 0
+            month_name = month_names[month_idx] if 0 <= month_idx < 12 else "January"
+
+            rendered_html = ""
+            if md_content:
+                md_body = re.sub(r'^\s*#\s+[^\r\n]+(?:\r?\n)+', '', md_content, count=1)
+                fixed_md = re.sub(r'!\[([^\]]*)\]\(([^)]+)\)', lambda m: f'![{m.group(1)}]({resolve_post_asset_path(folder_path, m.group(2))})', md_body)
+
+                def code_repl(m):
+                    lang = m.group(1).strip() or 'text'
+                    code_raw = m.group(2).rstrip()
+                    code_esc = html.escape(code_raw)
+                    collapsed = len(code_raw.splitlines()) > 3
+                    cls_extra = " is-collapsed" if collapsed else ""
+                    toggle_btn = '\n      <button type="button" class="btn-code-toggle" onclick="toggleCodeBlock(this)">Expand</button>' if collapsed else ''
+                    return f'''<div class="code-block-card{cls_extra}">
+  <div class="code-block-header">
+    <span class="code-lang-badge">{esc(lang)}</span>
+    <div class="code-actions">{toggle_btn}
+      <button type="button" class="btn-code-copy" onclick="copyCodeBlock(this)">Copy</button>
+    </div>
+  </div>
+  <pre><code class="language-{esc(lang)}">{code_esc}</code></pre>
+</div>'''
+
+                md_with_code = re.sub(r'```([a-zA-Z0-9_-]*)\r?\n(.*?)```', code_repl, fixed_md, flags=re.DOTALL)
+                compiled_html = markdown.markdown(md_with_code, extensions=['tables'])
+                rendered_html = re.sub(
+                    r'(<img[^>]+src=[\'"])([^\'"]+)([\'"][^>]*>)',
+                    lambda m: f'{m.group(1)}{resolve_post_asset_path(folder_path, m.group(2))}{m.group(3)}',
+                    compiled_html
+                )
+
+            post_id = slugify(folder_name)
+            slug = re.sub(r'^\d{4}-\d{2}-\d{2}[-_]*', '', folder_name) or post_id
+            parsed_posts.append({
+                "id": post_id,
+                "slug": slug,
+                "folder": folder_path.replace("\\", "/"),
+                "title": post_title,
+                "date": post_date,
+                "year": year_str,
+                "month_name": month_name,
+                "category": post_meta.get("category", "General"),
+                "tags": post_meta.get("tags", []),
+                "subheading": post_subheading,
+                "thumbnail": thumbnail_path,
+                "author": post_meta.get("author", "Prasannakumar T Bhat"),
+                "readTime": post_meta.get("readTime", "5 min read"),
+                "rendered_html": rendered_html
+            })
+
+    parsed_posts.sort(key=lambda x: x["date"], reverse=True)
+
+    tree_hierarchy = {}
+    categories_set, tags_set = set(), set()
+    for p in parsed_posts:
+        tree_hierarchy.setdefault(p["year"], {}).setdefault(p["month_name"], []).append(p)
+        if p.get("category"):
+            categories_set.add(p["category"])
+        for t in (p.get("tags") or []):
+            if isinstance(t, str) and t.strip():
+                tags_set.add(t.strip())
+
+    tree_items_html = []
+    for y in sorted(tree_hierarchy.keys(), reverse=True):
+        year_total = sum(len(tree_hierarchy[y][m]) for m in tree_hierarchy[y])
+        months_html = "".join(f'''
+              <li class="tree-item tree-month" data-year="{y}" data-month="{esc(m)}" onclick="filterByMonth('{y}', '{esc(m)}')">
+                <span class="tree-left-wrap"><span class="tree-bullet">&bull;</span><span class="tree-label">{esc(m)}</span></span>
+                <span class="tree-count">{len(tree_hierarchy[y][m])}</span>
+              </li>''' for m in sorted(tree_hierarchy[y].keys()))
+
+        tree_items_html.append(f'''
+          <li class="tree-item tree-year" data-year="{y}">
+            <div class="tree-node" onclick="toggleTreeNode(this, '{y}')">
+              <span class="tree-left-wrap"><span class="tree-arrow">&#9660;</span><span class="tree-label">{y}</span></span>
+              <span class="tree-count">{year_total}</span>
+            </div>
+            <ul class="tree-children">{months_html}</ul>
+          </li>''')
+
+    categories_pills = "".join(
+        f'<button type="button" class="filter-pill category-filter-pill" data-category="{esc(cat)}" onclick="filterByCategory(\'{esc(cat)}\')">{esc(cat)}</button>'
+        for cat in sorted(categories_set)
+    )
+    tags_pills = "".join(
+        f'<button type="button" class="filter-pill tag-filter-pill" data-tag="{esc(tag)}" onclick="filterByTag(\'{esc(tag)}\')">{esc(tag)}</button>'
+        for tag in sorted(tags_set, key=lambda x: x.lower())
+    )
+
+    blog_page_title = str(blog_info.get("pageTitle", f"{blog_title} | Pra - Motions")).strip() or f"{blog_title} | Pra - Motions"
+    blog_seo_desc = blog_desc or "Technical blog, practical VFX setups, automation scripts, and workflow optimization."
+
+    main_html = f'''      <div class="section-header">
+        <h1 class="section-title">{esc(blog_title) or "&nbsp;"}</h1>
+        <p class="section-desc">{esc(blog_desc) or "&nbsp;"}</p>
+      </div>
+      <div class="blog-layout">
+        <aside class="blog-sidebar">
+          <div class="blog-tree-card blog-filter-card">
+            <div class="tree-categories-wrap">
+              <div class="tree-section-header">
+                <h4 class="tree-subtitle">Categories</h4>
+                <button type="button" class="filter-pill category-filter-pill active" data-category="all" onclick="filterByCategory('all')">All</button>
+              </div>
+              <div class="tree-pill-list" id="categoryPillList">{categories_pills}</div>
+            </div>
+            <div class="tree-section-divider"></div>
+            <div class="tree-tags-wrap">
+              <div class="tree-section-header">
+                <h4 class="tree-subtitle">Tags</h4>
+                <button type="button" class="filter-pill tag-filter-pill active" data-tag="all" onclick="filterByTag('all')">All</button>
+              </div>
+              <div class="tree-pill-list" id="tagPillList">{tags_pills}</div>
+            </div>
+          </div>
+
+          <div class="blog-tree-card blog-archive-card">
+            <div class="tree-header">
+              <h3 class="tree-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                Archive
+              </h3>
+              <button type="button" class="filter-pill date-filter-pill active" data-date="all" onclick="filterByTree('all')" title="Reset date filter">All</button>
+            </div>
+            <ul class="tree-root">{"".join(tree_items_html)}</ul>
+          </div>
+        </aside>
+
+        <section class="blog-content-area">
+          <div class="blog-grid" id="blogGrid"></div>
+          <div class="blog-pagination" id="blogPagination">
+            <button type="button" class="page-nav-btn prev-btn" id="prevPageBtn" onclick="changePage(-1)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+              <span>Previous</span>
+            </button>
+            <div class="page-numbers-wrap" id="pageNumbers"></div>
+            <button type="button" class="page-nav-btn next-btn" id="nextPageBtn" onclick="changePage(1)">
+              <span>Next</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          </div>
+        </section>
+      </div>'''
+
+    reader_modal_html = f'''
+  <div id="blogReaderOverlay" class="blog-reader-overlay" aria-hidden="true">
+    {reader_bg_html}
+    <div class="blog-reader-scroll" id="blogReaderScroll">
+      <div class="blog-reader-dialog" role="dialog" aria-modal="true">
+        <article class="blog-reader-content">
+          <header class="reader-header">
+            <h2 class="reader-title" id="readerTitle">Title</h2>
+            <div class="reader-meta">
+              <span id="readerDate">Date</span><span>&bull;</span>
+              <span id="readerReadTime">Read Time</span><span>&bull;</span>
+              <span id="readerAuthor">Author</span>
+            </div>
+            <div class="reader-tags" id="readerTags"></div>
+          </header>
+          <div class="reader-hero-image-wrap" id="readerHeroWrap">
+            <img id="readerHeroImg" src="" alt="Hero Image" class="reader-hero-img">
+          </div>
+          <div class="reader-body" id="readerBody"></div>
+          <nav class="reader-footer-nav">
+            <button type="button" class="reader-nav-btn prev-post-btn" id="readerPrevBtn" onclick="navigatePost(-1)" title="Previous Post">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+              <span class="nav-title" id="readerPrevTitle">Previous Post</span>
+            </button>
+            <button type="button" class="reader-nav-btn next-post-btn" id="readerNextBtn" onclick="navigatePost(1)" title="Next Post">
+              <span class="nav-title" id="readerNextTitle">Next Post</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          </nav>
+        </article>
+      </div>
+    </div>
+    <div class="reader-bottom-controls" role="toolbar" aria-label="Article controls">
+      <button type="button" class="reader-side-nav reader-side-prev" id="readerSidePrev" onclick="navigatePost(-1)" aria-label="Previous Post" title="Previous Post">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      </button>
+      <button type="button" class="reader-floating-close" onclick="closePostModal()" aria-label="Close article" title="Close article (Esc)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+      <button type="button" class="back-to-top reader-back-to-top" id="readerBackToTop" onclick="scrollReaderToTop()" aria-label="Scroll to top" title="Scroll to top">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+      </button>
+      <button type="button" class="reader-side-nav reader-side-next" id="readerSideNext" onclick="navigatePost(1)" aria-label="Next Post" title="Next Post">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </button>
+    </div>
+  </div>
+
+  <script id="blogPostsData" type="application/json">{json.dumps(parsed_posts)}</script>'''
+
+    body_scripts = '''  <script src="_engine/js/prism.js"></script>
+  <script src="_engine/js/glightbox.min.js"></script>
+  <script src="_engine/js/blog.js"></script>
+  <script type="module" src="_engine/js/main.js"></script>'''
+
+    blog_html = render_document(
+        page_title=blog_page_title,
+        meta_desc=blog_seo_desc,
+        seo_meta=get_seo_meta_tags("blog.html", blog_page_title, blog_seo_desc),
+        nav_active="blog",
+        stylesheets=["main.css", "components.css", "glightbox.min.css", "prism.css", "blog.css", "responsive.css"],
+        main_html=main_html,
+        tracking_tags=tracking_tags,
+        extra_body_html=reader_modal_html,
+        body_scripts=body_scripts,
+        bg_img_html=blog_bg_img_html,
+        bg_overlay_html=blog_bg_overlay_html,
+    )
+    with open("blog.html", "w", encoding="utf-8") as f:
+        f.write(blog_html)
+    print(f"  -> Updated blog.html ({len(parsed_posts)} posts)")
+
+
+def build_resource_listing_page(page_id, dir_candidates, default_title, default_desc, tracking_tags):
+    """Build unlisted resource dashboard pages (more.html, extra.html) and subfolder redirects."""
+    page_dir = next((c for c in dir_candidates if os.path.exists(c)), dir_candidates[0])
+    bg_img_html, bg_overlay_html, _, _ = get_page_background_and_overlay(page_dir)
+
+    data = load_json(os.path.join(page_dir, "content.json"), {
+        "title": default_title,
+        "description": default_desc,
+        "linksSectionTitle": "Useful Links",
+        "downloadsSectionTitle": "Downloads",
+        "overlayOpacity": 75
+    })
+    page_title = str(data.get("title", default_title)).strip()
+    page_desc = str(data.get("description", "")).strip()
+    links_title = str(data.get("linksSectionTitle", "Useful Links")).strip()
+    downloads_title = str(data.get("downloadsSectionTitle", "Downloads")).strip()
+
+    useful_links_list = []
+    for cand_json in ("usefullLinks.json", "usefulLinks.json", "links.json"):
+        cand_path = os.path.join(page_dir, cand_json)
+        if os.path.exists(cand_path):
+            loaded = load_json(cand_path, [])
+            if isinstance(loaded, list):
+                useful_links_list = loaded
+                break
+
+    links_cards_html = []
+    for item in useful_links_list:
+        if not isinstance(item, dict):
+            continue
+        l_name = str(item.get("name") or item.get("title") or "Link").strip()
+        l_url = str(item.get("link") or item.get("url") or item.get("href") or "").strip()
+        if not l_url or l_url == "#":
+            l_url = f"https://www.google.com/search?q={urllib.parse.quote_plus(l_name)}"
+        l_desc = str(item.get("description") or item.get("desc") or "").strip()
+        if not l_desc and l_url.startswith("http"):
+            l_desc = re.sub(r'^https?:\/\/(?:www\.)?', '', l_url).split('/')[0]
+
+        links_cards_html.append(f'''
+          <a href="{esc(l_url)}" target="_blank" rel="noopener noreferrer" class="more-link-card" title="{esc(l_name)}">
+            <div class="more-link-content">
+              <div class="more-link-icon-wrap" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                </svg>
+              </div>
+              <div class="more-link-text">
+                <span class="more-link-title">{esc(l_name)}</span>
+                <span class="more-link-desc">{esc(l_desc)}</span>
+              </div>
+            </div>
+            <div class="more-link-arrow" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline>
+              </svg>
+            </div>
+          </a>''')
+
+    links_body = (
+        f'<div class="more-links-grid">{"".join(links_cards_html)}</div>'
+        if links_cards_html
+        else f'<p class="more-empty-msg">No links listed yet. Add entries to <code>{esc(page_dir)}/usefullLinks.json</code>.</p>'
+    )
+    links_section_html = f'''
+      <section class="more-section">
+        <div class="more-section-header"><h2 class="more-section-title">{esc(links_title)}</h2></div>
+        {links_body}
+      </section>'''
+
+    downloads_dir = os.path.join(page_dir, "forDownload")
+    if not os.path.exists(downloads_dir):
+        downloads_dir = "forDownload"
+
+    def _fmt_size(b):
+        for unit in ("B", "KB", "MB"):
+            if b < 1024 or unit == "MB":
+                return f"{b} {unit}" if unit == "B" else f"{b:.1f} {unit}"
+            b /= 1024.0
+        return f"{b / 1024.0:.1f} GB"
+
+    download_cards_html = []
+    if os.path.exists(downloads_dir):
+        raw_files = sorted(
+            (f for f in os.listdir(downloads_dir) if not f.startswith(".") and os.path.isfile(os.path.join(downloads_dir, f))),
+            key=str.lower
+        )
+        for fname in raw_files:
+            fpath = os.path.join(downloads_dir, fname)
+            frel_path = fpath.replace("\\", "/")
+            fsize_str = _fmt_size(os.path.getsize(fpath))
+            ext = os.path.splitext(fname)[1].lower().lstrip(".")
+            badge_text = ext.upper() if ext else "FILE"
+            if ext in ("zip", "rar", "7z", "tar", "gz"):
+                badge_cls = "badge-zip"
+            elif ext in ("json", "js", "ts", "py"):
+                badge_cls = "badge-json"
+            elif ext in ("html", "htm", "css", "xml"):
+                badge_cls = "badge-html"
+            elif ext in ("jpg", "jpeg", "png", "webp", "gif", "svg", "bmp"):
+                badge_cls = "badge-img"
+            else:
+                badge_cls = "badge-other"
+
+            download_cards_html.append(f'''
+          <div class="more-download-card">
+            <div class="more-download-info-wrap">
+              <span class="more-file-badge {badge_cls}">{badge_text}</span>
+              <div class="more-download-text">
+                <span class="more-download-name" title="{esc(fname)}">{esc(fname)}</span>
+                <span class="more-download-meta">{fsize_str} &bull; {badge_text}</span>
+              </div>
+            </div>
+            <a href="{esc(frel_path)}" download="{esc(fname)}" class="btn btn-primary more-download-btn" title="Download {esc(fname)}">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>Download</span>
+            </a>
+          </div>''')
+
+    downloads_body = (
+        f'<div class="more-downloads-grid">{"".join(download_cards_html)}</div>'
+        if download_cards_html
+        else f'<p class="more-empty-msg">No files currently in <code>{esc(downloads_dir)}/</code>.</p>'
+    )
+    downloads_section_html = f'''
+      <section class="more-section">
+        <div class="more-section-header"><h2 class="more-section-title">{esc(downloads_title)}</h2></div>
+        {downloads_body}
+      </section>'''
+
+    seo_page_title = str(data.get("pageTitle", f"{page_title} | Prasannakumar T Bhat")).strip() or f"{page_title} | Prasannakumar T Bhat"
+    main_html = f'''      <div class="section-header">
+        <h1 class="section-title">{esc(page_title) or "&nbsp;"}</h1>
+        <p class="section-desc">{esc(page_desc) or "&nbsp;"}</p>
+      </div>
+{links_section_html}
+{downloads_section_html}'''
+
+    full_html = render_document(
+        page_title=seo_page_title,
+        meta_desc=page_desc,
+        seo_meta=get_seo_meta_tags(f"{page_id}.html", seo_page_title, page_desc, is_private=True),
+        nav_active="",
+        stylesheets=["main.css", "components.css", "responsive.css"],
+        main_html=main_html,
+        tracking_tags=tracking_tags,
+        body_scripts='  <script type="module" src="_engine/js/main.js"></script>',
+        bg_img_html=bg_img_html,
+        bg_overlay_html=bg_overlay_html,
+    )
+    with open(f"{page_id}.html", "w", encoding="utf-8") as f:
+        f.write(full_html)
+    print(f"  -> Updated {page_id}.html")
+
+    os.makedirs(page_id, exist_ok=True)
+    with open(f"{page_id}/index.html", "w", encoding="utf-8") as f:
+        f.write(f'''<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="0; url=../{page_id}.html">
+  <title>Redirecting to {esc(page_title)}...</title>
+</head>
+<body>
+  <script>window.location.replace("../{page_id}.html");</script>
+</body>
+</html>''')
+
+
+def generate_sitemap_and_robots():
+    """Generate robots.txt and sitemap.xml (excluding /more and /extra)."""
+    cfg = get_site_config()
+    site_url = str(cfg.get("siteUrl") or cfg.get("url") or "https://pbhat99.github.io").strip().rstrip('/')
     today = datetime.datetime.now().strftime("%Y-%m-%d")
 
-    # 1. robots.txt
     robots_content = f"""# robots.txt for Pra - Motions ({site_url})
 User-agent: *
 Allow: /
@@ -307,9 +2016,7 @@ Sitemap: {site_url}/sitemap.xml
 """
     with open("robots.txt", "w", encoding="utf-8") as f:
         f.write(robots_content)
-    print("  -> Generated robots.txt (Allows public pages, blocks /more and /extra, links sitemap)")
 
-    # 2. sitemap.xml (Public pages only, strictly excludes more and extra)
     public_entries = [
         ("", "1.0", "weekly"),
         ("vfx.html", "0.9", "weekly"),
@@ -318,2626 +2025,164 @@ Sitemap: {site_url}/sitemap.xml
         ("about.html", "0.8", "monthly"),
         ("blog.html", "0.8", "weekly"),
     ]
-
-    urls_xml = []
-    for rel_path, priority, freq in public_entries:
-        loc = f"{site_url}/{rel_path}" if rel_path else f"{site_url}/"
-        urls_xml.append(f"""  <url>
-    <loc>{loc}</loc>
+    urls_xml = "\n".join(f"""  <url>
+    <loc>{f'{site_url}/{rel}' if rel else f'{site_url}/'}</loc>
     <lastmod>{today}</lastmod>
     <changefreq>{freq}</changefreq>
-    <priority>{priority}</priority>
-  </url>""")
+    <priority>{prio}</priority>
+  </url>""" for rel, prio, freq in public_entries)
 
-    urls_joined = "\n".join(urls_xml)
-    sitemap_content = f"""<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-{urls_joined}
-</urlset>
-"""
     with open("sitemap.xml", "w", encoding="utf-8") as f:
-        f.write(sitemap_content)
-    print("  -> Generated sitemap.xml (All 6 public pages listed, /more and /extra excluded)")
+        f.write(f'''<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+{urls_xml}
+</urlset>
+''')
+    print("  -> Updated robots.txt and sitemap.xml")
 
-def hex_to_rgba(hex_str, opacity_val=100):
-    """Converts a hex string like #0e1733 and opacity (0-100 or 0.0-1.0) to rgba(...)"""
-    if not hex_str:
-        return "rgba(14, 23, 51, 0.85)"
-    s = hex_str.strip().lstrip('#')
-    if len(s) == 3:
-        s = ''.join([c*2 for c in s])
-    try:
-        r = int(s[0:2], 16)
-        g = int(s[2:4], 16)
-        b = int(s[4:6], 16)
-    except Exception:
-        return "rgba(14, 23, 51, 0.85)"
-    try:
-        op = float(opacity_val)
-        if op > 1.0:
-            op = op / 100.0
-        op = max(0.0, min(1.0, op))
-    except Exception:
-        op = 0.85
-    return f"rgba({r}, {g}, {b}, {op:.2f})"
 
-def generate_nav_html(active_page="home"):
-    """
-    Renders the unified transparent header with clean 6-item navigation (VFX instead of VFX Works, NO contact button).
-    """
-    nav_items = [
-        ("index.html", "home", "Home"),
-        ("vfx.html", "vfx", "VFX"),
-        ("ai-comfy.html", "ai-comfy", "AI / Comfy"),
-        ("photography.html", "photography", "Photography"),
-        ("about.html", "about", "About"),
-        ("blog.html", "blog", "Blog"),
-    ]
+def _classify_raster_limit(rel_path):
+    """Return (category_label, max_warn_dim, max_warn_kb, resize_target_dim) keeping 4K backgrounds & panos high-res."""
+    norm = rel_path.replace("\\", "/").lower()
+    fname = os.path.basename(norm)
+    if fname.startswith("background"):
+        return ("4K Background", 4096, 1500, 3840)
+    if "/04_photography/panos/" in norm:
+        return ("360 Panorama", 6144, 2500, 4096)
+    if "/04_photography/photos/" in norm:
+        return ("Photo Still", 3000, 1000, 2400)
+    return ("Card / Tile Asset", 1600, 300, 1400)
 
-    links_html = []
-    for href, key, label in nav_items:
-        active_cls = ' class="active"' if key == active_page else ''
-        links_html.append(f'<li><a href="{href}"{active_cls}>{label}</a></li>')
 
-    return f'''  <header class="site-header">
-    <div class="nav-wrapper">
-      <a href="index.html" class="brand-logo">
-        <img src="_engine/images/logo.png" alt="Pra Motions Logo" width="34" height="34" style="border-radius: 6px;">
-        <span>Pra - <span class="brand-badge">Motions</span></span>
-      </a>
-
-      <button class="mobile-nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
-        <span></span><span></span><span></span>
-      </button>
-
-      <ul class="nav-links">
-        {"".join(links_html)}
-      </ul>
-    </div>
-  </header>'''
-
-BACK_TO_TOP_HTML = '''  <!-- Jump to Top Floating Button (Visible past 1 screen height) -->
-  <button id="back-to-top" class="back-to-top" aria-label="Jump to top" title="Jump to top">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <polyline points="18 15 12 9 6 15"></polyline>
-    </svg>
-  </button>'''
-
-FONTS_HTML = '''  <!-- Local Pre-Compressed WOFF2 Typography (Zero Network Roundtrips) -->
-  <link rel="stylesheet" href="_engine/css/fonts.css">
-  <!-- Fallback Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,700&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">'''
-
-def build_resource_listing_page(page_id, dir_candidates, default_title, default_desc, ga_head_tag, ga_body_tag):
-    """
-    Consolidated generator for unlisted resource pages (e.g. more.html, extra.html).
-    Parses links (usefullLinks.json) and download files (forDownload/), generating
-    a responsive, modern utility dashboard with direct redirects.
-    """
-    page_dir = None
-    for cand in dir_candidates:
-        if os.path.exists(cand):
-            page_dir = cand
-            break
-    if not page_dir:
-        page_dir = dir_candidates[0]
-
-    bg_img_html, bg_overlay_html, _, _ = get_page_background_and_overlay(page_dir)
-
-    data = {
-        "title": default_title,
-        "description": default_desc,
-        "linksSectionTitle": "Useful Links",
-        "downloadsSectionTitle": "Downloads",
-        "overlayOpacity": 75
-    }
-
-    content_json = os.path.join(page_dir, "content.json")
-    if os.path.exists(content_json):
-        try:
-            with open(content_json, "r", encoding="utf-8") as f:
-                data.update(json.load(f))
-        except Exception:
-            pass
-
-    page_title = data.get("title", default_title)
-    page_desc = data.get("description", "")
-    title_inner = page_title.strip() if page_title else '&nbsp;'
-    desc_inner = page_desc.strip() if page_desc else '&nbsp;'
-    links_section_title = data.get("linksSectionTitle", "Useful Links").strip()
-    downloads_section_title = data.get("downloadsSectionTitle", "Downloads").strip()
-
-    # 1. Parse Useful Links (usefullLinks.json, usefulLinks.json, links.json)
-    useful_links_list = []
-    for cand_json in ["usefullLinks.json", "usefulLinks.json", "links.json"]:
-        cand_path = os.path.join(page_dir, cand_json)
-        if os.path.exists(cand_path):
-            try:
-                with open(cand_path, "r", encoding="utf-8") as f:
-                    d = json.load(f)
-                    if isinstance(d, list):
-                        useful_links_list = d
-                        break
-            except Exception as e:
-                print(f"Notice reading {cand_path}:", e)
-
-    links_cards_html = []
-    for item in useful_links_list:
-        if not isinstance(item, dict):
-            continue
-        l_name = (item.get("name") or item.get("title") or "Link").strip()
-        l_url = (item.get("link") or item.get("url") or item.get("href") or "").strip()
-        if not l_url or l_url == "#":
-            l_url = f"https://www.google.com/search?q={urllib.parse.quote_plus(l_name)}"
-        l_desc = (item.get("description") or item.get("desc") or "").strip()
-        if not l_desc and l_url.startswith("http"):
-            domain_part = re.sub(r'^https?:\/\/(?:www\.)?', '', l_url).split('/')[0]
-            l_desc = domain_part
-
-        links_cards_html.append(f'''
-          <a href="{l_url}" target="_blank" rel="noopener noreferrer" class="more-link-card" title="{l_name}">
-            <div class="more-link-content">
-              <div class="more-link-icon-wrap" aria-hidden="true">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-                </svg>
-              </div>
-              <div class="more-link-text">
-                <span class="more-link-title">{l_name}</span>
-                <span class="more-link-desc">{l_desc}</span>
-              </div>
-            </div>
-            <div class="more-link-arrow" aria-hidden="true">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="7" y1="17" x2="17" y2="7"></line>
-                <polyline points="7 7 17 7 17 17"></polyline>
-              </svg>
-            </div>
-          </a>''')
-
-    if links_cards_html:
-        links_section_html = f'''
-      <section class="more-section">
-        <div class="more-section-header">
-          <h2 class="more-section-title">
-            <span>{links_section_title}</span>
-          </h2>
-        </div>
-        <div class="more-links-grid">
-          {"".join(links_cards_html)}
-        </div>
-      </section>'''
-    else:
-        links_section_html = f'''
-      <section class="more-section">
-        <div class="more-section-header">
-          <h2 class="more-section-title">{links_section_title}</h2>
-        </div>
-        <p class="more-empty-msg">No links listed yet. Add entries to <code>{page_dir}/usefullLinks.json</code>.</p>
-      </section>'''
-
-    # 2. Parse Files for Download (forDownload/ folder)
-    downloads_dir = os.path.join(page_dir, "forDownload")
-    if not os.path.exists(downloads_dir):
-        downloads_dir = "forDownload"
-
-    download_cards_html = []
-    if os.path.exists(downloads_dir):
-        raw_files = [f for f in os.listdir(downloads_dir) if not f.startswith(".") and os.path.isfile(os.path.join(downloads_dir, f))]
-        raw_files.sort(key=lambda s: s.lower())
-
-        def _fmt_size(b):
-            if b < 1024:
-                return f"{b} B"
-            elif b < 1024 * 1024:
-                return f"{b / 1024:.1f} KB"
-            elif b < 1024 * 1024 * 1024:
-                return f"{b / (1024 * 1024):.1f} MB"
-            else:
-                return f"{b / (1024 * 1024 * 1024):.1f} GB"
-
-        for fname in raw_files:
-            fpath = os.path.join(downloads_dir, fname)
-            frel_path = fpath.replace("\\", "/")
-            fsize_bytes = os.path.getsize(fpath)
-            fsize_str = _fmt_size(fsize_bytes)
-            ext = os.path.splitext(fname)[1].lower().lstrip(".")
-            badge_text = ext.upper() if ext else "FILE"
-
-            badge_cls = "badge-other"
-            if ext in ["zip", "rar", "7z", "tar", "gz"]:
-                badge_cls = "badge-zip"
-            elif ext in ["json", "js", "ts", "py"]:
-                badge_cls = "badge-json"
-            elif ext in ["html", "htm", "css", "xml"]:
-                badge_cls = "badge-html"
-            elif ext in ["jpg", "jpeg", "png", "webp", "gif", "svg", "bmp"]:
-                badge_cls = "badge-img"
-
-            download_cards_html.append(f'''
-          <div class="more-download-card">
-            <div class="more-download-info-wrap">
-              <span class="more-file-badge {badge_cls}">{badge_text}</span>
-              <div class="more-download-text">
-                <span class="more-download-name" title="{fname}">{fname}</span>
-                <span class="more-download-meta">{fsize_str} &bull; {badge_text}</span>
-              </div>
-            </div>
-            <a href="{frel_path}" download="{fname}" class="btn btn-primary more-download-btn" title="Download {fname}">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="7 10 12 15 17 10"></polyline>
-                <line x1="12" y1="15" x2="12" y2="3"></line>
-              </svg>
-              <span>Download</span>
-            </a>
-          </div>''')
-
-    if download_cards_html:
-        downloads_section_html = f'''
-      <section class="more-section">
-        <div class="more-section-header">
-          <h2 class="more-section-title">
-            <span>{downloads_section_title}</span>
-          </h2>
-        </div>
-        <div class="more-downloads-grid">
-          {"".join(download_cards_html)}
-        </div>
-      </section>'''
-    else:
-        downloads_section_html = f'''
-      <section class="more-section">
-        <div class="more-section-header">
-          <h2 class="more-section-title">{downloads_section_title}</h2>
-        </div>
-        <p class="more-empty-msg">No files currently in <code>{downloads_dir}/</code>. Upload any files here to list them for download.</p>
-      </section>'''
-
-    seo_page_title = data.get("pageTitle", f"{page_title} | Prasannakumar T Bhat").strip() or f"{page_title} | Prasannakumar T Bhat"
-    seo_meta = get_seo_meta_tags(f"{page_id}.html", seo_page_title, page_desc, is_private=True)
-
-    full_html = f'''<!DOCTYPE html>
-<html lang="en">
-<head>
-{ga_head_tag}
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{seo_page_title}</title>
-  <meta name="description" content="{page_desc}">
-{seo_meta}
-  <link rel="icon" type="image/png" href="_engine/images/logo.png">
-{FONTS_HTML}
-  <link rel="stylesheet" href="_engine/css/main.css">
-  <link rel="stylesheet" href="_engine/css/components.css">
-  <link rel="stylesheet" href="_engine/css/responsive.css">
-</head>
-<body>
-{ga_body_tag}
-  {bg_img_html}
-  {bg_overlay_html}
-
-{generate_nav_html("")}
-
-  <main style="padding-top: clamp(84px, 7vw, 110px); padding-bottom: clamp(36px, 5vw, 64px);">
-    <div class="container-wide">
-      
-      <!-- Page Header -->
-      <div class="section-header">
-        <h1 class="section-title">{title_inner}</h1>
-        <p class="section-desc">{desc_inner}</p>
-      </div>
-
-      <!-- Useful Links Section -->
-      {links_section_html}
-
-      <!-- Downloads Section -->
-      {downloads_section_html}
-
-    </div>
-  </main>
-
-  <script type="module" src="_engine/js/main.js"></script>
-
-{BACK_TO_TOP_HTML}
-</body>
-</html>
-'''
-    with open(f"{page_id}.html", "w", encoding="utf-8") as f:
-        f.write(full_html)
-    print(f"  -> Updated {page_id}.html (Unlisted Page: Useful Links & forDownload Assets)")
-
-    # Also generate {page_id}/index.html meta-redirect so /{page_id} or /{page_id}/ works everywhere
-    os.makedirs(page_id, exist_ok=True)
-    redirect_html = f'''<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=../{page_id}.html">
-  <title>Redirecting to {page_title}...</title>
-</head>
-<body>
-  <script>window.location.replace("../{page_id}.html");</script>
-</body>
-</html>'''
-    with open(f"{page_id}/index.html", "w", encoding="utf-8") as f:
-        f.write(redirect_html)
-
-def convert_all_pages_images_to_webp(root_dir="pages"):
-    """
-    Site-wide WebP conversion:
-    Scans root_dir (default 'pages/').
-    Converts any non-webp source image (.jpg, .jpeg, .png, .avif, .gif, .bmp, .tiff)
-    to optimized .webp:
-    - Maintains original dimensions.
-    - Preserves alpha transparency for RGBA/palette images.
-    - Quality: 90 for alpha, 85 for RGB.
-    - Replaces the original image file (removes source file).
-    - Automatically updates references in .json and .md files under root_dir.
-    """
-    if not os.path.exists(root_dir):
-        return
-
+def check_oversized_raster_assets(root_dir="pages", prompt_resize=False):
+    """Warn on oversized raster assets in pages/ and optionally prompt user to auto-resize."""
     from PIL import Image
-    valid_exts = {'.jpg', '.jpeg', '.jfif', '.png', '.avif', '.gif', '.bmp', '.tiff'}
-    replacements = {}
 
-    # 1. Walk root_dir and convert non-webp images
-    for current_root, dirs, files in os.walk(root_dir):
-        # Preserve original files in forDownload directories
+    if not os.path.exists(root_dir):
+        return False
+
+    raster_exts = DISPLAY_IMG_EXTS | VALID_IMG_EXTS
+    flagged = []
+    for current_root, _, files in os.walk(root_dir):
         if "fordownload" in current_root.replace("\\", "/").lower():
             continue
-        for f in files:
-            if f.startswith('.'):
+        for f in sorted(files):
+            if f.startswith(".") or os.path.splitext(f)[1].lower() not in raster_exts:
                 continue
-            base, ext = os.path.splitext(f)
-            ext_lower = ext.lower()
-            if ext_lower in valid_exts:
-                src_path = os.path.join(current_root, f)
-                webp_path = os.path.join(current_root, f"{base}.webp")
-                try:
-                    with Image.open(src_path) as im:
-                        if im.mode in ('RGBA', 'LA') or (im.mode == 'P' and 'transparency' in im.info):
-                            im_conv = im.convert('RGBA')
-                            im_conv.save(webp_path, 'WEBP', quality=90, method=6)
-                        else:
-                            im_conv = im.convert('RGB')
-                            im_conv.save(webp_path, 'WEBP', quality=85, method=6)
-                    
-                    if os.path.exists(src_path):
-                        try:
-                            os.remove(src_path)
-                        except OSError as rm_err:
-                            if os.path.exists(src_path):
-                                print(f"  [Warning] Could not remove {src_path}: {rm_err}")
-                    
-                    replacements[f] = f"{base}.webp"
-                    print(f"  [Site WebP] Converted & replaced: {src_path} -> {base}.webp")
-                except Exception as err:
-                    print(f"  [WebP Error] {src_path}: {err}")
+            path = os.path.join(current_root, f)
+            rel_path = path.replace("\\", "/")
+            size_kb = os.path.getsize(path) / 1024.0
+            try:
+                with Image.open(path) as im:
+                    w, h = im.size
+            except Exception:
+                continue
 
-    # 2. Update references in .json and .md files under root_dir
-    if replacements:
-        for current_root, dirs, files in os.walk(root_dir):
-            for f in files:
-                if f.lower().endswith(('.json', '.md')):
-                    file_path = os.path.join(current_root, f)
-                    try:
-                        with open(file_path, "r", encoding="utf-8") as rf:
-                            content = rf.read()
-                        new_content = content
-                        for old_name, new_name in replacements.items():
-                            if old_name in new_content:
-                                new_content = new_content.replace(old_name, new_name)
-                        if new_content != content:
-                            with open(file_path, "w", encoding="utf-8") as wf:
-                                wf.write(new_content)
-                            print(f"  [Ref Update] Updated references in {file_path}")
-                    except Exception as ref_err:
-                        print(f"  [Ref Update Error] {file_path}: {ref_err}")
+            label, max_dim, max_kb, target_dim = _classify_raster_limit(rel_path)
+            if (max(w, h) > max_dim and size_kb >= 50.0) or size_kb > max_kb:
+                flagged.append((rel_path, label, w, h, size_kb, max_dim, max_kb, target_dim))
 
-def sync_all(convert_webp=False):
-    print("=== Syncing site (Site-wide WebP, VFX company structure, Proportional Backgrounds) ===")
+    if not flagged:
+        return False
+
+    print("\n" + "=" * 72)
+    print(f"  [WARNING] Oversized Raster Assets Detected ({len(flagged)} file{'s' if len(flagged) != 1 else ''})")
+    print("  (4K page backgrounds & 360 panoramas are intentionally kept high-res)")
+    print("=" * 72)
+    for i, (rel_path, label, w, h, size_kb, max_dim, max_kb, target_dim) in enumerate(flagged, 1):
+        print(f"  {i}. {rel_path}")
+        print(f"     {label}: {w}x{h} px, {size_kb:.1f} KB (limit: {max_dim} px / {max_kb} KB)")
+    print("=" * 72)
+
+    if not (prompt_resize and sys.stdin.isatty()):
+        return False
+
+    try:
+        choice = input("\nResize these assets proportionally now? [y] Auto-resize  [N] Skip (manual)  [q] Abort: ").strip().lower()
+    except EOFError:
+        return False
+
+    if choice in ("q", "quit", "abort"):
+        print("\n[ABORTED] Stopped so oversized assets can be resized manually.")
+        sys.exit(1)
+
+    if choice not in ("y", "yes"):
+        print("  -> Skipping automatic resize; keeping existing files.")
+        return False
+
+    resized_any = False
+    for rel_path, label, w, h, size_kb, _, _, target_dim in flagged:
+        try:
+            with Image.open(rel_path) as im:
+                has_alpha = im.mode in ('RGBA', 'LA') or (im.mode == 'P' and 'transparency' in im.info)
+                cur_w, cur_h = im.size
+                out_im = im
+                if max(cur_w, cur_h) > target_dim:
+                    scale = target_dim / float(max(cur_w, cur_h))
+                    out_im = im.resize((max(1, int(round(cur_w * scale))), max(1, int(round(cur_h * scale)))), Image.Resampling.LANCZOS)
+                out_im = out_im.convert('RGBA' if has_alpha else 'RGB')
+                out_im.save(rel_path, 'WEBP', quality=(88 if has_alpha else 84), method=6)
+                new_kb = os.path.getsize(rel_path) / 1024.0
+                new_w, new_h = out_im.size
+                print(f"  [Resized] {rel_path}: {cur_w}x{cur_h} ({size_kb:.1f} KB) -> {new_w}x{new_h} ({new_kb:.1f} KB)")
+                resized_any = True
+        except Exception as err:
+            print(f"  [Resize Error] {rel_path}: {err}")
+
+    return resized_any
+
+
+def sync_all(convert_webp=False, generate_thumbs=True, check_assets=False, prompt_resize=False):
+    global _SITE_CONFIG_CACHE
+    _SITE_CONFIG_CACHE = None
+
+    print("=== Syncing site ===")
     if convert_webp:
         print("  -> [WebP Optimization] Converting source images across pages/ to WebP...")
         convert_all_pages_images_to_webp("pages")
 
-    ga_head_tag, ga_body_tag = get_tracking_tags()
-    ga_tag = ga_head_tag
-
-    json_ld_person = '''  <!-- Structured Data (JSON-LD) for Google Rich Results -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Person",
-    "name": "Prasannakumar T Bhat",
-    "jobTitle": "Visual Effects Compositor",
-    "url": "https://pbhat99.github.io",
-    "image": "https://pbhat99.github.io/_engine/images/logo.png",
-    "sameAs": [
-      "https://github.com/pbhat99",
-      "https://www.imdb.com/name/nm9329447/",
-      "https://www.linkedin.com/in/pbhat99",
-      "https://vimeo.com/662339422"
-    ]
-  }
-  </script>'''
-
-    # --------------------------------------------------------------------------
-    # 1. SYNC HOME PAGE (pages/01_home)
-    # --------------------------------------------------------------------------
-    home_dir = "pages/01_home"
-    content_file = os.path.join(home_dir, "content.json")
-    
-    home_data = {
-        "designation": "Senior Visual Effects Compositor @ DNEG",
-        "tagline": "CG is not just faking, its adding beautiful layers of lie on the ugly truth.",
-        "overlayOpacity": 60
-    }
-    if os.path.exists(content_file):
-        try:
-            with open(content_file, "r", encoding="utf-8") as f:
-                home_data.update(json.load(f))
-        except Exception as e:
-            print(f"Notice reading {content_file}: {e}")
-
-    fixed_name = "Prasannakumar T Bhat"
-    page_title = home_data.get("pageTitle", fixed_name).strip() or fixed_name
-    designation = home_data.get("designation", "").strip()
-    tagline = home_data.get("tagline", "").strip()
-    wipe_angle = str(home_data.get("wipeAngle", home_data.get("wipeFrom", "45"))).strip() or "45"
-
-    _, _, _, home_alpha = get_page_background_and_overlay(home_dir)
-
-    home_bgs = get_home_background_list(home_dir)
-    if not home_bgs:
-        _, _, fallback_bg, _ = get_page_background_and_overlay(home_dir)
-        if fallback_bg:
-            home_bgs = [(fallback_bg.split('?')[0], fallback_bg, 'image')]
-
-    slides_html_list = []
-    for idx, (bg_path, bg_url, media_type) in enumerate(home_bgs):
-        if media_type == 'video':
-            ext_name = os.path.splitext(bg_path)[1].lower().replace('.', '')
-            mime_type = f"video/{ext_name}"
-            if idx == 0:
-                slides_html_list.append(
-                    f'      <div class="home-bg-slide is-active" data-index="{idx}" data-type="video">\n'
-                    f'        <video class="home-bg-slide-video" autoplay loop muted playsinline preload="metadata">\n'
-                    f'          <source src="{bg_url}" type="{mime_type}">\n'
-                    f'        </video>\n'
-                    f'      </div>'
-                )
-            else:
-                slides_html_list.append(
-                    f'      <div class="home-bg-slide" data-index="{idx}" data-type="video" data-video-src="{bg_url}" data-video-type="{mime_type}">\n'
-                    f'        <video class="home-bg-slide-video" loop muted playsinline preload="none"></video>\n'
-                    f'      </div>'
-                )
-        else:
-            if idx == 0:
-                slides_html_list.append(
-                    f'      <div class="home-bg-slide is-active" data-index="{idx}" data-type="image">\n'
-                    f'        <div class="home-bg-slide-inner" style="background-image: url(\'{bg_url}\');"></div>\n'
-                    f'      </div>'
-                )
-            else:
-                slides_html_list.append(
-                    f'      <div class="home-bg-slide" data-index="{idx}" data-type="image" data-bg="{bg_url}">\n'
-                    f'        <div class="home-bg-slide-inner"></div>\n'
-                    f'      </div>'
-                )
-
-    home_bg_slider_html = (
-        '    <!-- Background Slider & Directional Wipe Layer -->\n'
-        f'    <div class="home-bg-slider" id="home-bg-slider" data-wipe-angle="{wipe_angle}" data-wipe-from="{wipe_angle}" aria-hidden="true">\n'
-        + "\n".join(slides_html_list) + "\n"
-        '    </div>'
-    ) if home_bgs else ''
-
-    home_bg_overlay_html = f'<div class="home-bg-overlay" style="opacity: {home_alpha};"></div>' if home_bgs else ''
-    preload_bg_html = f'  <link rel="preload" as="image" href="{home_bgs[0][1]}">' if home_bgs and home_bgs[0][2] == 'image' else ''
-
-    designation_html = f'<p class="hero-designation-plain">{designation}</p>' if designation else ""
-    tagline_html = f'<p class="hero-tagline-plain">"{tagline}"</p>' if tagline else ""
-
-    home_desc = f"{fixed_name} - {designation}. {tagline}".strip()
-    home_seo_meta = get_seo_meta_tags("", page_title, home_desc)
-
-    index_html = f'''<!DOCTYPE html>
-<html lang="en">
-<head>
-{ga_head_tag}
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{page_title}</title>
-  <meta name="description" content="{fixed_name} - {designation}">
-{home_seo_meta}
-{preload_bg_html}
-{json_ld_person}
-  <link rel="icon" type="image/png" href="_engine/images/logo.png">
-{FONTS_HTML}
-  
-  <link rel="stylesheet" href="_engine/css/main.css">
-  <link rel="stylesheet" href="_engine/css/components.css">
-  <link rel="stylesheet" href="_engine/css/glightbox.min.css">
-  <link rel="stylesheet" href="_engine/css/responsive.css">
-  
-  <style>
-    /* Full-Page Fixed Non-Scrollable Viewport */
-    html, body {{
-      margin: 0;
-      padding: 0;
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
-      position: fixed;
-      inset: 0;
-      background-color: var(--bg-primary);
-      font-family: 'Ubuntu', sans-serif;
-    }}
-
-    /* Seamless Navigation */
-    .site-header {{
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 100;
-      background: transparent !important;
-      border: none !important;
-      box-shadow: none !important;
-    }}
-
-    /* Auto-hide & animation on desktop only (screen > 860px) */
-    @media (min-width: 861px) {{
-      .site-header {{
-        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
-        will-change: transform, opacity;
-      }}
-
-      .site-header.header-hidden {{
-        transform: translateY(-100%);
-        opacity: 0;
-        pointer-events: none;
-      }}
-
-      .site-header:focus-within {{
-        transform: translateY(0) !important;
-        opacity: 1 !important;
-        pointer-events: auto !important;
-      }}
-    }}
-
-    .home-fullscreen-container {{
-      position: fixed;
-      inset: 0;
-      width: 100vw;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding-inline: 24px;
-      background-color: var(--bg-primary);
-      overflow: hidden;
-    }}
-
-    /* Background Slider & Directional Wipe Layer */
-    .home-bg-slider {{
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 0;
-      overflow: hidden;
-      pointer-events: none;
-    }}
-
-    .home-bg-slide {{
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      visibility: hidden;
-      pointer-events: none;
-      z-index: 0;
-      will-change: clip-path;
-    }}
-
-    .home-bg-slide.is-active {{
-      visibility: visible;
-      z-index: 1;
-    }}
-
-    .home-bg-slide-inner {{
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      background-size: cover;
-      background-position: center center;
-      background-repeat: no-repeat;
-    }}
-
-    .home-bg-slide-video {{
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: center center;
-      pointer-events: none;
-    }}
-
-    /* Single Controlled Fixed Overlay Layer across all images & videos */
-    .home-bg-overlay {{
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      background-color: var(--bg-primary);
-      z-index: 1;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-    }}
-
-    #bg-canvas {{
-      position: fixed;
-      inset: 0;
-      width: 100vw;
-      height: 100vh;
-      pointer-events: none;
-      z-index: 2;
-    }}
-
-    /* Center Stage: Stacked 3 Lines, Perfectly Centered */
-    .home-center-stage {{
-      position: relative;
-      z-index: 10;
-      max-width: 900px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      gap: 16px;
-    }}
-
-    /* 1st Line: Fixed Name */
-    .hero-name-main {{
-      font-family: 'Ubuntu', sans-serif;
-      font-size: clamp(2.4rem, 5.5vw, 4.4rem);
-      font-weight: 700;
-      color: var(--text-main);
-      letter-spacing: -0.02em;
-      line-height: 1.1;
-      margin: 0;
-      text-shadow: 0 0 45px rgba(249, 134, 3, 0.25);
-    }}
-
-    /* 2nd Line: Designation (Pure text, no box or outline) */
-    .hero-designation-plain {{
-      font-family: 'Ubuntu', sans-serif;
-      font-size: clamp(1.05rem, 2vw, 1.45rem);
-      font-weight: 500;
-      color: var(--accent-primary);
-      letter-spacing: 0.05em;
-      margin: 0;
-      line-height: 1.3;
-    }}
-
-    /* 3rd Line: Tagline (Pure text, off-white italic) */
-    .hero-tagline-plain {{
-      font-family: 'Ubuntu', sans-serif;
-      font-size: clamp(0.95rem, 1.6vw, 1.25rem);
-      font-weight: 400;
-      font-style: italic;
-      color: var(--text-muted);
-      max-width: 740px;
-      margin: 0;
-      line-height: 1.5;
-    }}
-
-    .hero-about-wrap {{
-      margin-top: 24px;
-    }}
-
-    .btn-about {{
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 11px 40px;
-      font-size: 0.95rem;
-      font-weight: 500;
-      font-family: 'Ubuntu', sans-serif;
-      border-radius: var(--radius-full);
-      background: var(--accent-primary);
-      color: #ffffff;
-      box-shadow: 0 4px 18px rgba(249, 134, 3, 0.4);
-      transition: all var(--transition-fast);
-      letter-spacing: 0.02em;
-    }}
-
-    @media (max-width: 768px) {{
-      .home-fullscreen-container {{
-        padding-inline: 14px;
-        width: 100%;
-        max-width: 100%;
-        overflow-x: hidden;
-      }}
-
-      .home-center-stage {{
-        max-width: 92vw !important;
-        width: 92vw !important;
-        padding-inline: 8px !important;
-        gap: 8px !important;
-      }}
-
-      /* Heading: Half size for mobile */
-      .hero-name-main {{
-        font-size: clamp(1.2rem, 5.5vw, 1.55rem) !important;
-        line-height: 1.15 !important;
-        word-break: break-word !important;
-        overflow-wrap: break-word !important;
-        white-space: normal !important;
-      }}
-
-      /* Subheading Designation: Half size for mobile */
-      .hero-designation-plain {{
-        font-size: clamp(0.7rem, 2.6vw, 0.8rem) !important;
-        line-height: 1.3 !important;
-        word-break: break-word !important;
-        overflow-wrap: break-word !important;
-      }}
-
-      /* Subheading Tagline: Half size and wrap into 2 or 3 lines */
-      .hero-tagline-plain {{
-        font-size: clamp(0.65rem, 2.3vw, 0.74rem) !important;
-        line-height: 1.45 !important;
-        max-width: 86vw !important;
-        margin-inline: auto !important;
-        word-break: break-word !important;
-        overflow-wrap: break-word !important;
-        white-space: normal !important;
-      }}
-
-      .hero-about-wrap {{
-        margin-top: 14px !important;
-      }}
-
-      .btn-about {{
-        padding: 7px 26px !important;
-        font-size: 0.78rem !important;
-      }}
-    }}
-
-    .btn-about:hover {{
-      background: var(--accent-hover);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 25px rgba(249, 134, 3, 0.55);
-    }}
-  </style>
-</head>
-<body>
-{ga_body_tag}
-
-{generate_nav_html("home")}
-
-  <!-- Full-Screen Interactive Viewport -->
-  <main class="home-fullscreen-container">
-{home_bg_slider_html}
-    {home_bg_overlay_html}
-
-    <!-- Interactive Canvas Background -->
-    <canvas id="bg-canvas"></canvas>
-
-    <!-- Center Stage: 3 Lines Centered + About Button -->
-    <div class="home-center-stage">
-      <h1 class="hero-name-main">{fixed_name}</h1>
-      {designation_html}
-      {tagline_html}
-
-      <div class="hero-about-wrap">
-        <a href="about-me.html" class="btn-about">About</a>
-      </div>
-    </div>
-  </main>
-
-  <script type="module">
-    import {{ initInteractiveBackground }} from './_engine/js/interactive-bg.js';
-    import {{ initHomeBackgroundSlider }} from './_engine/js/home-bg-slider.js';
-    import './_engine/js/main.js';
-
-    initInteractiveBackground('bg-canvas');
-    initHomeBackgroundSlider('home-bg-slider');
-
-    // Live sync overlay opacity if content.json is edited
-    fetch('pages/01_home/content.json')
-      .then(r => r.json())
-      .then(d => {{
-        const raw = d.overlayOpacity ?? d.bgOverlayOpacity ?? d.opacity;
-        if (raw !== undefined) {{
-          let num = parseFloat(raw);
-          if (num > 1) num = num / 100;
-          const overlay = document.querySelector('.home-bg-overlay');
-          if (overlay) overlay.style.opacity = Math.max(0, Math.min(1, num));
-        }}
-      }}).catch(() => {{}});
-  </script>
-
-{BACK_TO_TOP_HTML}
-</body>
-</html>
-'''
-    with open("index.html", "w", encoding="utf-8") as f:
-        f.write(index_html)
-    print("  -> Updated index.html (Nav: VFX, Proportional Background)")
-
-    # --------------------------------------------------------------------------
-    # 2. SYNC VFX PAGE (pages/02_VFX -> vfx.html)
-    # --------------------------------------------------------------------------
-    vfx_dir = "pages/02_VFX"
-    content_file = os.path.join(vfx_dir, "content.json")
-
-    vfx_content = {
-        "title": "Visual Effects & Compositing",
-        "description": "Production shots, feature film breakdowns, and commercials across world-class visual effects studios."
-    }
-    if os.path.exists(content_file):
-        try:
-            with open(content_file, "r", encoding="utf-8") as f:
-                vfx_content.update(json.load(f))
-        except Exception:
-            pass
-
-    vfx_title = vfx_content.get('title', 'Visual Effects & Compositing')
-    vfx_desc = vfx_content.get('description', '')
-    vfx_title_inner = vfx_title.strip() if vfx_title else '&nbsp;'
-    vfx_desc_inner = vfx_desc.strip() if vfx_desc else '&nbsp;'
-
-    vfx_bg_img_html, vfx_bg_overlay_html, _, _ = get_page_background_and_overlay(vfx_dir)
-
-    company_subdirs = sorted([d for d in os.listdir(vfx_dir) if os.path.isdir(os.path.join(vfx_dir, d)) and not d.startswith('.')], reverse=True) if os.path.exists(vfx_dir) else []
-    
-    company_sections_html = []
-    total_projects_count = 0
-    all_categories = set()
-    valid_img_exts = {'.jpg', '.jpeg', '.png', '.webp', '.avif', '.gif'}
-
-    for comp_folder in company_subdirs:
-        comp_path = os.path.join(vfx_dir, comp_folder)
-        comp_slug = slugify(comp_folder)
-
-        # 1. Company Info
-        comp_info = {
-            "companyName": format_title_from_filename(comp_folder),
-            "period": "Aug-2021 to Present",
-            "designation": "",
-            "description": "",
-            "color": "#0e1733",
-            "cardBgColor": "#131e42",
-            "cardBgOpacity": 85,
-            "link": ""
-        }
-        comp_info_file = os.path.join(comp_path, "companyInfo.json")
-        if not os.path.exists(comp_info_file):
-            comp_info_file = os.path.join(comp_path, "company.json")
-        if os.path.exists(comp_info_file):
-            try:
-                with open(comp_info_file, "r", encoding="utf-8") as f:
-                    comp_info.update(json.load(f))
-            except Exception:
-                pass
-
-        company_name = comp_info.get("companyName") or comp_info.get("name") or format_title_from_filename(comp_folder)
-        comp_period = comp_info.get("period", "")
-        comp_designation = comp_info.get("designation", "")
-        comp_description = comp_info.get("description", "")
-        comp_color = comp_info.get("color", "#0e1733")
-        comp_link = (comp_info.get("link") or "").strip()
-        if not comp_link or comp_link == "#":
-            comp_link = f"https://www.google.com/search?q={urllib.parse.quote_plus(company_name)}"
-        card_bg_color = comp_info.get("cardBgColor", "#131e42")
-        card_bg_opacity = comp_info.get("cardBgOpacity", 85)
-        tile_bg_rgba = hex_to_rgba(card_bg_color, card_bg_opacity)
-
-        # 2. Company Banner Logo (right edge fit)
-        banner_path = None
-        for f in os.listdir(comp_path):
-            if os.path.isfile(os.path.join(comp_path, f)) and os.path.splitext(f)[1].lower() in valid_img_exts:
-                if 'banner' in f.lower() or 'logo' in f.lower():
-                    banner_path = f"{comp_path}/{f}".replace("\\", "/")
-                    break
-
-        # 3. Project Folders inside Company
-        proj_subdirs = [d for d in os.listdir(comp_path) if os.path.isdir(os.path.join(comp_path, d)) and not d.startswith('.')]
-        
-        # Sort project folders in descending order as requested
-        proj_subdirs.sort(reverse=True)
-
-        tiles_html = []
-        for p_folder in proj_subdirs:
-            p_folder_path = os.path.join(comp_path, p_folder)
-            
-            # Find project image (projectImage.jpg / thumb.* / first image)
-            proj_img_path = None
-            for f in os.listdir(p_folder_path):
-                if os.path.splitext(f)[1].lower() in valid_img_exts:
-                    if 'projectimage' in f.lower() or 'thumb' in f.lower() or 'image' in f.lower():
-                        proj_img_path = f"{p_folder_path}/{f}".replace("\\", "/")
-                        break
-            if not proj_img_path:
-                for f in os.listdir(p_folder_path):
-                    if os.path.splitext(f)[1].lower() in valid_img_exts:
-                        proj_img_path = f"{p_folder_path}/{f}".replace("\\", "/")
-                        break
-
-            if not proj_img_path:
-                continue
-
-            # Read projectInfo.json
-            proj_info = {
-                "title": format_title_from_filename(p_folder),
-                "description": "",
-                "category": "commercials",
-                "year": "",
-                "tags": [],
-                "orientation": "horizontal",
-                "link": ""
-            }
-            proj_info_file = os.path.join(p_folder_path, "projectInfo.json")
-            if not os.path.exists(proj_info_file):
-                proj_info_file = os.path.join(p_folder_path, "info.json")
-            if os.path.exists(proj_info_file):
-                try:
-                    with open(proj_info_file, "r", encoding="utf-8") as f:
-                        proj_info.update(json.load(f))
-                except Exception:
-                    pass
-
-            p_title = proj_info.get("title") or format_title_from_filename(p_folder)
-            p_desc = proj_info.get("description", "")
-            p_category = (proj_info.get("category") or "commercials").strip().lower()
-            all_categories.add(p_category)
-            p_year = proj_info.get("year", "")
-            p_orientation = proj_info.get("orientation", "horizontal").lower()
-            if p_orientation not in ("horizontal", "vertical", "square"):
-                p_orientation = "horizontal"
-
-            p_link = (proj_info.get("link") or "").strip()
-            if not p_link or p_link == "#":
-                p_link = f"https://www.google.com/search?q={urllib.parse.quote_plus(p_title)}"
-            more_link_html = f'<a href="{p_link}" target="_blank" rel="noopener noreferrer" class="tile-more-link" title="More information on {p_title}">more...</a>'
-
-            # Tags processing
-            raw_tags = proj_info.get("tags") or proj_info.get("tools") or []
-            if isinstance(raw_tags, str):
-                p_tags = [t.strip() for t in raw_tags.split(",") if t.strip()]
-            else:
-                p_tags = [str(t).strip() for t in raw_tags if str(t).strip()]
-
-            # Category label: keep exactly as in json, changed to titlecase (no substitutions)
-            cat_label = p_category.replace('-', ' ').replace('_', ' ').title()
-
-            year_span = f'<span class="tile-year">{p_year}</span>' if p_year else ''
-            desc_html = f'<p class="tile-desc">{p_desc}</p>' if p_desc else ''
-            
-            tags_csv = ",".join(p_tags)
-            tags_buttons = "".join([f'<button class="tile-tag" data-tag="{t}">{t}</button>' for t in p_tags])
-            tags_html = f'<div class="tile-tags-wrap">{tags_buttons}</div>' if p_tags else ''
-
-            tiles_html.append(f'''
-            <article class="project-tile aspect-{p_orientation}" data-category="{p_category}" data-tags="{tags_csv}">
-              <div class="tile-circling-border" aria-hidden="true"></div>
-              <div class="tile-inner">
-                <img src="{proj_img_path}" alt="{p_title}" class="tile-img" loading="lazy" decoding="async">
-                <button class="tile-category-pill" data-filter-category="{p_category}" title="Filter by {cat_label}">{cat_label}</button>
-                {more_link_html}
-                <div class="tile-hover-overlay">
-                  <div class="tile-hover-content">
-                    <h3 class="tile-title">
-                      <span>{p_title}</span>
-                      {year_span}
-                    </h3>
-                    {desc_html}
-                    {tags_html}
-                  </div>
-                </div>
-              </div>
-            </article>''')
-            total_projects_count += 1
-
-        # Company Banner HTML (Reduced Height Strip with Right-Edge Flush Logo)
-        meta_items = []
-        if comp_period:
-            meta_items.append(f'<span class="company-banner-period">{comp_period}</span>')
-        if comp_designation:
-            meta_items.append(f'<span class="company-banner-designation">{comp_designation}</span>')
-
-        meta_html = f'<div class="company-banner-meta">{"<span class=\"company-banner-sep\"> - </span>".join(meta_items)}</div>' if meta_items else ''
-        description_html = f'<div class="company-banner-desc">{comp_description}</div>' if comp_description else ''
-
-        if banner_path:
-            logo_html = f'''
-        <a href="{comp_link}" target="_blank" rel="noopener noreferrer" class="company-banner-logo-wrap is-clickable" title="Visit {company_name}">
-          <img src="{banner_path}" alt="{company_name} Logo" class="company-banner-logo-img">
-        </a>'''
-        else:
-            logo_html = ''
-
-        company_banner_html = f'''
-        <div class="company-banner-strip" style="background-color: {comp_color};">
-          <div class="company-banner-info">
-            <h2 class="company-banner-heading">{company_name}</h2>
-            {meta_html}
-            {description_html}
-          </div>
-          {logo_html}
-        </div>'''
-
-        company_sections_html.append(f'''
-        <section class="company-section" id="{comp_slug}" data-company="{comp_slug}">
-          {company_banner_html}
-          <div class="portfolio-grid company-project-grid">
-            {"".join(tiles_html)}
-          </div>
-        </section>''')
-
-    # Dynamic Category Filter Pills (Ordered with 'All' first without count)
-    preferred_order = ["commercials", "films", "feature films", "series", "music-videos", "other"]
-    sorted_categories = []
-    for c in preferred_order:
-        if c in all_categories:
-            sorted_categories.append(c)
-    for c in sorted(all_categories):
-        if c not in sorted_categories:
-            sorted_categories.append(c)
-
-    filter_buttons_html = ['<button class="filter-btn active" data-filter="all">All</button>']
-    for cat in sorted_categories:
-        label = cat.replace('-', ' ').replace('_', ' ').title()
-        filter_buttons_html.append(f'<button class="filter-btn" data-filter="{cat}">{label}</button>')
-
-    vfx_page_title = vfx_content.get("pageTitle", "VFX | Pra - Motions").strip() or "VFX | Pra - Motions"
-    vfx_seo_meta = get_seo_meta_tags(
-        "vfx.html",
-        vfx_page_title,
-        "Visual Effects & Compositing portfolio of Prasannakumar T Bhat across DNEG, The Mill, and feature film productions."
-    )
-    vfx_json_ld = '''  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "CollectionPage",
-    "name": "Visual Effects Portfolio - Prasannakumar T Bhat",
-    "description": "Visual Effects & Compositing portfolio of Prasannakumar T Bhat across DNEG, The Mill, and feature film productions.",
-    "author": {
-      "@type": "Person",
-      "name": "Prasannakumar T Bhat",
-      "jobTitle": "Lead Compositor & VFX Artist"
-    }
-  }
-  </script>'''
-
-    vfx_html = f'''<!DOCTYPE html>
-<html lang="en">
-<head>
-{ga_head_tag}
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{vfx_page_title}</title>
-  <meta name="description" content="Visual Effects & Compositing portfolio of Prasannakumar T Bhat across DNEG, The Mill, and feature film productions.">
-{vfx_seo_meta}
-{vfx_json_ld}
-  <link rel="icon" type="image/png" href="_engine/images/logo.png">
-{FONTS_HTML}
-  <link rel="stylesheet" href="_engine/css/main.css">
-  <link rel="stylesheet" href="_engine/css/components.css">
-  <link rel="stylesheet" href="_engine/css/glightbox.min.css">
-  <link rel="stylesheet" href="_engine/css/responsive.css">
-</head>
-<body>
-{ga_body_tag}
-  {vfx_bg_img_html}
-  {vfx_bg_overlay_html}
-
-{generate_nav_html("vfx")}
-
-  <main style="padding-top: clamp(84px, 7vw, 110px); padding-bottom: clamp(36px, 5vw, 64px);">
-    <div class="container-wide">
-      <div class="section-header">
-        <h1 class="section-title">{vfx_title_inner}</h1>
-        <p class="section-desc">{vfx_desc_inner}</p>
-      </div>
-
-      <!-- Filter Controls: Dynamic Categories (No count on 'All', dynamically appends any added category) -->
-      <div class="filter-bar filter-bar-center">
-        {"".join(filter_buttons_html)}
-        <span class="tag-filter-status" style="display: none;"></span>
-      </div>
-
-      <!-- Company Sections with Banners & Project Grids -->
-      <div class="vfx-companies-container">
-        {"".join(company_sections_html)}
-      </div>
-    </div>
-  </main>
-
-  <script src="_engine/js/glightbox.min.js"></script>
-  <script type="module" src="_engine/js/main.js"></script>
-
-{BACK_TO_TOP_HTML}
-</body>
-</html>
-'''
-    with open("vfx.html", "w", encoding="utf-8") as f:
-        f.write(vfx_html)
-    print(f"  -> Updated vfx.html ({len(company_subdirs)} companies, {total_projects_count} projects, auto-sorted descending)")
-
-    # --------------------------------------------------------------------------
-    # 3. SYNC PHOTOGRAPHY (pages/04_photography -> photos/ and panos/)
-    # --------------------------------------------------------------------------
-    photo_dir = "pages/04_photography"
-    photos_dir = os.path.join(photo_dir, "photos")
-    panos_dir = os.path.join(photo_dir, "panos")
-    os.makedirs(photos_dir, exist_ok=True)
-    os.makedirs(panos_dir, exist_ok=True)
-    photo_bg_img_html, photo_bg_overlay_html, _, _ = get_page_background_and_overlay(photo_dir)
-
-    # Read Photography content.json if present
-    photo_page_info = {
-        "title": "Photography & Panoramas",
-        "description": "High-resolution 360° environment captures, HDRI light probes, and cinematic stills gallery."
-    }
-    photo_content_json = os.path.join(photo_dir, "content.json")
-    if os.path.exists(photo_content_json):
-        try:
-            with open(photo_content_json, "r", encoding="utf-8") as f:
-                photo_page_info.update(json.load(f))
-        except Exception:
-            pass
-
-    photo_title = photo_page_info.get("title", "Photography & Panoramas")
-    photo_desc = photo_page_info.get("description", "")
-    photo_title_inner = photo_title.strip() if photo_title else '&nbsp;'
-    photo_desc_inner = photo_desc.strip() if photo_desc else '&nbsp;'
-
-    def clean_photo_title(filename):
-        name_no_ext = os.path.splitext(filename)[0]
-        # Remove leading numbers and separators e.g. 001_, 01 -, etc.
-        clean = re.sub(r'^\d+[\s_-]*', '', name_no_ext)
-        clean = clean.replace('_', ' ').replace('-', ' ')
-        clean = ' '.join(clean.split())
-        return clean.strip() or name_no_ext
-
-    def process_photo_collection(dir_path):
-        if not os.path.exists(dir_path):
-            return []
-
-        # 1. Convert any non-webp source image to webp and replace original file
-        if convert_webp:
-            from PIL import Image
-            for fname in os.listdir(dir_path):
-                if fname.startswith('.'):
-                    continue
-                base, ext = os.path.splitext(fname)
-                ext_lower = ext.lower()
-                if ext_lower in ('.jpg', '.jpeg', '.png', '.avif', '.gif', '.bmp', '.tiff'):
-                    src_path = os.path.join(dir_path, fname)
-                    webp_path = os.path.join(dir_path, f"{base}.webp")
-                    try:
-                        with Image.open(src_path) as im:
-                            if im.mode in ('RGBA', 'LA') or (im.mode == 'P' and 'transparency' in im.info):
-                                im_conv = im.convert('RGBA')
-                                im_conv.save(webp_path, 'WEBP', quality=90, method=6)
-                            else:
-                                im_conv = im.convert('RGB')
-                                im_conv.save(webp_path, 'WEBP', quality=85, method=6)
-                        print(f"  [WebP Conversion] Replaced {fname} -> {base}.webp")
-                        try:
-                            os.remove(src_path)
-                        except OSError as rm_err:
-                            print(f"  [Warning] Could not remove original {src_path}: {rm_err}")
-                    except Exception as err:
-                        print(f"  [WebP Error] {src_path}: {err}")
-
-        # 2. Read and index all .webp files
-        from PIL import Image
-        webp_files = sorted([f for f in os.listdir(dir_path) if f.lower().endswith('.webp') and not f.startswith('.')])
-        items = []
-        for f in webp_files:
-            base, _ = os.path.splitext(f)
-            webp_path = os.path.join(dir_path, f)
-            w, h, aspect = 1920, 1080, 1.778
-            try:
-                with Image.open(webp_path) as im:
-                    w, h = im.size
-                    aspect = round(w / h, 3)
-            except Exception:
-                pass
-
-            items.append({
-                "id": slugify(base),
-                "filename": f,
-                "title": clean_photo_title(f),
-                "webp": webp_path.replace("\\", "/"),
-                "width": w,
-                "height": h,
-                "aspect": aspect
-            })
-        return items
-
-    # Convert photography background.jpg to background.webp if present and delete original
-    photo_bg_jpg = os.path.join(photo_dir, "background.jpg")
-    photo_bg_webp = os.path.join(photo_dir, "background.webp")
-    if convert_webp and os.path.exists(photo_bg_jpg):
-        try:
-            from PIL import Image
-            with Image.open(photo_bg_jpg) as im:
-                im.convert('RGB').save(photo_bg_webp, 'WEBP', quality=85, method=6)
-            os.remove(photo_bg_jpg)
-            print("  [WebP] Converted & replaced photography background.jpg -> background.webp")
-        except Exception as bg_err:
-            print(f"  [WebP Error] {photo_bg_jpg}: {bg_err}")
-
-    photos_list = process_photo_collection(photos_dir)
-    panos_list = process_photo_collection(panos_dir)
-
-    photos_json_str = json.dumps(photos_list)
-    panos_json_str = json.dumps(panos_list)
-
-    # Build photo tiles with native aspect ratio embedded (ZERO CROP)
-    photo_tiles = []
-    for idx, p in enumerate(photos_list):
-        asp = p.get('aspect', 1.778)
-        tile_html = f'''
-        <div class="waterfall-item" data-type="photos" data-aspect="{asp}" style="--aspect: {asp};">
-          <article class="project-tile photo-tile" onclick="openPhotoViewer({idx})" title="{p['title']}" style="--aspect: {asp}; aspect-ratio: {asp};">
-            <div class="tile-circling-border" aria-hidden="true"></div>
-            <div class="tile-inner" style="aspect-ratio: {asp};">
-              <img src="{p['webp']}" alt="{p['title']}" class="tile-img" loading="lazy" decoding="async">
-              <div class="tile-hover-overlay">
-                <div class="tile-hover-content">
-                  <h3 class="tile-title">
-                    <span>{p['title']}</span>
-                  </h3>
-                </div>
-              </div>
-            </div>
-          </article>
-        </div>'''
-        photo_tiles.append((p, tile_html, idx))
-
-    # Build pano tiles with native aspect ratio embedded (ZERO CROP)
-    pano_tiles = []
-    for idx, p in enumerate(panos_list):
-        asp = p.get('aspect', 2.0)
-        tile_html = f'''
-        <div class="waterfall-item" data-type="panos" data-aspect="{asp}" style="--aspect: {asp};">
-          <article class="project-tile pano-tile" onclick="openPanoViewer({idx})" title="{p['title']}" style="--aspect: {asp}; aspect-ratio: {asp};">
-            <div class="tile-circling-border" aria-hidden="true"></div>
-            <div class="tile-inner" style="aspect-ratio: {asp};">
-              <img src="{p['webp']}" alt="{p['title']}" class="tile-img" loading="lazy" decoding="async">
-              <span class="pano-badge">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
-                360° Panorama
-              </span>
-              <div class="pano-center-indicator" aria-hidden="true">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" style="margin-left: 2px;"><polygon points="6 3 20 12 6 21 6 3"/></svg>
-              </div>
-              <div class="tile-hover-overlay">
-                <div class="tile-hover-content">
-                  <h3 class="tile-title">
-                    <span>{p['title']}</span>
-                  </h3>
-                </div>
-              </div>
-            </div>
-          </article>
-        </div>'''
-        pano_tiles.append((p, tile_html, idx))
-
-    # Balanced 3-column distribution for initial static waterfall
-    col1 = [
-        pano_tiles[0][1],     # Atacama 360 (aspect 2.0)
-        photo_tiles[0][1],    # Anjaniputra (aspect 1.333)
-        photo_tiles[1][1],    # Adidas Create (aspect 1.777)
-        photo_tiles[4][1]     # Busch Forest (aspect 1.777)
-    ]
-    col2 = [
-        photo_tiles[5][1],    # Pepsi Super Bowl Tall Vertical (aspect 0.681)
-        pano_tiles[1][1],     # Cerro Toco 360 (aspect 2.0)
-        photo_tiles[2][1]     # Adidas Football (aspect 1.777)
-    ]
-    col3 = [
-        pano_tiles[2][1],     # Baltimore 360 (aspect 2.0)
-        photo_tiles[3][1],    # Busch Mountain (aspect 1.777)
-        photo_tiles[6][1],    # Pepsi The Call (aspect 1.777)
-        pano_tiles[3][1],     # Charles Street 360 (aspect 2.768)
-        photo_tiles[7][1]     # Xbox Forza (aspect 1.777)
-    ]
-    waterfall_cols_html = f'''
-        <div class="waterfall-col">
-          {"".join(col1)}
-        </div>
-        <div class="waterfall-col">
-          {"".join(col2)}
-        </div>
-        <div class="waterfall-col">
-          {"".join(col3)}
-        </div>'''
-
-    photo_page_title = photo_page_info.get("pageTitle", f"{photo_title} | Pra - Motions").strip() or f"{photo_title} | Pra - Motions"
-    photo_seo_meta = get_seo_meta_tags(
-        "photography.html",
-        photo_page_title,
-        photo_desc or "Photography and 360 interactive panoramas by Prasannakumar T Bhat."
-    )
-
-    photography_html = f'''<!DOCTYPE html>
-<html lang="en">
-<head>
-{ga_head_tag}
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{photo_page_title}</title>
-{photo_seo_meta}
-  <link rel="icon" type="image/png" href="_engine/images/logo.png">
-{FONTS_HTML}
-  <link rel="stylesheet" href="_engine/css/main.css">
-  <link rel="stylesheet" href="_engine/css/components.css">
-  <link rel="stylesheet" href="_engine/css/pannellum.css">
-  <link rel="stylesheet" href="_engine/css/photography.css">
-  <link rel="stylesheet" href="_engine/css/responsive.css">
-</head>
-<body>
-{ga_body_tag}
-  {photo_bg_img_html}
-  {photo_bg_overlay_html}
-
-{generate_nav_html("photography")}
-
-  <main style="padding-top: clamp(84px, 7vw, 110px); padding-bottom: clamp(36px, 5vw, 64px);">
-    <div class="container-wide">
-      <div class="section-header">
-        <h1 class="section-title">{photo_title_inner}</h1>
-        <p class="section-desc">{photo_desc_inner}</p>
-      </div>
-
-      <!-- Gallery Filter Tabs (All, Panoramas, Photos matching VFX page pills) -->
-      <div class="filter-bar filter-bar-center" style="margin-bottom: 32px;">
-        <button type="button" class="filter-btn active" id="tabBtnAll" data-tab="all" onclick="switchGalleryTab('all', event)">All</button>
-        <button type="button" class="filter-btn" id="tabBtnPanos" data-tab="panos" onclick="switchGalleryTab('panos', event)">Panoramas</button>
-        <button type="button" class="filter-btn" id="tabBtnPhotos" data-tab="photos" onclick="switchGalleryTab('photos', event)">Photos</button>
-      </div>
-
-      <!-- Unified Waterfall Gallery Grid (3 Columns in All & Photos, 2 Columns in Panoramas) -->
-      <section class="photo-gallery-section" id="gallery-container">
-        <div class="waterfall-container waterfall-3-col" id="photoWaterfallContainer">
-          {waterfall_cols_html}
-        </div>
-      </section>
-
-    </div>
-  </main>
-
-  <!-- Fullscreen Photo Viewer Modal with Bottom Filmstrip -->
-  <div id="photoViewerModal" class="fullscreen-viewer-modal" aria-hidden="true" role="dialog">
-    <div class="viewer-top-bar">
-      <div class="viewer-title-wrap">
-        <h3 class="viewer-title" id="photoViewerTitle">Photo</h3>
-        <span class="viewer-counter" id="photoViewerCounter">1 / 1</span>
-      </div>
-      <div class="viewer-top-actions">
-        <button type="button" class="viewer-close-btn" id="photoViewerCloseBtn" onclick="closePhotoViewer()" aria-label="Close viewer" title="Close (Esc)">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-      </div>
-    </div>
-
-    <div class="viewer-stage" id="photoViewerStage">
-      <button type="button" class="viewer-side-arrow viewer-prev-arrow" onclick="navPhotoViewer(-1)" aria-label="Previous photo" title="Previous photo (←)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
-          <polyline points="15 18 9 12 15 6"></polyline>
-        </svg>
-      </button>
-
-      <div class="viewer-img-container">
-        <img id="photoViewerImg" src="" alt="Photo" class="viewer-main-img">
-      </div>
-
-      <button type="button" class="viewer-side-arrow viewer-next-arrow" onclick="navPhotoViewer(1)" aria-label="Next photo" title="Next photo (→)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
-          <polyline points="9 18 15 12 9 6"></polyline>
-        </svg>
-      </button>
-    </div>
-
-    <div class="viewer-filmstrip-bar">
-      <div class="filmstrip-track" id="photoFilmstripTrack"></div>
-    </div>
-  </div>
-
-  <!-- Fullscreen 360 Panorama Viewer Modal with Bottom Filmstrip -->
-  <div id="panoViewerModal" class="fullscreen-viewer-modal" aria-hidden="true" role="dialog">
-    <div class="viewer-top-bar">
-      <div class="viewer-title-wrap">
-        <span class="pano-modal-tag">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
-          360° Photosphere
-        </span>
-        <h3 class="viewer-title" id="panoViewerTitle">Panorama</h3>
-        <span class="viewer-counter" id="panoViewerCounter">1 / 1</span>
-      </div>
-      <div class="viewer-top-actions">
-        <button type="button" class="viewer-close-btn" id="panoViewerCloseBtn" onclick="closePanoViewer()" aria-label="Close viewer" title="Close (Esc)">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-      </div>
-    </div>
-
-    <div class="pano-stage">
-      <div id="fullscreenPanoContainer" class="pano-webgl-viewport"></div>
-
-      <button type="button" class="viewer-side-arrow viewer-prev-arrow" onclick="navPanoViewer(-1)" aria-label="Previous panorama" title="Previous panorama (←)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
-          <polyline points="15 18 9 12 15 6"></polyline>
-        </svg>
-      </button>
-
-      <button type="button" class="viewer-side-arrow viewer-next-arrow" onclick="navPanoViewer(1)" aria-label="Next panorama" title="Next panorama (→)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
-          <polyline points="9 18 15 12 9 6"></polyline>
-        </svg>
-      </button>
-    </div>
-
-    <div class="viewer-filmstrip-bar">
-      <div class="filmstrip-track" id="panoFilmstripTrack"></div>
-    </div>
-  </div>
-
-  <script id="photosData" type="application/json">
-{photos_json_str}
-  </script>
-  <script id="panosData" type="application/json">
-{panos_json_str}
-  </script>
-  <script src="_engine/js/pannellum.js"></script>
-  <script src="_engine/js/photography.js"></script>
-  <script type="module" src="_engine/js/main.js"></script>
-
-{BACK_TO_TOP_HTML}
-</body>
-</html>
-'''
-    with open("photography.html", "w", encoding="utf-8") as f:
-        f.write(photography_html)
-    print(f"  -> Updated photography.html (Nav: Photography, {len(photos_list)} Stills Masonry, {len(panos_list)} 360 Panoramas 2:1)")
-
-    # --------------------------------------------------------------------------
-    # 4. SYNC ABOUT PAGE (pages/05_about -> about.html & about-me.html redirect)
-    # --------------------------------------------------------------------------
-    about_dir = "pages/05_about" if os.path.exists("pages/05_about") else "pages/05_about-me"
-    about_bg_img_html, about_bg_overlay_html, _, _ = get_page_background_and_overlay(about_dir)
-
-    about_data = {
-        "name": "Prasannakumar T Bhat",
-        "designation": "Visual Effects Compositor",
-        "experience": "",
-        "info": "For <strong>10+ years</strong>, I've been weaving magic with pixels in the world of visual effects. It's thrilling to take raw footage, images, and 3D elements, and mold them into the final image that graces the big screen or TV. Seeing my work come to life is an unparalleled reward!\n\nI'm a relentless explorer, always pushing the boundaries of what's possible with the latest software in <strong>feature films, commercials, and TV projects</strong>.\n\nMy passion for innovation extends beyond the screen. In my spare time, I delve into research, <strong>crafting tools and automating tasks with scripts</strong>. With deep expertise in compositing, I'm currently bringing my vision to life as a <strong>Compositing Artist at DNEG</strong>.",
-        "showreelLink": "https://vimeo.com/835414002"
-    }
-
-    # Load from content.json (or aboutMe.json fallback)
-    for cand_json in ["content.json", "aboutMe.json"]:
-        cand_path = os.path.join(about_dir, cand_json)
-        if os.path.exists(cand_path):
-            try:
-                with open(cand_path, "r", encoding="utf-8") as f:
-                    about_data.update(json.load(f))
-            except Exception:
-                pass
-
-    name = about_data.get("name", "Prasannakumar T Bhat")
-    designation = about_data.get("designation", "Visual Effects Compositor")
-    experience = about_data.get("experience", "")
-    info_raw = about_data.get("info", "")
-    resume_link = about_data.get("resumeLink") or (f"{about_dir}/resume.pdf" if os.path.exists(f"{about_dir}/resume.pdf") else "#")
-    cover_letter_link = about_data.get("coverLetterLink") or (f"{about_dir}/coverLetter.pdf" if os.path.exists(f"{about_dir}/coverLetter.pdf") else "#")
-    showreel_title = (
-        about_data.get("showreelTitle")
-        or about_data.get("showreel title")
-        or about_data.get("showreelHeading")
-        or about_data.get("videoTitle")
-        or ""
-    ).strip()
-    info_bg_color = about_data.get("infoBGcolor") or about_data.get("infoBgColor") or "#131e42"
-    info_bg_opacity = about_data.get("infoBGopacity", about_data.get("infoBgOpacity", about_data.get("info_bg_opacity", 75)))
-    info_bg_rgba = hex_to_rgba(info_bg_color, info_bg_opacity)
-
-    showreel_url = (
-        about_data.get("showreelLink")
-        or about_data.get("showreel link")
-        or about_data.get("showreel")
-        or about_data.get("showreelUrl")
-        or about_data.get("showreel url")
-        or about_data.get("vimeoUrl")
-        or about_data.get("vimeoLink")
-        or about_data.get("vimeo")
-        or ""
-    ).strip()
-    phone = about_data.get("phone", "+91 9449267068")
-    email = about_data.get("email", "pbhat99@gmail.com")
-    github_link = about_data.get("github", "https://github.com/pbhat99")
-    location = about_data.get("location", "Karnataka, India - 581337")
-
-    # Format info paragraphs with line break support (\n\n -> <p>, \n -> <br>)
-    info_paras = [p.strip() for p in info_raw.split("\n\n") if p.strip()]
-    if not info_paras and info_raw:
-        info_paras = [info_raw.strip()]
-    paragraphs_html = "\n".join([f"<p>{p.replace(chr(10), '<br>')}</p>" for p in info_paras])
-
-    # Find profile picture (profilePic.webp or fallback)
-    profile_img = "_engine/images/logo.png"
-    for cand_img in ["profilePic.webp", "profilePic.jpg", "profilePic.png", "profile.webp", "profile.jpg", "profile.png"]:
-        p_path = os.path.join(about_dir, cand_img)
-        if os.path.exists(p_path):
-            profile_img = p_path.replace("\\", "/")
-            break
-
-    # Auto-load known tools from knownTools/ folder (single row fitted to overall width)
-    known_tools_dir = os.path.join(about_dir, "knownTools")
-    tools_cards_html = []
-    if os.path.exists(known_tools_dir):
-        tool_files = sorted([f for f in os.listdir(known_tools_dir) if os.path.splitext(f)[1].lower() in valid_img_exts])
-        for tf in tool_files:
-            tf_path = f"{known_tools_dir}/{tf}".replace("\\", "/")
-            raw_name = os.path.splitext(tf)[0]
-            # Strip numeric prefix like '01_' if present to get clean tool name without extension
-            tool_name = re.sub(r'^\d+[\s_-]*', '', raw_name).replace('_', ' ').replace('-', ' ').title()
-            tools_cards_html.append(f'''
-          <div class="known-tool-card" title="{tool_name}">
-            <img src="{tf_path}" alt="{tool_name}" class="known-tool-img" loading="lazy" decoding="async">
-            <div class="known-tool-hover">
-              <span class="known-tool-name">{tool_name}</span>
-            </div>
-          </div>''')
-
-    tools_section_html = ""
-    if tools_cards_html:
-        num_tools = len(tools_cards_html)
-        # Dynamically set gap and padding based on number of tools:
-        # - Fewer tools (e.g. 3-4) -> larger padding & gap, perfectly centered
-        # - More tools (up to 15) -> smaller padding & gap to fit strictly in a single line
-        # - Fixed height is 82px (80% of original 10-tool arrangement)
-        if num_tools <= 4:
-            tool_gap = "clamp(24px, 3.5vw, 42px)"
-            tool_pad = "12px"
-        elif num_tools <= 7:
-            tool_gap = "clamp(16px, 2.2vw, 26px)"
-            tool_pad = "9px"
-        elif num_tools <= 10:
-            tool_gap = "clamp(10px, 1.5vw, 18px)"
-            tool_pad = "7px"
-        elif num_tools <= 12:
-            tool_gap = "clamp(7px, 1.1vw, 13px)"
-            tool_pad = "5px"
-        else:
-            # 13 to 15+ tools: reduced padding to make room for all
-            tool_gap = "clamp(4px, 0.8vw, 8px)"
-            tool_pad = "4px"
-
-        tools_section_html = f'''
-      <section class="known-tools-section">
-        <div class="known-tools-strip" style="--tool-count: {num_tools}; --tool-gap: {tool_gap}; --tool-pad: {tool_pad};">
-          {"".join(tools_cards_html)}
-        </div>
-      </section>'''
-
-    # Showreel Video Embed (Vimeo or YouTube)
-    showreel_section_html = ""
-    if showreel_url:
-        embed_src = None
-        allow_attr = "autoplay; fullscreen; picture-in-picture"
-        
-        # Check YouTube
-        yt_match = re.search(r'(?:youtube\.com\/(?:watch\?.*?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})', showreel_url)
-        if yt_match:
-            yt_id = yt_match.group(1)
-            embed_src = f"https://www.youtube.com/embed/{yt_id}?rel=0"
-            allow_attr = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        else:
-            # Check Vimeo
-            vimeo_match = re.search(r'vimeo\.com\/(?:video\/|channels\/[^\/]+\/|manage\/videos\/)?(\d{6,})', showreel_url)
-            if not vimeo_match and "vimeo" in showreel_url.lower():
-                vimeo_match = re.search(r'(\d{6,})', showreel_url)
-            if vimeo_match:
-                vimeo_id = vimeo_match.group(1)
-                embed_src = f"https://player.vimeo.com/video/{vimeo_id}?title=0&byline=0&portrait=0"
-                allow_attr = "autoplay; fullscreen; picture-in-picture"
-            elif "embed" in showreel_url:
-                embed_src = showreel_url
-                allow_attr = "autoplay; fullscreen; picture-in-picture"
-
-        if embed_src:
-            video_header_html = f'''
-        <div class="about-video-header">
-          <h2 class="about-video-heading">{showreel_title}</h2>
-        </div>''' if showreel_title else ""
-
-            showreel_section_html = f'''
-      <section class="about-video-card" style="--info-bg: {info_bg_rgba};">
-        {video_header_html}
-        <div class="about-video-container">
-          <iframe src="{embed_src}"
-                  allow="{allow_attr}" allowfullscreen
-                  title="{showreel_title or 'VFX Showreel'} - {name}"></iframe>
-        </div>
-      </section>'''
-
-    meta_role = f'{designation}'
-    if experience:
-        meta_role += f' &bull; {experience}'
-
-    page_title = about_data.get("title", "About Me")
-    page_desc = about_data.get("description", "")
-    title_inner = page_title.strip() if page_title else '&nbsp;'
-    desc_inner = page_desc.strip() if page_desc else '&nbsp;'
-
-    # 1. Contact Info Lines (separate key section in aboutMe.json, one per line, expands height)
-    contact_lines_data = (
-        about_data.get("contactInfoLines")
-        or about_data.get("contactLines")
-        or about_data.get("infoLines")
-    )
-    contact_lines_html = []
-    if contact_lines_data and isinstance(contact_lines_data, list):
-        for item in contact_lines_data:
-            if isinstance(item, dict):
-                label = item.get("label") or item.get("key") or ""
-                val = str(item.get("value") or item.get("text") or item.get("val") or "")
-                link = item.get("link") or item.get("url") or ""
-                
-                label_html = f'<span class="contact-line-label">{label}:</span>' if label else ''
-                if link:
-                    val_html = f'<a href="{link}" target="_blank" rel="noopener noreferrer">{val}</a>'
-                elif '@' in val and not val.startswith('http'):
-                    val_html = f'<a href="mailto:{val}">{val}</a>'
-                else:
-                    val_html = f'<strong>{val}</strong>' if 'phone' in label.lower() else val
-                contact_lines_html.append(f'<div class="contact-line-item">{label_html}<span class="contact-line-val">{val_html}</span></div>')
-            elif isinstance(item, str) and item.strip():
-                contact_lines_html.append(f'<div class="contact-line-item"><span class="contact-line-val">{item.strip()}</span></div>')
-
-    if not contact_lines_html:
-        # Fallback to standard contact info
-        if phone:
-            contact_lines_html.append(f'<div class="contact-line-item"><span class="contact-line-label">Phone:</span><span class="contact-line-val"><strong>{phone}</strong></span></div>')
-        if email:
-            contact_lines_html.append(f'<div class="contact-line-item"><span class="contact-line-label">Email:</span><span class="contact-line-val"><a href="mailto:{email}">{email}</a></span></div>')
-        if github_link:
-            contact_lines_html.append(f'<div class="contact-line-item"><span class="contact-line-label">GitHub:</span><span class="contact-line-val"><a href="{github_link}" target="_blank" rel="noopener">{github_link.replace("https://", "")}</a></span></div>')
-        if location:
-            contact_lines_html.append(f'<div class="contact-line-item"><span class="contact-line-label">Location:</span><span class="contact-line-val">{location}</span></div>')
-
-    # 2. Right-Aligned Contact Image (Auto-detected from folder: contact.jpg, contact.png, etc.; no JSON key needed)
-    contact_img_html = ""
-    contact_img_path = None
-    for cand in ["contact.webp", "contact.jpg", "contact.png", "contact.jpeg"]:
-        p = os.path.join(about_dir, cand)
-        if os.path.exists(p):
-            contact_img_path = p.replace("\\", "/")
-            break
-
-    if contact_img_path:
-        contact_img_html = f'''
-          <div class="contact-image-wrap">
-            <img src="{contact_img_path}" alt="Contact Visual" class="contact-img" loading="lazy" decoding="async">
-          </div>'''
-
-    # 3. Social Media Section (from pages/05_about/social/ or socialMedia/)
-    social_tiles_html = []
-    social_folder = None
-    for folder_cand in ["social", "socialMedia"]:
-        cand_dir = os.path.join(about_dir, folder_cand)
-        if os.path.exists(cand_dir) and os.path.isdir(cand_dir):
-            social_folder = cand_dir
-            break
-
-    if social_folder:
-        social_json_file = None
-        for jcand in ["social.json", "socialMedia.json", "links.json"]:
-            jp = os.path.join(social_folder, jcand)
-            if os.path.exists(jp):
-                social_json_file = jp
-                break
-
-        if social_json_file:
-            try:
-                with open(social_json_file, "r", encoding="utf-8") as sf:
-                    social_items = json.load(sf)
-                    if isinstance(social_items, list):
-                        for s_item in social_items:
-                            img_name = s_item.get("image") or s_item.get("image name") or s_item.get("icon") or ""
-                            s_link = (s_item.get("link") or s_item.get("url") or "").strip()
-                            s_name = s_item.get("name") or s_item.get("title") or os.path.splitext(img_name)[0].title()
-                            if not s_link or s_link == "#":
-                                s_link = f"https://www.google.com/search?q={urllib.parse.quote_plus(s_name)}"
-                            
-                            # Prefer .webp if converted
-                            img_base = os.path.splitext(img_name)[0]
-                            resolved_img = img_name
-                            for cand_ext in [".webp", ".png", ".jpg", ".jpeg"]:
-                                if os.path.exists(os.path.join(social_folder, f"{img_base}{cand_ext}")):
-                                    resolved_img = f"{img_base}{cand_ext}"
-                                    break
-
-                            s_img_path = f"{social_folder}/{resolved_img}".replace("\\", "/")
-                            if os.path.exists(os.path.join(social_folder, resolved_img)):
-                                social_tiles_html.append(f'''
-            <a href="{s_link}" target="_blank" rel="noopener noreferrer" class="social-tile" title="{s_name}">
-              <img src="{s_img_path}" alt="{s_name}" class="social-icon-img" loading="lazy" decoding="async">
-            </a>''')
-            except Exception as e:
-                print("Notice reading social.json:", e)
-
-    social_section_html = ""
-    if social_tiles_html:
-        social_section_html = f'''
-          <div class="about-social-row">
-            {"".join(social_tiles_html)}
-          </div>'''
-
-    about_page_title = about_data.get("pageTitle", f"About | {name}").strip() or f"About | {name}"
-    about_seo_meta = get_seo_meta_tags(
-        "about.html",
-        about_page_title,
-        f"{name} - {designation}. {experience}. Production visual effects, compositing breakdown, and workflow automation.",
-        image_url=profile_img
-    )
-
-    about_html = f'''<!DOCTYPE html>
-<html lang="en">
-<head>
-{ga_head_tag}
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{about_page_title}</title>
-  <meta name="description" content="{name} - {designation}. {experience}.">
-{about_seo_meta}
-{json_ld_person}
-  <link rel="icon" type="image/png" href="_engine/images/logo.png">
-{FONTS_HTML}
-  <link rel="stylesheet" href="_engine/css/main.css">
-  <link rel="stylesheet" href="_engine/css/components.css">
-  <link rel="stylesheet" href="_engine/css/glightbox.min.css">
-  <link rel="stylesheet" href="_engine/css/responsive.css">
-</head>
-<body>
-{ga_body_tag}
-  {about_bg_img_html}
-  {about_bg_overlay_html}
-
-{generate_nav_html("about")}
-
-  <main style="padding-top: clamp(84px, 7vw, 110px); padding-bottom: clamp(36px, 5vw, 64px);">
-    <div class="container-wide">
-      
-      <!-- Page Header (With Title & Description; spacing preserved even if empty) -->
-      <div class="section-header">
-        <h1 class="section-title">{title_inner}</h1>
-        <p class="section-desc">{desc_inner}</p>
-      </div>
-
-      <!-- Profile & Bio Grid (40:60 Ratio, Vertical Project-Tile Photo, Paragraphs with Line Breaks) -->
-      <div class="about-grid">
-        <div class="about-profile-col">
-          <div class="project-tile aspect-vertical about-profile-tile">
-            <div class="tile-circling-border" aria-hidden="true"></div>
-            <div class="tile-inner">
-              <img src="{profile_img}" alt="{name}" class="tile-img">
-            </div>
-          </div>
-        </div>
-
-        <div class="about-bio-col" style="--info-bg: {info_bg_rgba};">
-          <div class="about-bio-top">
-            <h1 class="about-name">{name}</h1>
-            <div class="about-role-strip">{meta_role}</div>
-            <div class="about-paragraphs">
-              {paragraphs_html}
-            </div>
-          </div>
-          <div class="about-bio-bottom">
-            {social_section_html}
-            <div class="about-actions-wrap">
-              <a href="{resume_link}" class="btn btn-primary" download>Resume</a>
-              <a href="{cover_letter_link}" class="btn btn-primary" download>Cover Letter</a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Showreel Video Embed (Vimeo or YouTube) -->
-      {showreel_section_html}
-
-      <!-- Known Tools Strip (Single Row Auto-Fitted Across Full Width) -->
-      {tools_section_html}
-
-      <!-- Contact Information Card (Lines List on Left, Optional Right-Aligned Image) -->
-      <section id="contact" class="contact-card">
-        <div class="contact-content-grid">
-          <div class="contact-info-col">
-            <h2 class="contact-heading">Contact Information</h2>
-            <div class="contact-lines-list">
-              {"".join(contact_lines_html)}
-            </div>
-          </div>
-          {contact_img_html}
-        </div>
-      </section>
-
-    </div>
-  </main>
-
-  <script src="_engine/js/glightbox.min.js"></script>
-  <script type="module" src="_engine/js/main.js"></script>
-
-{BACK_TO_TOP_HTML}
-</body>
-</html>
-'''
-    with open("about.html", "w", encoding="utf-8") as f:
-        f.write(about_html)
-    print("  -> Updated about.html (Nav: About, Vertical Photo Tile, Known Tools Strip, Showreel Embed)")
-
-    # Also generate about-me.html meta-refresh redirect to about.html
-    about_redirect_html = '''<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=about.html">
-  <title>Redirecting to About...</title>
-  <link rel="canonical" href="about.html">
-</head>
-<body>
-  <p>Redirecting to <a href="about.html">About</a>...</p>
-</body>
-</html>'''
-    with open("about-me.html", "w", encoding="utf-8") as f:
-        f.write(about_redirect_html)
-    print("  -> Updated about-me.html (Permanent redirect to about.html)")
-
-    # --------------------------------------------------------------------------
-    # 5. SYNC AI / COMFY (pages/03_ai-comfy)
-    # --------------------------------------------------------------------------
-    ai_dir = "pages/03_ai-comfy"
-    ai_bg_img_html, ai_bg_overlay_html, _, _ = get_page_background_and_overlay(ai_dir)
-
-    # Read AI / Comfy content.json if present
-    ai_page_info = {
-        "title": "ComfyUI Pipelines & AI Toolsets",
-        "description": "Bridging the gap between cutting-edge Diffusion models and film-grade visual effects pipelines. Custom ComfyUI node workflows, automated plate inpainting, and depth-guided dynamic relighting."
-    }
-    ai_content_json = os.path.join(ai_dir, "content.json")
-    if os.path.exists(ai_content_json):
-        try:
-            with open(ai_content_json, "r", encoding="utf-8") as f:
-                ai_page_info.update(json.load(f))
-        except Exception:
-            pass
-
-    ai_title = ai_page_info.get("title", "ComfyUI Pipelines & AI Toolsets")
-    ai_desc = ai_page_info.get("description", "")
-    ai_title_inner = ai_title.strip() if ai_title else '&nbsp;'
-    ai_desc_inner = ai_desc.strip() if ai_desc else '&nbsp;'
-
-    # Resolve Workflow Architecture image
-    workflow_img = "pages/03_ai-comfy/workflows/comfyui-production-pipeline.webp"
-    if not os.path.exists(workflow_img):
-        workflow_img = "pages/03_ai-comfy/workflows/comfyui-production-pipeline.png"
-
-    ai_page_title = ai_page_info.get("pageTitle", f"{ai_title} | Pra - Motions").strip() or f"{ai_title} | Pra - Motions"
-    ai_seo_meta = get_seo_meta_tags(
-        "ai-comfy.html",
-        ai_page_title,
-        ai_desc or "ComfyUI pipelines, automated cleanup nodes, and custom AI VFX workflows."
-    )
-
-    ai_html = f'''<!DOCTYPE html>
-<html lang="en">
-<head>
-{ga_head_tag}
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{ai_page_title}</title>
-  <meta name="description" content="{ai_desc}">
-{ai_seo_meta}
-  <link rel="icon" type="image/png" href="_engine/images/logo.png">
-{FONTS_HTML}
-  
-  <link rel="stylesheet" href="_engine/css/main.css">
-  <link rel="stylesheet" href="_engine/css/components.css">
-  <link rel="stylesheet" href="_engine/css/glightbox.min.css">
-  <link rel="stylesheet" href="_engine/css/responsive.css">
-</head>
-<body>
-{ga_body_tag}
-  {ai_bg_img_html}
-  {ai_bg_overlay_html}
-
-{generate_nav_html("ai-comfy")}
-
-  <main style="padding-top: clamp(84px, 7vw, 110px); padding-bottom: clamp(36px, 5vw, 64px);">
-    <div class="container-wide">
-      
-      <!-- Page Header -->
-      <div class="section-header">
-        <h1 class="section-title">{ai_title_inner}</h1>
-        <p class="section-desc">{ai_desc_inner}</p>
-      </div>
-
-      <!-- Production ComfyUI Workflow Architecture -->
-      <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: clamp(20px, 4vw, 36px); margin-bottom: 48px;">
-        <div style="margin-bottom: 20px;">
-          <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent-primary); text-transform: uppercase;">Production Workflow Graph</span>
-          <h2 style="font-size: 1.4rem; font-weight: 700;">ComfyUI VFX Production Pipeline Graph</h2>
-          <p style="font-size: 0.9rem; color: var(--text-muted);">
-            Full interactive visual graph. Click image to open high-resolution zoom in Lightbox.
-          </p>
-        </div>
-        <div style="border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border-subtle); background: #000;">
-          <img src="{workflow_img}" alt="ComfyUI Production Pipeline Architecture" style="width: 100%; object-fit: contain; cursor: zoom-in;" data-lightbox data-caption="ComfyUI Master VFX Production Workflow Architecture">
-        </div>
-      </div>
-
-      <!-- Workflow Cards Grid -->
-      <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 24px;">Production ComfyUI Workflows</h2>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: 28px;">
-
-        <!-- Workflow 1 -->
-        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 24px; display: flex; flex-direction: column;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-primary); background: rgba(249,134,3,0.1); padding: 3px 8px; border-radius: 4px;">PLATE INPAINTING</span>
-            <span style="font-size: 0.78rem; color: var(--text-subtle);">ComfyUI + LaMa</span>
-          </div>
-          <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 10px;">Automated 4K Clean-Plate Generator</h3>
-          <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 16px; flex-grow: 1;">
-            Converts roto tracking markers and harness wires into seamless 4K background textures without seam artifacts or optical degradation.
-          </p>
-          <div style="background: var(--bg-secondary); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 16px; font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted);">
-            <div><strong>Inputs:</strong> Live Plate + Roto Matte</div>
-            <div><strong>Outputs:</strong> 16-bit Float EXR Clean Plate</div>
-          </div>
-          <a href="blog.html#comfyui-portable-custom-nodes" class="btn btn-secondary" style="font-size: 0.82rem; padding: 8px 16px;">
-            <span>Read Setup Tutorial</span>
-          </a>
-        </div>
-
-        <!-- Workflow 2 -->
-        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 24px; display: flex; flex-direction: column;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-hover); background: rgba(255,155,38,0.1); padding: 3px 8px; border-radius: 4px;">RELIGHTING / COMP</span>
-            <span style="font-size: 0.78rem; color: var(--text-subtle);">Marigold + IC-Light</span>
-          </div>
-          <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 10px;">Depth-Guided Shot Relighting</h3>
-          <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 16px; flex-grow: 1;">
-            Derives photoreal metric depth maps and surface normals directly from 2D footage to cast directional rim lights, specular glints, and volume fog.
-          </p>
-          <div style="background: var(--bg-secondary); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 16px; font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted);">
-            <div><strong>Nodes:</strong> Marigold Depth, IC-Light, VHS</div>
-            <div><strong>Outputs:</strong> Normal Pass + Rim Key Light</div>
-          </div>
-          <a href="blog.html#facefusion-windows-portable" class="btn btn-secondary" style="font-size: 0.82rem; padding: 8px 16px;">
-            <span>View Implementation</span>
-          </a>
-        </div>
-
-      </div>
-
-    </div>
-  </main>
-
-  <script src="_engine/js/glightbox.min.js"></script>
-  <script type="module" src="_engine/js/main.js"></script>
-
-{BACK_TO_TOP_HTML}
-</body>
-</html>
-'''
-    with open("ai-comfy.html", "w", encoding="utf-8") as f:
-        f.write(ai_html)
-    print("  -> Updated ai-comfy.html (Nav: VFX, ComfyUI Workflows)")
-
-    # --------------------------------------------------------------------------
-    # 6. SYNC BLOG (pages/06_blog)
-    # --------------------------------------------------------------------------
-    blog_dir = "pages/06_blog"
-    blog_bg_img_html, blog_bg_overlay_html, blog_resolved_bg, blog_overlay_alpha = get_page_background_and_overlay(blog_dir)
-    reader_bg_html = f'<div class="reader-bg-image" style="background-image: url(\'{blog_resolved_bg}\');"></div>\n    <div class="reader-bg-overlay" style="opacity: {blog_overlay_alpha};"></div>' if blog_resolved_bg else ''
-
-    # 1. Read Blog content.json (title, description, overlayOpacity)
-    blog_page_info = {
-        "title": "Technical Blog & Guides",
-        "description": "Practical setups, automation scripts, compositing breakdowns, and workflow optimization for VFX & AI artists."
-    }
-    blog_content_json = os.path.join(blog_dir, "content.json")
-    if os.path.exists(blog_content_json):
-        try:
-            with open(blog_content_json, "r", encoding="utf-8") as f:
-                blog_page_info.update(json.load(f))
-        except Exception:
-            pass
-
-    blog_title = blog_page_info.get("title", "Technical Blog & Guides")
-    blog_desc = blog_page_info.get("description", "")
-    blog_title_inner = blog_title.strip() if blog_title else '&nbsp;'
-    blog_desc_inner = blog_desc.strip() if blog_desc else '&nbsp;'
-
-    # 2. Discover and Parse all Dated Post Folders in pages/06_blog/posts/
-    posts_base_dir = os.path.join(blog_dir, "posts")
-    parsed_posts = []
-
-    month_names = ["January", "February", "March", "April", "May", "June",
-                   "July", "August", "September", "October", "November", "December"]
-
-    if os.path.exists(posts_base_dir):
-        post_subdirs = sorted([d for d in os.listdir(posts_base_dir) if os.path.isdir(os.path.join(posts_base_dir, d))], reverse=True)
-        for folder_name in post_subdirs:
-            folder_path = os.path.join(posts_base_dir, folder_name)
-            
-            # Post Metadata
-            post_meta = {
-                "title": format_title_from_filename(folder_name),
-                "date": "2026-01-01",
-                "category": "General",
-                "tags": [],
-                "subheading": "",
-                "thumbnail": "",
-                "author": "Prasannakumar T Bhat",
-                "readTime": "5 min read"
-            }
-
-            # Date extraction strictly from folder name: YYYY-MM-DD... (single source of truth)
-            date_match = re.match(r'^(\d{4})-(\d{2})-(\d{2})', folder_name)
-            post_date = f"{date_match.group(1)}-{date_match.group(2)}-{date_match.group(3)}" if date_match else "2026-01-01"
-            post_meta["date"] = post_date
-
-            # Load post.json if present
-            post_json_path = os.path.join(folder_path, "post.json")
-            if os.path.exists(post_json_path):
-                try:
-                    with open(post_json_path, "r", encoding="utf-8") as f:
-                        loaded_json = json.load(f)
-                        if isinstance(loaded_json, dict):
-                            loaded_json.pop("date", None) # strictly fetched from folder name
-                            post_meta.update(loaded_json)
-                except Exception:
-                    pass
-
-            # Read post.md content
-            md_content = ""
-            for md_cand in ["post.md", "index.md", "article.md", "README.md"]:
-                md_p = os.path.join(folder_path, md_cand)
-                if os.path.exists(md_p):
-                    with open(md_p, "r", encoding="utf-8") as f:
-                        md_content = f.read()
-                    break
-
-            # If metadata was in YAML frontmatter in post.md
-            if md_content.startswith("---"):
-                parts = md_content.split("---", 2)
-                if len(parts) >= 3:
-                    try:
-                        frontmatter = yaml.safe_load(parts[1])
-                        if isinstance(frontmatter, dict):
-                            frontmatter.pop("date", None) # strictly fetched from folder name
-                            post_meta.update(frontmatter)
-                            md_content = parts[2].strip()
-                    except Exception:
-                        pass
-
-            # Enforce date strictly from folder name
-            post_meta["date"] = post_date
-
-            # 1. Extract Title from markdown (1st # Heading)
-            extracted_title = ""
-            if md_content:
-                title_match = re.search(r'^\s*#\s+(.+)$', md_content, re.MULTILINE)
-                if title_match:
-                    extracted_title = title_match.group(1).strip()
-
-            # 2. Extract Subheading from markdown (1st paragraph of text)
-            extracted_subheading = ""
-            if md_content:
-                raw_paragraphs = re.split(r'\r?\n\s*\r?\n', md_content)
-                for raw_p in raw_paragraphs:
-                    p_clean = raw_p.strip()
-                    if not p_clean:
-                        continue
-                    if p_clean.startswith('#') or p_clean.startswith('![') or p_clean.startswith('<') or p_clean.startswith('```') or p_clean.startswith('>') or p_clean.startswith('---'):
-                        continue
-                    clean_excerpt = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', p_clean)
-                    clean_excerpt = re.sub(r'[*_`]', '', clean_excerpt)
-                    clean_excerpt = ' '.join(clean_excerpt.split())
-                    if clean_excerpt:
-                        extracted_subheading = clean_excerpt
-                        break
-
-            # 3. Extract Thumbnail from markdown (1st image in post.md)
-            extracted_thumb = ""
-            if md_content:
-                md_img_match = re.search(r'!\[([^\]]*)\]\(([^)]+)\)', md_content)
-                html_img_match = re.search(r'<img[^>]+src=[\'"]([^\'"]+)[\'"]', md_content)
-
-                first_img_src = None
-                if md_img_match and html_img_match:
-                    if md_img_match.start() < html_img_match.start():
-                        first_img_src = md_img_match.group(2).strip()
-                    else:
-                        first_img_src = html_img_match.group(1).strip()
-                elif md_img_match:
-                    first_img_src = md_img_match.group(2).strip()
-                elif html_img_match:
-                    first_img_src = html_img_match.group(1).strip()
-
-                if first_img_src:
-                    clean_src = first_img_src.split('?')[0].strip()
-                    if clean_src.startswith("http") or clean_src.startswith("/") or clean_src.startswith("pages/"):
-                        extracted_thumb = clean_src
-                    else:
-                        base_thumb, _ = os.path.splitext(clean_src)
-                        webp_path = os.path.join(folder_path, f"{base_thumb}.webp")
-                        orig_path = os.path.join(folder_path, clean_src)
-                        if os.path.exists(webp_path):
-                            extracted_thumb = f"{folder_path}/{base_thumb}.webp".replace("\\", "/")
-                        elif os.path.exists(orig_path):
-                            extracted_thumb = f"{folder_path}/{clean_src}".replace("\\", "/")
-
-            post_title = extracted_title or post_meta.get("title") or format_title_from_filename(folder_name)
-            post_subheading = extracted_subheading or post_meta.get("subheading") or ""
-
-            # Resolve thumbnail image (extracted_thumb primary, fallback to folder files)
-            thumbnail_path = extracted_thumb or ""
-            if not thumbnail_path and post_meta.get("thumbnail"):
-                cand_thumb = os.path.join(folder_path, post_meta["thumbnail"])
-                if os.path.exists(cand_thumb):
-                    thumbnail_path = cand_thumb.replace("\\", "/")
-                elif os.path.exists(post_meta["thumbnail"]):
-                    thumbnail_path = post_meta["thumbnail"].replace("\\", "/")
-
-            if not thumbnail_path:
-                for img_cand in ["cover.webp", "cover.jpg", "cover.png", "thumbnail.webp", "thumbnail.jpg", "thumbnail.png"]:
-                    p = os.path.join(folder_path, img_cand)
-                    if os.path.exists(p):
-                        thumbnail_path = p.replace("\\", "/")
-                        break
-
-            if not thumbnail_path:
-                # Fallback to any image in post folder
-                for f in sorted(os.listdir(folder_path)):
-                    if os.path.splitext(f)[1].lower() in valid_img_exts:
-                        thumbnail_path = f"{folder_path}/{f}".replace("\\", "/")
-                        break
-
-            # Parse date for Year and Month
-            post_date = post_meta.get("date", "2026-01-01")
-            d_parts = post_date.split("-")
-            year_str = d_parts[0] if len(d_parts) > 0 else "2026"
-            month_idx = int(d_parts[1]) - 1 if len(d_parts) > 1 and d_parts[1].isdigit() else 0
-            month_name = month_names[month_idx] if 0 <= month_idx < 12 else "January"
-
-            # Render Markdown into HTML
-            rendered_html = ""
-            if md_content:
-                # Remove top # Title line from markdown body so it is not duplicated in reader
-                md_body = re.sub(r'^\s*#\s+[^\r\n]+(?:\r?\n)+', '', md_content, count=1)
-
-                # 1. Process relative image paths: e.g. src="image.png" -> src="pages/06_blog/posts/.../image.webp"
-                def fix_md_img(m):
-                    alt, src = m.group(1), m.group(2)
-                    if not src.startswith("http") and not src.startswith("/") and not src.startswith("pages/"):
-                        base_s, _ = os.path.splitext(src)
-                        if os.path.exists(os.path.join(folder_path, f"{base_s}.webp")):
-                            src = f"{folder_path}/{base_s}.webp".replace("\\", "/")
-                        else:
-                            src = f"{folder_path}/{src}".replace("\\", "/")
-                    return f'![{alt}]({src})'
-                fixed_md = re.sub(r'!\[([^\]]*)\]\(([^)]+)\)', fix_md_img, md_body)
-
-                # Process code blocks into collapsible cards with copy button
-                def process_markdown_code_blocks(md_text):
-                    code_pattern = re.compile(r'```([a-zA-Z0-9_-]*)\r?\n(.*?)```', re.DOTALL)
-                    def code_repl(m):
-                        lang = m.group(1).strip() or 'text'
-                        code_raw = m.group(2).rstrip()
-                        code_esc = html.escape(code_raw)
-                        line_count = len(code_raw.splitlines())
-                        if line_count <= 3:
-                            # 3 or fewer lines: show expanded by default, omit expand/collapse button
-                            return f'''<div class="code-block-card">
-  <div class="code-block-header">
-    <span class="code-lang-badge">{lang}</span>
-    <div class="code-actions">
-      <button type="button" class="btn-code-copy" onclick="copyCodeBlock(this)">Copy</button>
-    </div>
-  </div>
-  <pre><code class="language-{lang}">{code_esc}</code></pre>
-</div>'''
-                        else:
-                            # Greater than 3 lines: collapsed by default (3 lines), include expand/collapse toggle
-                            return f'''<div class="code-block-card is-collapsed">
-  <div class="code-block-header">
-    <span class="code-lang-badge">{lang}</span>
-    <div class="code-actions">
-      <button type="button" class="btn-code-toggle" onclick="toggleCodeBlock(this)">Expand</button>
-      <button type="button" class="btn-code-copy" onclick="copyCodeBlock(this)">Copy</button>
-    </div>
-  </div>
-  <pre><code class="language-{lang}">{code_esc}</code></pre>
-</div>'''
-                    return code_pattern.sub(code_repl, md_text)
-
-                md_with_code = process_markdown_code_blocks(fixed_md)
-                compiled_html = markdown.markdown(md_with_code, extensions=['tables'])
-
-                # Also fix any <img src="relative"> in html:
-                def fix_html_img(m):
-                    pfx, src, sfx = m.group(1), m.group(2), m.group(3)
-                    if not src.startswith("http") and not src.startswith("/") and not src.startswith("pages/"):
-                        base_s, _ = os.path.splitext(src)
-                        if os.path.exists(os.path.join(folder_path, f"{base_s}.webp")):
-                            src = f"{folder_path}/{base_s}.webp".replace("\\", "/")
-                        else:
-                            src = f"{folder_path}/{src}".replace("\\", "/")
-                    return f'{pfx}{src}{sfx}'
-                rendered_html = re.sub(r'(<img[^>]+src=[\'"])([^\'"]+)([\'"][^>]*>)', fix_html_img, compiled_html)
-
-            # Generate Post ID / slug
-            post_id = slugify(folder_name)
-            slug = re.sub(r'^\d{4}-\d{2}-\d{2}[-_]*', '', folder_name) or post_id
-
-            parsed_posts.append({
-                "id": post_id,
-                "slug": slug,
-                "folder": folder_path.replace("\\", "/"),
-                "title": post_title,
-                "date": post_date,
-                "year": year_str,
-                "month_name": month_name,
-                "category": post_meta.get("category", "General"),
-                "tags": post_meta.get("tags", []),
-                "subheading": post_subheading,
-                "thumbnail": thumbnail_path,
-                "author": post_meta.get("author", "Prasannakumar T Bhat"),
-                "readTime": post_meta.get("readTime", "5 min read"),
-                "rendered_html": rendered_html
-            })
-
-    # Sort parsed posts descending by date
-    parsed_posts.sort(key=lambda x: x["date"], reverse=True)
-
-    # 3. Build Tree Data: Year -> Month -> Posts
-    tree_hierarchy = {}
-    categories_set = set()
-    tags_set = set()
-    for p in parsed_posts:
-        y = p["year"]
-        m = p["month_name"]
-        if y not in tree_hierarchy:
-            tree_hierarchy[y] = {}
-        if m not in tree_hierarchy[y]:
-            tree_hierarchy[y][m] = []
-        tree_hierarchy[y][m].append(p)
-        if p.get("category"):
-            categories_set.add(p["category"])
-        if p.get("tags") and isinstance(p["tags"], list):
-            for t in p["tags"]:
-                if t and isinstance(t, str) and t.strip():
-                    tags_set.add(t.strip())
-
-    tree_items_html = []
-    for y in sorted(tree_hierarchy.keys(), reverse=True):
-        year_total = sum(len(tree_hierarchy[y][m]) for m in tree_hierarchy[y])
-        months_html = []
-        for m in sorted(tree_hierarchy[y].keys()):
-            m_count = len(tree_hierarchy[y][m])
-            months_html.append(f'''
-              <li class="tree-item tree-month" data-year="{y}" data-month="{m}" onclick="filterByMonth('{y}', '{m}')">
-                <span class="tree-left-wrap">
-                  <span class="tree-bullet">&bull;</span>
-                  <span class="tree-label">{m}</span>
-                </span>
-                <span class="tree-count">{m_count}</span>
-              </li>''')
-
-        tree_items_html.append(f'''
-          <li class="tree-item tree-year" data-year="{y}">
-            <div class="tree-node" onclick="toggleTreeNode(this, '{y}')">
-              <span class="tree-left-wrap">
-                <span class="tree-arrow">&#9660;</span>
-                <span class="tree-label">{y}</span>
-              </span>
-              <span class="tree-count">{year_total}</span>
-            </div>
-            <ul class="tree-children">
-              {"".join(months_html)}
-            </ul>
-          </li>''')
-
-    categories_pills = []
-    for cat in sorted(categories_set):
-        cat_esc = html.escape(cat)
-        categories_pills.append(f'<button type="button" class="filter-pill category-filter-pill" data-category="{cat_esc}" onclick="filterByCategory(\'{cat_esc}\')">{cat_esc}</button>')
-
-    tags_pills = []
-    for tag in sorted(tags_set, key=lambda x: x.lower()):
-        tag_esc = html.escape(tag)
-        tags_pills.append(f'<button type="button" class="filter-pill tag-filter-pill" data-tag="{tag_esc}" onclick="filterByTag(\'{tag_esc}\')">{tag_esc}</button>')
-
-    posts_json_str = json.dumps(parsed_posts)
-
-    blog_page_title = blog_page_info.get("pageTitle", f"{blog_title} | Pra - Motions").strip() or f"{blog_title} | Pra - Motions"
-    blog_seo_meta = get_seo_meta_tags(
-        "blog.html",
-        blog_page_title,
-        blog_desc or "Technical blog, practical VFX setups, automation scripts, and workflow optimization."
-    )
-
-    blog_html = f'''<!DOCTYPE html>
-<html lang="en">
-<head>
-{ga_head_tag}
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{blog_page_title}</title>
-  <meta name="description" content="{blog_desc}">
-{blog_seo_meta}
-  <link rel="icon" type="image/png" href="_engine/images/logo.png">
-{FONTS_HTML}
-  
-  <link rel="stylesheet" href="_engine/css/main.css">
-  <link rel="stylesheet" href="_engine/css/components.css">
-  <link rel="stylesheet" href="_engine/css/glightbox.min.css">
-  <link rel="stylesheet" href="_engine/css/responsive.css">
-  <link rel="stylesheet" href="_engine/css/prism.css">
-  <link rel="stylesheet" href="_engine/css/blog.css">
-</head>
-<body>
-{ga_body_tag}
-  {blog_bg_img_html}
-  {blog_bg_overlay_html}
-
-{generate_nav_html("blog")}
-
-  <main style="padding-top: clamp(84px, 7vw, 110px); padding-bottom: clamp(36px, 5vw, 64px);">
-    <div class="container-wide">
-      
-      <!-- Page Header -->
-      <div class="section-header">
-        <h1 class="section-title">{blog_title_inner}</h1>
-        <p class="section-desc">{blog_desc_inner}</p>
-      </div>
-
-      <!-- Blog Layout: Sidebar Tree + 3-Tile Grid -->
-      <div class="blog-layout">
-        
-        <!-- Left Sidebar: Independent Filters & Archive Cards -->
-        <aside class="blog-sidebar">
-          
-          <!-- Box 1: Content Filters Card (Categories & Tags First) -->
-          <div class="blog-tree-card blog-filter-card">
-            
-            <!-- Categories Section -->
-            <div class="tree-categories-wrap">
-              <div class="tree-section-header">
-                <h4 class="tree-subtitle">Categories</h4>
-                <button type="button" class="filter-pill category-filter-pill active" data-category="all" onclick="filterByCategory('all')">All</button>
-              </div>
-              <div class="tree-pill-list" id="categoryPillList">
-                {"".join(categories_pills)}
-              </div>
-            </div>
-
-            <div class="tree-section-divider"></div>
-
-            <!-- Tags Section -->
-            <div class="tree-tags-wrap">
-              <div class="tree-section-header">
-                <h4 class="tree-subtitle">Tags</h4>
-                <button type="button" class="filter-pill tag-filter-pill active" data-tag="all" onclick="filterByTag('all')">All</button>
-              </div>
-              <div class="tree-pill-list" id="tagPillList">
-                {"".join(tags_pills)}
-              </div>
-            </div>
-          </div>
-
-          <!-- Box 2: Independent Date / Archive Filter Card -->
-          <div class="blog-tree-card blog-archive-card">
-            <div class="tree-header">
-              <h3 class="tree-title">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                Archive
-              </h3>
-              <button type="button" class="filter-pill date-filter-pill active" data-date="all" onclick="filterByTree('all')" title="Reset date filter">All</button>
-            </div>
-
-            <ul class="tree-root">
-              {"".join(tree_items_html)}
-            </ul>
-          </div>
-
-        </aside>
-
-        <!-- Main Blog Area: Post Grid & Pagination -->
-        <section class="blog-content-area">
-          <div class="blog-grid" id="blogGrid">
-            <!-- Populated dynamically by blog.js with initial server-side fallback -->
-          </div>
-
-          <!-- Pagination Controls -->
-          <div class="blog-pagination" id="blogPagination">
-            <button type="button" class="page-nav-btn prev-btn" id="prevPageBtn" onclick="changePage(-1)">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
-              <span>Previous</span>
-            </button>
-            
-            <div class="page-numbers-wrap" id="pageNumbers"></div>
-
-            <button type="button" class="page-nav-btn next-btn" id="nextPageBtn" onclick="changePage(1)">
-              <span>Next</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-            </button>
-          </div>
-        </section>
-
-      </div>
-
-    </div>
-  </main>
-
-  <!-- Full Post Reader Modal (Expanded Reading View) -->
-  <div id="blogReaderOverlay" class="blog-reader-overlay" aria-hidden="true">
-
-    <!-- Reader Background Layers (matches blog page background and overlay opacity settings) -->
-    {reader_bg_html}
-
-    <!-- Pinned Floating Close Button (Viewport top-right, always visible) -->
-    <button type="button" class="reader-floating-close" onclick="closePostModal()" aria-label="Close article" title="Close article (Esc)">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="18" y1="6" x2="6" y2="18"></line>
-        <line x1="6" y1="6" x2="18" y2="18"></line>
-      </svg>
-    </button>
-
-    <!-- Pinned Side Navigation Arrows: Left (Previous Post) & Right (Next Post) -->
-    <button type="button" class="reader-side-nav reader-side-prev" id="readerSidePrev" onclick="navigatePost(-1)" aria-label="Previous Post" title="Previous Post">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
-        <polyline points="15 18 9 12 15 6"></polyline>
-      </svg>
-    </button>
-
-    <button type="button" class="reader-side-nav reader-side-next" id="readerSideNext" onclick="navigatePost(1)" aria-label="Next Post" title="Next Post">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
-        <polyline points="9 18 15 12 9 6"></polyline>
-      </svg>
-    </button>
-
-    <!-- Pinned Floating Move-to-Top Button (Viewport bottom-right, matches VFX page) -->
-    <button type="button" class="back-to-top reader-back-to-top" id="readerBackToTop" onclick="scrollReaderToTop()" aria-label="Scroll to top" title="Scroll to top">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="18 15 12 9 6 15"></polyline>
-      </svg>
-    </button>
-
-    <!-- Full-page scrolling viewport container -->
-    <div class="blog-reader-scroll" id="blogReaderScroll">
-      <div class="blog-reader-dialog" role="dialog" aria-modal="true">
-        
-        <article class="blog-reader-content">
-          <header class="reader-header">
-            <h1 class="reader-title" id="readerTitle">Title</h1>
-            <div class="reader-meta">
-              <span id="readerDate">Date</span>
-              <span>&bull;</span>
-              <span id="readerReadTime">Read Time</span>
-              <span>&bull;</span>
-              <span id="readerAuthor">Author</span>
-            </div>
-            <div class="reader-tags" id="readerTags"></div>
-          </header>
-
-          <div class="reader-hero-image-wrap" id="readerHeroWrap">
-            <img id="readerHeroImg" src="" alt="Hero Image" class="reader-hero-img">
-          </div>
-
-          <div class="reader-body" id="readerBody"></div>
-
-          <!-- Bottom Post Navigation: Move to Previous & Next Post (50/50 full area, 2 lines with arrow) -->
-          <nav class="reader-footer-nav">
-            <button type="button" class="reader-nav-btn prev-post-btn" id="readerPrevBtn" onclick="navigatePost(-1)" title="Previous Post">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
-              <span class="nav-title" id="readerPrevTitle">Previous Post</span>
-            </button>
-
-            <button type="button" class="reader-nav-btn next-post-btn" id="readerNextBtn" onclick="navigatePost(1)" title="Next Post">
-              <span class="nav-title" id="readerNextTitle">Next Post</span>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-            </button>
-          </nav>
-
-        </article>
-
-      </div>
-    </div>
-
-  </div>
-
-  <script id="blogPostsData" type="application/json">
-{posts_json_str}
-  </script>
-
-  <script src="_engine/js/prism.js"></script>
-  <script src="_engine/js/glightbox.min.js"></script>
-  <script src="_engine/js/blog.js"></script>
-  <script type="module" src="_engine/js/main.js"></script>
-
-{BACK_TO_TOP_HTML}
-</body>
-</html>
-'''
-    with open("blog.html", "w", encoding="utf-8") as f:
-        f.write(blog_html)
-    print("  -> Updated blog.html (Nav: Blog, 3-Tile Grid, Archive Tree, Modal Reader, Code Highlights)")
-
-    # --------------------------------------------------------------------------
-    # 7. SYNC MORE / RESOURCES PAGE (pages/07_more -> more.html, not in nav)
-    # --------------------------------------------------------------------------
+    if check_assets:
+        if check_oversized_raster_assets("pages", prompt_resize=prompt_resize):
+            generate_thumbs = True
+
+    tracking_tags = get_tracking_tags()
+    build_home_page(tracking_tags, generate_thumbs=generate_thumbs)
+    build_vfx_page(tracking_tags, generate_thumbs=generate_thumbs)
+    build_photography_page(tracking_tags, generate_thumbs=generate_thumbs)
+    build_about_page(tracking_tags)
+    build_ai_comfy_page(tracking_tags)
+    build_blog_page(tracking_tags)
     build_resource_listing_page(
         page_id="more",
         dir_candidates=["pages/07_more", "pages/more"],
         default_title="More & Resources",
         default_desc="Direct downloads, project files, and curated links.",
-        ga_head_tag=ga_head_tag,
-        ga_body_tag=ga_body_tag
+        tracking_tags=tracking_tags,
     )
-
-    # --------------------------------------------------------------------------
-    # 8. SYNC EXTRA / UTILITIES PAGE (pages/08_extra -> extra.html, not in nav)
-    # --------------------------------------------------------------------------
     build_resource_listing_page(
         page_id="extra",
         dir_candidates=["pages/08_extra", "pages/extra"],
         default_title="Extra & Utilities",
         default_desc="Additional utilities, downloadable packages, and curated links.",
-        ga_head_tag=ga_head_tag,
-        ga_body_tag=ga_body_tag
+        tracking_tags=tracking_tags,
     )
-
-    # --------------------------------------------------------------------------
-    # 9. GENERATE SITEMAP & ROBOTS.TXT (Exclude /more and /extra)
-    # --------------------------------------------------------------------------
     generate_sitemap_and_robots()
-
     print("\nSUCCESS: All pages synchronized cleanly!")
+
 
 if __name__ == "__main__":
     try:
-        convert_flag = ("--convert-webp" in sys.argv) or ("-w" in sys.argv)
-        sync_all(convert_webp=convert_flag)
+        args = set(sys.argv[1:])
+        convert_flag = bool(args & {"--convert-webp", "-w"})
+        thumbs_flag = "--no-thumbs" not in args
+        check_assets_flag = bool(args & {"--check-assets", "--prompt-resize"})
+        prompt_resize_flag = "--prompt-resize" in args
+        sync_all(
+            convert_webp=convert_flag,
+            generate_thumbs=thumbs_flag,
+            check_assets=check_assets_flag,
+            prompt_resize=prompt_resize_flag,
+        )
     except Exception as err:
         import traceback
         print(f"\n[FATAL BUILD ERROR] {err}", file=sys.stderr)

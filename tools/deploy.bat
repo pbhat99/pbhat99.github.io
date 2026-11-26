@@ -30,9 +30,9 @@ if %ERRORLEVEL% neq 0 (
     exit /b 1
 )
 
-:: 2. Run Site-Wide WebP Conversion and Build
-echo [1/6] Running site-wide WebP conversion and rebuilding all pages...
-"%PY_EXE%" tools\build.py --convert-webp
+:: 2. Run Site-Wide WebP Conversion, Thumb Generation, Asset Check, and Build
+echo [1/5] Running WebP optimization, thumbs sync, asset audit, and rebuilding all pages...
+"%PY_EXE%" tools\build.py --convert-webp --thumbs --check-assets --prompt-resize
 if %ERRORLEVEL% neq 0 (
     echo.
     echo [ERROR] Build failed! Please review the error above.
@@ -42,7 +42,7 @@ if %ERRORLEVEL% neq 0 (
 
 :: 3. Run Site Verification
 echo.
-echo [2/6] Verifying site links, CSS, JS, and image assets...
+echo [2/5] Verifying site links, CSS, JS, and image assets...
 "%PY_EXE%" tools/verify_site.py
 if %ERRORLEVEL% neq 0 (
     echo.

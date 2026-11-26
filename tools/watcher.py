@@ -17,30 +17,35 @@ import socketserver
 import importlib
 import build
 
-PAGES_DIR = "pages"
+WATCH_TARGETS = ("pages", os.path.join("tools", "build.py"), os.path.join("tools", "siteConfig.json"))
 PORT = 8080
 
 def get_dir_state():
     state = {}
-    if not os.path.exists(PAGES_DIR):
-        return state
-    for root, dirs, files in os.walk(PAGES_DIR):
-        for f in files:
-            path = os.path.join(root, f)
+    for target in WATCH_TARGETS:
+        if os.path.isfile(target):
             try:
-                state[path] = os.path.getmtime(path)
+                state[target] = os.path.getmtime(target)
             except OSError:
                 pass
+        elif os.path.isdir(target):
+            for root, _, files in os.walk(target):
+                for f in files:
+                    path = os.path.join(root, f)
+                    try:
+                        state[path] = os.path.getmtime(path)
+                    except OSError:
+                        pass
     return state
 
 def watch_loop():
-    print(f"\n[Watcher] 👁️  Actively monitoring '{PAGES_DIR}/' folder...")
+    print("\n[Watcher] Actively monitoring pages/ and tools/build.py...")
     last_state = get_dir_state()
     while True:
         time.sleep(1.2)
         current_state = get_dir_state()
         if current_state != last_state:
-            print("[Watcher] ⚡ Detected changes in pages/ folder, rebuilding...")
+            print("[Watcher] Detected changes, rebuilding...")
             try:
                 importlib.reload(build)
                 build.sync_all(convert_webp=False)

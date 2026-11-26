@@ -14,7 +14,6 @@
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-
     gtag('config', 'G-PTGZPG59ZS');
   </script>
   <meta charset="UTF-8">
@@ -25,7 +24,7 @@
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://pbhat99.github.io">
 
-  <!-- Open Graph / Social Media Sharing (Facebook, LinkedIn, Discord) -->
+  <!-- Open Graph / Social Media Sharing -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://pbhat99.github.io">
   <meta property="og:title" content="Prasannakumar T Bhat">
@@ -38,7 +37,8 @@
   <meta name="twitter:title" content="Prasannakumar T Bhat">
   <meta name="twitter:description" content="Prasannakumar T Bhat - Visual Effects Compositor. CG is not just faking, its adding beautiful layers of lie on the ugly truth.">
   <meta name="twitter:image" content="https://pbhat99.github.io/_engine/images/logo.png">
-  <link rel="preload" as="image" href="pages/01_home/background_00.webp?v=1794718649">
+  <link rel="preload" as="image" href="pages/01_home/background_00.webp?v=1794718649" fetchpriority="high" media="(min-width: 861px)">
+  <link rel="preload" as="image" href="_engine/proxies/home/background_00.webp?v=1795691983" fetchpriority="high" media="(max-width: 860px)">
   <!-- Structured Data (JSON-LD) for Google Rich Results -->
   <script type="application/ld+json">
   {
@@ -57,290 +57,28 @@
   }
   </script>
   <link rel="icon" type="image/png" href="_engine/images/logo.png">
-  <!-- Local Pre-Compressed WOFF2 Typography (Zero Network Roundtrips) -->
   <link rel="stylesheet" href="_engine/css/fonts.css">
-  <!-- Fallback Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,700&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
-  
   <link rel="stylesheet" href="_engine/css/main.css">
   <link rel="stylesheet" href="_engine/css/components.css">
-  <link rel="stylesheet" href="_engine/css/glightbox.min.css">
+  <link rel="stylesheet" href="_engine/css/home.css">
   <link rel="stylesheet" href="_engine/css/responsive.css">
-  
-  <style>
-    /* Full-Page Fixed Non-Scrollable Viewport */
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
-      position: fixed;
-      inset: 0;
-      background-color: var(--bg-primary);
-      font-family: 'Ubuntu', sans-serif;
-    }
-
-    /* Seamless Navigation */
-    .site-header {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 100;
-      background: transparent !important;
-      border: none !important;
-      box-shadow: none !important;
-    }
-
-    /* Auto-hide & animation on desktop only (screen > 860px) */
-    @media (min-width: 861px) {
-      .site-header {
-        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
-        will-change: transform, opacity;
-      }
-
-      .site-header.header-hidden {
-        transform: translateY(-100%);
-        opacity: 0;
-        pointer-events: none;
-      }
-
-      .site-header:focus-within {
-        transform: translateY(0) !important;
-        opacity: 1 !important;
-        pointer-events: auto !important;
-      }
-    }
-
-    .home-fullscreen-container {
-      position: fixed;
-      inset: 0;
-      width: 100vw;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding-inline: 24px;
-      background-color: var(--bg-primary);
-      overflow: hidden;
-    }
-
-    /* Background Slider & Directional Wipe Layer */
-    .home-bg-slider {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 0;
-      overflow: hidden;
-      pointer-events: none;
-    }
-
-    .home-bg-slide {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      visibility: hidden;
-      pointer-events: none;
-      z-index: 0;
-      will-change: clip-path;
-    }
-
-    .home-bg-slide.is-active {
-      visibility: visible;
-      z-index: 1;
-    }
-
-    .home-bg-slide-inner {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      background-size: cover;
-      background-position: center center;
-      background-repeat: no-repeat;
-    }
-
-    .home-bg-slide-video {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: center center;
-      pointer-events: none;
-    }
-
-    /* Single Controlled Fixed Overlay Layer across all images & videos */
-    .home-bg-overlay {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      background-color: var(--bg-primary);
-      z-index: 1;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-    }
-
-    #bg-canvas {
-      position: fixed;
-      inset: 0;
-      width: 100vw;
-      height: 100vh;
-      pointer-events: none;
-      z-index: 2;
-    }
-
-    /* Center Stage: Stacked 3 Lines, Perfectly Centered */
-    .home-center-stage {
-      position: relative;
-      z-index: 10;
-      max-width: 900px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      gap: 16px;
-    }
-
-    /* 1st Line: Fixed Name */
-    .hero-name-main {
-      font-family: 'Ubuntu', sans-serif;
-      font-size: clamp(2.4rem, 5.5vw, 4.4rem);
-      font-weight: 700;
-      color: var(--text-main);
-      letter-spacing: -0.02em;
-      line-height: 1.1;
-      margin: 0;
-      text-shadow: 0 0 45px rgba(249, 134, 3, 0.25);
-    }
-
-    /* 2nd Line: Designation (Pure text, no box or outline) */
-    .hero-designation-plain {
-      font-family: 'Ubuntu', sans-serif;
-      font-size: clamp(1.05rem, 2vw, 1.45rem);
-      font-weight: 500;
-      color: var(--accent-primary);
-      letter-spacing: 0.05em;
-      margin: 0;
-      line-height: 1.3;
-    }
-
-    /* 3rd Line: Tagline (Pure text, off-white italic) */
-    .hero-tagline-plain {
-      font-family: 'Ubuntu', sans-serif;
-      font-size: clamp(0.95rem, 1.6vw, 1.25rem);
-      font-weight: 400;
-      font-style: italic;
-      color: var(--text-muted);
-      max-width: 740px;
-      margin: 0;
-      line-height: 1.5;
-    }
-
-    .hero-about-wrap {
-      margin-top: 24px;
-    }
-
-    .btn-about {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 11px 40px;
-      font-size: 0.95rem;
-      font-weight: 500;
-      font-family: 'Ubuntu', sans-serif;
-      border-radius: var(--radius-full);
-      background: var(--accent-primary);
-      color: #ffffff;
-      box-shadow: 0 4px 18px rgba(249, 134, 3, 0.4);
-      transition: all var(--transition-fast);
-      letter-spacing: 0.02em;
-    }
-
-    @media (max-width: 768px) {
-      .home-fullscreen-container {
-        padding-inline: 14px;
-        width: 100%;
-        max-width: 100%;
-        overflow-x: hidden;
-      }
-
-      .home-center-stage {
-        max-width: 92vw !important;
-        width: 92vw !important;
-        padding-inline: 8px !important;
-        gap: 8px !important;
-      }
-
-      /* Heading: Half size for mobile */
-      .hero-name-main {
-        font-size: clamp(1.2rem, 5.5vw, 1.55rem) !important;
-        line-height: 1.15 !important;
-        word-break: break-word !important;
-        overflow-wrap: break-word !important;
-        white-space: normal !important;
-      }
-
-      /* Subheading Designation: Half size for mobile */
-      .hero-designation-plain {
-        font-size: clamp(0.7rem, 2.6vw, 0.8rem) !important;
-        line-height: 1.3 !important;
-        word-break: break-word !important;
-        overflow-wrap: break-word !important;
-      }
-
-      /* Subheading Tagline: Half size and wrap into 2 or 3 lines */
-      .hero-tagline-plain {
-        font-size: clamp(0.65rem, 2.3vw, 0.74rem) !important;
-        line-height: 1.45 !important;
-        max-width: 86vw !important;
-        margin-inline: auto !important;
-        word-break: break-word !important;
-        overflow-wrap: break-word !important;
-        white-space: normal !important;
-      }
-
-      .hero-about-wrap {
-        margin-top: 14px !important;
-      }
-
-      .btn-about {
-        padding: 7px 26px !important;
-        font-size: 0.78rem !important;
-      }
-    }
-
-    .btn-about:hover {
-      background: var(--accent-hover);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 25px rgba(249, 134, 3, 0.55);
-    }
-  </style>
 </head>
 <body>
   <!-- Google Tag Manager (noscript) -->
   <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WZLPRH6G"
   height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <!-- End Google Tag Manager (noscript) -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
 
   <header class="site-header">
     <div class="nav-wrapper">
       <a href="index.html" class="brand-logo">
-        <img src="_engine/images/logo.png" alt="Pra Motions Logo" width="34" height="34" style="border-radius: 6px;">
+        <img src="_engine/images/logo.png" alt="Pra Motions Logo" width="34" height="34">
         <span>Pra - <span class="brand-badge">Motions</span></span>
       </a>
 
-      <button class="mobile-nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+      <button type="button" class="mobile-nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
 
@@ -350,12 +88,15 @@
     </div>
   </header>
 
-  <!-- Full-Screen Interactive Viewport -->
-  <main class="home-fullscreen-container">
-    <!-- Background Slider & Directional Wipe Layer -->
+  <main id="main-content" class="home-fullscreen-container">
     <div class="home-bg-slider" id="home-bg-slider" data-wipe-angle="75" data-wipe-from="75" aria-hidden="true">
-      <div class="home-bg-slide is-active" data-index="0" data-type="image">
-        <div class="home-bg-slide-inner" style="background-image: url('pages/01_home/background_00.webp?v=1794718649');"></div>
+      <div class="home-bg-slide is-active" data-index="0" data-type="image" data-loaded="true">
+        <div class="home-bg-slide-inner">
+          <picture>
+            <source media="(max-width: 860px)" srcset="_engine/proxies/home/background_00.webp?v=1795691983">
+            <img src="pages/01_home/background_00.webp?v=1794718649" alt="" class="home-bg-slide-img" fetchpriority="high" decoding="async">
+          </picture>
+        </div>
       </div>
       <div class="home-bg-slide" data-index="1" data-type="image" data-bg="pages/01_home/background_01.webp?v=1795499092">
         <div class="home-bg-slide-inner"></div>
@@ -374,22 +115,16 @@
       </div>
     </div>
     <div class="home-bg-overlay" style="opacity: 0.25;"></div>
-
-    <!-- Interactive Canvas Background -->
     <canvas id="bg-canvas"></canvas>
-
-    <!-- Center Stage: 3 Lines Centered + About Button -->
     <div class="home-center-stage">
       <h1 class="hero-name-main">Prasannakumar T Bhat</h1>
       <p class="hero-designation-plain">Visual Effects Compositor</p>
       <p class="hero-tagline-plain">"CG is not just faking, its adding beautiful layers of lie on the ugly truth."</p>
-
       <div class="hero-about-wrap">
-        <a href="about-me.html" class="btn-about">About</a>
+        <a href="about.html" class="btn-about">About</a>
       </div>
     </div>
   </main>
-
   <script type="module">
     import { initInteractiveBackground } from './_engine/js/interactive-bg.js';
     import { initHomeBackgroundSlider } from './_engine/js/home-bg-slider.js';
@@ -398,25 +133,19 @@
     initInteractiveBackground('bg-canvas');
     initHomeBackgroundSlider('home-bg-slider');
 
-    // Live sync overlay opacity if content.json is edited
     fetch('pages/01_home/content.json')
-      .then(r => r.json())
-      .then(d => {
+      .then((r) => r.json())
+      .then((d) => {
         const raw = d.overlayOpacity ?? d.bgOverlayOpacity ?? d.opacity;
         if (raw !== undefined) {
           let num = parseFloat(raw);
-          if (num > 1) num = num / 100;
+          if (num > 1) num /= 100;
           const overlay = document.querySelector('.home-bg-overlay');
           if (overlay) overlay.style.opacity = Math.max(0, Math.min(1, num));
         }
-      }).catch(() => {});
+      })
+      .catch(() => {});
   </script>
 
-  <!-- Jump to Top Floating Button (Visible past 1 screen height) -->
-  <button id="back-to-top" class="back-to-top" aria-label="Jump to top" title="Jump to top">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <polyline points="18 15 12 9 6 15"></polyline>
-    </svg>
-  </button>
 </body>
 </html>

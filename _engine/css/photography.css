@@ -1,80 +1,21 @@
 /**
  * Photography & 360 Panorama Styles
- * Filter Tab Bar, Mondrian Mosaic Grid (3-5 Images Horizontally), 2:1 Pano Grid,
- * Fullscreen Interactive Viewers with Bottom Filmstrip
+ * Unified 3-Col (All/Photos) and 2-Col (Panoramas) Flex Waterfall,
+ * Fullscreen Interactive Photo & 360 WebGL Panorama Viewers with Bottom Filmstrip
  */
 
-/* ==========================================================================
-   Gallery Tab Bar (Matching VFX Page Filter Pills: size, center-align, no icons/counts)
-   ========================================================================== */
-.filter-bar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
-  align-items: center;
-  margin-top: 10px;
-  margin-bottom: 32px;
-}
-
-.filter-btn,
-.gallery-tab-btn {
-  padding: 8px 18px;
-  font-size: 0.88rem;
-  font-weight: 500;
-  font-family: 'Ubuntu', sans-serif;
-  border-radius: var(--radius-full);
-  background: var(--bg-card);
-  color: var(--text-muted);
-  border: 1px solid var(--border-subtle);
-  transition: all var(--transition-fast);
-  cursor: pointer;
-  user-select: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.filter-btn:hover,
-.gallery-tab-btn:hover {
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.25);
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.filter-btn.active,
-.gallery-tab-btn.active {
-  background: var(--accent-primary) !important;
-  color: #ffffff !important;
-  border-color: var(--accent-primary) !important;
-  box-shadow: 0 0 15px rgba(249, 134, 3, 0.4) !important;
-}
-
-.tab-pill-count,
-.gallery-section-count {
-  display: none !important;
-}
-
-/* ==========================================================================
-   Section Headers (Removed per instruction)
-   ========================================================================== */
 .photo-gallery-section {
   margin-top: 10px;
 }
 
-.gallery-section-heading {
-  display: none !important;
-}
-
 /* ==========================================================================
-   1. Waterfall Photography Layout (3 Columns in All & Photos, 2 Columns in Panoramas)
+   1. Waterfall Photography Layout (3 Columns All/Photos, 2 Columns Panoramas)
    ========================================================================== */
 .waterfall-container {
   display: flex;
   gap: 14px;
   width: 100%;
   align-items: flex-start;
-  box-sizing: border-box;
 }
 
 .waterfall-col {
@@ -83,50 +24,52 @@
   flex-direction: column;
   gap: 14px;
   min-width: 0;
-  box-sizing: border-box;
 }
 
 .waterfall-item {
   width: 100%;
   display: block;
   position: relative;
-  box-sizing: border-box;
 }
 
-/* Waterfall Tiles */
-.waterfall-item .photo-tile,
-.waterfall-item .pano-tile {
-  width: 100%;
-  height: auto;
-  border-radius: var(--radius-md);
-  border: none !important;
-  outline: none !important;
+/* Shared Photo & Panorama Waterfall Tile Styles */
+.photo-tile,
+.pano-tile {
   cursor: pointer;
   position: relative;
   display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: var(--aspect, 1.778);
+  border-radius: var(--radius-md);
   overflow: visible;
-  box-sizing: border-box;
 }
 
-/* Tile Inner Container: Strictly reflects native image aspect-ratio with ZERO crop */
+.pano-tile {
+  aspect-ratio: var(--aspect, 2 / 1);
+}
+
 .waterfall-item .tile-inner {
   width: 100%;
+  height: 100%;
   aspect-ratio: var(--aspect, 1.778);
   border-radius: var(--radius-md);
   overflow: hidden;
   position: relative;
   background-color: var(--bg-card);
-  border: none !important;
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
   transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease;
   z-index: 1;
 }
 
-/* Image fills true-aspect container without any cropping */
+.pano-tile .tile-inner {
+  aspect-ratio: var(--aspect, 2 / 1);
+}
+
 .waterfall-item .tile-img {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Since container aspect-ratio == image native aspect, NO cropping occurs! */
+  object-fit: cover;
   display: block;
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -140,94 +83,16 @@
   transform: scale(1.04);
 }
 
-/* Circling outline on hover */
 .waterfall-item .tile-circling-border {
-  position: absolute;
-  inset: -2px;
-  border-radius: calc(var(--radius-md) + 2px);
   z-index: 2;
-  overflow: hidden;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-  padding: 2px;
-  box-sizing: border-box;
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
 }
 
-.waterfall-item:hover .tile-circling-border {
-  opacity: 1;
-}
-
-/* Responsive Gaps */
-@media (max-width: 900px) {
-  .waterfall-container {
-    gap: 10px;
-  }
-  .waterfall-col {
-    gap: 10px;
-  }
-}
-
-@media (max-width: 600px) {
-  .waterfall-container {
-    gap: 8px;
-  }
-  .waterfall-col {
-    gap: 8px;
-  }
-}
-
-/* Photo Tile Card */
-.photo-tile {
-  cursor: pointer;
-  position: relative;
-  display: block;
-  width: 100%;
-  height: auto;
-  aspect-ratio: var(--aspect, 1.778);
-  border-radius: var(--radius-md);
-  border: none !important;
-  outline: none !important;
-  overflow: visible;
-  box-sizing: border-box;
-}
-
-.photo-tile:hover .tile-circling-border {
-  opacity: 1;
-}
-
-.photo-tile .tile-inner {
-  width: 100%;
-  height: 100%;
-  aspect-ratio: var(--aspect, 1.778);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  background-color: var(--bg-card);
-  border: none !important;
-  position: relative;
-  z-index: 1;
-}
-
-.photo-tile .tile-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.photo-tile:hover .tile-img {
-  transform: scale(1.05);
-}
-
-/* Hover Overlay for Photo Title */
-.photo-tile .tile-hover-overlay {
+/* Title Overlay */
+.photo-tile .tile-hover-overlay,
+.pano-tile .tile-hover-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(8, 14, 32, 0.95) 0%, rgba(8, 14, 32, 0.5) 45%, transparent 100%);
+  background: linear-gradient(to top, rgba(8, 14, 32, 0.95) 0%, rgba(8, 14, 32, 0.48) 45%, transparent 100%);
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -238,78 +103,23 @@
   z-index: 3;
 }
 
-.photo-tile:hover .tile-hover-overlay {
+.photo-tile:hover .tile-hover-overlay,
+.pano-tile:hover .tile-hover-overlay,
+.photo-tile:focus-visible .tile-hover-overlay,
+.pano-tile:focus-visible .tile-hover-overlay {
   opacity: 1;
 }
 
-.photo-tile .tile-title {
-  font-family: 'Ubuntu', sans-serif;
-  font-size: clamp(0.92rem, 1.3vw, 1.05rem);
+.photo-tile .tile-title,
+.pano-tile .tile-title {
+  font-family: var(--font-sans);
+  font-size: clamp(0.92rem, 1.3vw, 1.08rem);
   font-weight: 700;
   color: #ffffff;
-  margin: 0;
   line-height: 1.3;
 }
 
-/* ==========================================================================
-   2. 360 Panoramas: 2 per row 2:1 Grid
-   ========================================================================== */
-.pano-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
-  width: 100%;
-}
-
-@media (max-width: 768px) {
-  .pano-grid {
-    grid-template-columns: 1fr;
-    gap: 18px;
-  }
-}
-
-.pano-tile {
-  position: relative;
-  aspect-ratio: var(--aspect, 2 / 1);
-  cursor: pointer;
-  border-radius: var(--radius-md);
-  border: none !important;
-  outline: none !important;
-  overflow: visible;
-  box-sizing: border-box;
-}
-
-.pano-tile:hover .tile-circling-border {
-  opacity: 1;
-}
-
-.pano-tile .tile-inner {
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  background-color: var(--bg-card);
-  border: none !important;
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  height: 100%;
-  aspect-ratio: var(--aspect, 2 / 1);
-}
-  height: 100%;
-}
-
-.pano-tile .tile-img {
-  width: 100%;
-  height: 100%;
-  aspect-ratio: 2 / 1;
-  object-fit: cover;
-  display: block;
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.pano-tile:hover .tile-img {
-  transform: scale(1.04);
-}
-
+/* 360 Panorama Indicators */
 .pano-badge {
   position: absolute;
   top: 14px;
@@ -317,10 +127,9 @@
   z-index: 4;
   padding: 5px 12px;
   border-radius: var(--radius-full);
-  background: rgba(14, 23, 51, 0.9);
-  border: 1px solid rgba(249, 134, 3, 0.5);
+  background: rgba(14, 23, 51, 0.88);
+  border: 1px solid rgba(249, 134, 3, 0.42);
   color: var(--accent-primary);
-  font-family: var(--font-sans);
   font-size: 0.75rem;
   font-weight: 600;
   display: inline-flex;
@@ -362,35 +171,23 @@
   opacity: 1;
 }
 
-.pano-tile .tile-hover-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(8, 14, 32, 0.95) 0%, rgba(8, 14, 32, 0.45) 45%, transparent 100%);
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: 18px;
-  opacity: 0;
-  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  pointer-events: none;
-  z-index: 3;
+/* Responsive Waterfall Gaps */
+@media (max-width: 900px) {
+  .waterfall-container,
+  .waterfall-col {
+    gap: 10px;
+  }
 }
 
-.pano-tile:hover .tile-hover-overlay {
-  opacity: 1;
-}
-
-.pano-tile .tile-title {
-  font-family: 'Ubuntu', sans-serif;
-  font-size: clamp(0.95rem, 1.3vw, 1.15rem);
-  font-weight: 700;
-  color: #ffffff;
-  margin: 0;
-  line-height: 1.3;
+@media (max-width: 600px) {
+  .waterfall-container,
+  .waterfall-col {
+    gap: 8px;
+  }
 }
 
 /* ==========================================================================
-   3. Fullscreen Viewer Modals (Photos & 360 Panos)
+   2. Fullscreen Viewer Modals (Photos & 360 Panos)
    ========================================================================== */
 .fullscreen-viewer-modal {
   position: fixed;
@@ -399,7 +196,7 @@
   background: rgba(8, 14, 32, 0.98);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  display: none; /* Inactive modals are completely detached from rendering */
+  display: none;
   flex-direction: column;
   opacity: 0;
   pointer-events: none;
@@ -413,7 +210,6 @@
   pointer-events: auto;
 }
 
-/* Viewer Top Header */
 .viewer-top-bar {
   position: absolute;
   top: 0;
@@ -431,20 +227,21 @@
 .viewer-title-wrap {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  flex: 1 1 auto;
   min-width: 0;
+  margin-right: 12px;
 }
 
 .viewer-title {
-  font-family: 'Ubuntu', sans-serif;
-  font-size: clamp(1rem, 1.8vw, 1.25rem);
+  font-size: clamp(0.95rem, 1.8vw, 1.25rem);
   font-weight: 700;
   color: #ffffff;
-  margin: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: clamp(240px, 50vw, 600px);
+  min-width: 0;
+  flex: 0 1 auto;
 }
 
 .viewer-counter {
@@ -479,25 +276,9 @@
   z-index: 10060;
 }
 
-/* Bulletproof Close Button Style */
 .viewer-close-btn {
-  width: 46px;
-  height: 46px;
-  border-radius: var(--radius-full);
-  background: rgba(14, 23, 51, 0.94);
-  border: 1px solid var(--accent-primary);
-  color: var(--accent-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.55), 0 0 12px rgba(249, 134, 3, 0.2);
-  transition: all 0.2s ease;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   position: relative;
   z-index: 10060;
-  pointer-events: auto;
 }
 
 .viewer-close-btn svg {
@@ -505,61 +286,32 @@
 }
 
 .viewer-close-btn:hover {
-  background: var(--accent-primary);
-  color: #ffffff;
   transform: scale(1.08) rotate(90deg);
-  border-color: var(--accent-hover);
-  box-shadow: 0 8px 28px rgba(249, 134, 3, 0.55);
 }
 
-/* Pinned Prev & Next Arrows */
+/* Prev & Next Floating Arrows */
 .viewer-side-arrow {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
   width: 48px;
   height: 48px;
-  border-radius: var(--radius-full);
-  background: rgba(14, 23, 51, 0.92);
-  border: 1px solid var(--accent-primary);
-  color: var(--accent-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
   z-index: 10050;
-  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.55), 0 0 12px rgba(249, 134, 3, 0.2);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 }
 
-.viewer-prev-arrow {
-  left: 20px;
-}
+.viewer-prev-arrow { left: 20px; }
+.viewer-next-arrow { right: 20px; }
 
-.viewer-next-arrow {
-  right: 20px;
-}
-
-.viewer-side-arrow:hover {
-  background: var(--accent-primary);
-  color: #ffffff;
-  border-color: var(--accent-hover);
-  box-shadow: 0 8px 28px rgba(249, 134, 3, 0.55);
-}
-
-.viewer-prev-arrow:hover {
-  transform: translateY(-50%) translateX(-2px) scale(1.08);
-}
-
-.viewer-next-arrow:hover {
-  transform: translateY(-50%) translateX(2px) scale(1.08);
-}
+.viewer-prev-arrow:hover { transform: translateY(-50%) translateX(-2px) scale(1.08); }
+.viewer-next-arrow:hover { transform: translateY(-50%) translateX(2px) scale(1.08); }
 
 @media (max-width: 640px) {
   .viewer-side-arrow {
-    display: none !important;
+    display: none;
+  }
+
+  .pano-modal-tag {
+    display: none;
   }
 }
 
@@ -577,13 +329,6 @@
   padding: 12px 70px;
 }
 
-@media (max-width: 640px) {
-  .viewer-stage {
-    padding: 12px 14px;
-    bottom: 96px;
-  }
-}
-
 .viewer-img-container {
   max-width: 100%;
   max-height: 100%;
@@ -596,21 +341,12 @@
   max-height: calc(100vh - 190px);
   max-width: calc(100vw - 140px);
   object-fit: contain;
-  display: block;
   border-radius: 4px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
   transition: opacity 0.2s ease, transform 0.25s ease;
   user-select: none;
 }
 
-@media (max-width: 640px) {
-  .viewer-main-img {
-    max-width: 100%;
-    max-height: calc(100vh - 180px);
-  }
-}
-
-/* 360 Panorama Stage */
 .pano-stage {
   position: absolute;
   top: 0;
@@ -620,20 +356,30 @@
   overflow: hidden;
 }
 
-@media (max-width: 640px) {
-  .pano-stage {
-    bottom: 96px;
-  }
-}
-
 .pano-webgl-viewport {
   width: 100%;
   height: 100%;
   background: #050814;
 }
 
+@media (max-width: 640px) {
+  .viewer-stage {
+    padding: 12px 14px;
+    bottom: 96px;
+  }
+
+  .viewer-main-img {
+    max-width: 100%;
+    max-height: calc(100vh - 180px);
+  }
+
+  .pano-stage {
+    bottom: 96px;
+  }
+}
+
 /* ==========================================================================
-   4. Bottom Filmstrip Component
+   3. Bottom Filmstrip Component
    ========================================================================== */
 .viewer-filmstrip-bar {
   position: absolute;
@@ -671,7 +417,6 @@
   -webkit-overflow-scrolling: touch;
 }
 
-/* Sleek dark scrollbar for filmstrip */
 .filmstrip-track::-webkit-scrollbar {
   height: 4px;
 }
@@ -686,9 +431,8 @@
   border-radius: 2px;
 }
 
-/* Normal Photo Filmstrip Thumbnail */
-.filmstrip-item {
-  height: 68px;
+.filmstrip-item,
+.filmstrip-pano-item {
   border-radius: 6px;
   overflow: hidden;
   flex-shrink: 0;
@@ -698,60 +442,39 @@
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   background: rgba(14, 23, 51, 0.8);
+}
+
+.filmstrip-item {
+  height: 68px;
+}
+
+.filmstrip-pano-item {
+  height: 58px;
+  aspect-ratio: 2 / 1;
 }
 
 .filmstrip-item img {
   height: 100%;
   width: auto;
-  display: block;
   object-fit: cover;
   pointer-events: none;
-}
-
-.filmstrip-item:hover {
-  opacity: 0.9;
-  border-color: rgba(249, 134, 3, 0.5);
-  transform: translateY(-2px);
-}
-
-.filmstrip-item.active {
-  opacity: 1;
-  border-color: var(--accent-primary);
-  transform: scale(1.08);
-  box-shadow: 0 0 18px rgba(249, 134, 3, 0.65), 0 4px 14px rgba(0, 0, 0, 0.6);
-  z-index: 2;
-}
-
-/* 2:1 Pano Filmstrip Thumbnail */
-.filmstrip-pano-item {
-  height: 58px;
-  aspect-ratio: 2 / 1;
-  border-radius: 6px;
-  overflow: hidden;
-  flex-shrink: 0;
-  border: 2px solid transparent;
-  cursor: pointer;
-  opacity: 0.55;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  position: relative;
-  background: rgba(14, 23, 51, 0.8);
 }
 
 .filmstrip-pano-item img {
   width: 100%;
   height: 100%;
-  aspect-ratio: 2 / 1;
   object-fit: cover;
-  display: block;
   pointer-events: none;
 }
 
+.filmstrip-item:hover,
 .filmstrip-pano-item:hover {
   opacity: 0.9;
   border-color: rgba(249, 134, 3, 0.5);
   transform: translateY(-2px);
 }
 
+.filmstrip-item.active,
 .filmstrip-pano-item.active {
   opacity: 1;
   border-color: var(--accent-primary);

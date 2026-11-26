@@ -1,21 +1,19 @@
 /**
  * Pra - Motions: Home Page Multi-Background Parallax Wipe Slider
- * Features:
- * - Direct interactive scroll-driven wipe scrub matching scroll speed exactly
- * - Controlled forward and backward with mouse wheel, trackpad, and mobile touch
- * - Allows stopping halfway at any point with zero snapping
- * - True diagonal mask (clean 45° diagonal dividing line, not a box/square mask)
- * - Supports image (webp, jfif, jpg, png) and video (mp4, webm) backgrounds
- * - Configurable wipe direction via json key wipeFrom (bottom, left, right, top, bottom-left, top-left, etc.)
- * - Non-priority progressive lazy loading
+ * - Direct interactive scroll-driven wipe scrub matching scroll speed
+ * - Arbitrary angle diagonal polygon clipping
+ * - Non-priority progressive lazy loading for images & videos
+ * - Desktop-only auto-hiding header (stays static/visible on mobile <= 860px)
  */
+
+const MOBILE_MQ = '(max-width: 860px)';
 
 export function initHomeHeaderScroll() {
   const header = document.querySelector('.site-header');
   if (!header) return;
 
-  // On mobile version: do not hide or animate (reverted back to static visible header)
-  if (window.matchMedia('(max-width: 860px)').matches) {
+  const isMobile = () => window.matchMedia(MOBILE_MQ).matches;
+  if (isMobile()) {
     header.classList.remove('header-hidden');
     return;
   }
@@ -23,12 +21,9 @@ export function initHomeHeaderScroll() {
   let isHeaderHidden = false;
 
   function setHeaderVisibility(show) {
-    // Keep visible if on mobile
-    if (window.matchMedia('(max-width: 860px)').matches) {
-      if (isHeaderHidden) {
-        header.classList.remove('header-hidden');
-        isHeaderHidden = false;
-      }
+    if (isMobile()) {
+      header.classList.remove('header-hidden');
+      isHeaderHidden = false;
       return;
     }
 
@@ -36,43 +31,36 @@ export function initHomeHeaderScroll() {
       header.classList.remove('header-hidden');
       isHeaderHidden = false;
     } else if (!show && !isHeaderHidden) {
-      // Don't hide if mobile nav drawer is open
       const navLinks = document.querySelector('.nav-links');
       if (navLinks && navLinks.classList.contains('active')) return;
-
       header.classList.add('header-hidden');
       isHeaderHidden = true;
     }
   }
 
-  // Hide ONLY on scroll down. Do NOT unhide on scroll up per user instruction.
+  // Hide strictly on scroll down; do NOT unhide on scroll up (ArrowUp / PageUp / wheel up)
   window.addEventListener('wheel', (e) => {
-    if (e.deltaY > 3) {
-      setHeaderVisibility(false); // Scroll down -> hide header
-    }
-    // Do NOT unhide on scroll up (deltaY < 0)
+    if (e.deltaY > 3) setHeaderVisibility(false);
   }, { passive: true });
 
-  // Keyboard: hide on scroll down keys ONLY. Do NOT unhide on ArrowUp or PageUp.
   window.addEventListener('keydown', (e) => {
     if (['ArrowDown', 'PageDown', ' '].includes(e.key)) {
       setHeaderVisibility(false);
     }
   });
 
-  // Unhide on mouse move anywhere across the entire viewport (full area, all coordinates)
+  // Unhide on mouse movement anywhere across the full viewport
   let lastMouseX = -1;
   let lastMouseY = -1;
   window.addEventListener('mousemove', (e) => {
     if (lastMouseX === e.clientX && lastMouseY === e.clientY) return;
     lastMouseX = e.clientX;
     lastMouseY = e.clientY;
-    setHeaderVisibility(true); // Bring header back on mouse move anywhere
+    setHeaderVisibility(true);
   }, { passive: true });
 
-  // Handle window resize cleanly
   window.addEventListener('resize', () => {
-    if (window.matchMedia('(max-width: 860px)').matches) {
+    if (isMobile()) {
       header.classList.remove('header-hidden');
       isHeaderHidden = false;
     }
@@ -80,7 +68,6 @@ export function initHomeHeaderScroll() {
 }
 
 export function initHomeBackgroundSlider(containerId = 'home-bg-slider') {
-  // Initialize auto-hiding header for full screen immersion on both desktop & mobile
   initHomeHeaderScroll();
 
   const container = document.getElementById(containerId);
@@ -90,16 +77,13 @@ export function initHomeBackgroundSlider(containerId = 'home-bg-slider') {
   const totalSlides = slides.length;
   if (totalSlides <= 1) return;
 
-  // On mobile screens: keep single static background image (no wipe or video background)
-  const isMobile = window.matchMedia('(max-width: 860px)').matches;
-  if (isMobile) {
+  if (window.matchMedia(MOBILE_MQ).matches) {
     ensureSlideMediaLoaded(slides[0]);
     slides[0].style.visibility = 'visible';
     slides[0].style.zIndex = '1';
     slides[0].style.clipPath = 'none';
     slides[0].classList.add('is-active');
 
-    // Pause and hide any videos
     slides.forEach((s, idx) => {
       const v = s.querySelector('video');
       if (v) v.pause();
@@ -108,68 +92,52 @@ export function initHomeBackgroundSlider(containerId = 'home-bg-slider') {
         s.style.visibility = 'hidden';
       }
     });
-    return; // Exit without attaching wheel/touch wipe scrubbing listeners on mobile
+    return;
   }
 
-  // Global wipe angle/direction from container data attribute or default '45'
   const globalWipeAngle = (container.getAttribute('data-wipe-angle') || container.getAttribute('data-wipe-from') || '45').toLowerCase().trim();
+  const namedAngles = {
+    'bottom': 0,
+    'bottom-left': 45,
+    'bottomleft': 45,
+    'left': 90,
+    'top-left': 135,
+    'topleft': 135,
+    'top': 180,
+    'top-right': 225,
+    'topright': 225,
+    'right': 270,
+    'bottom-right': 315,
+    'bottomright': 315
+  };
 
-  // Scroll tracking: targetScroll is driven by wheel/touch, currentScroll smoothly catches up
-  let targetScroll = 0;
-  let currentScroll = 0;
-  let isRunning = false;
+  function resolveAngleDegrees(directionOrAngle) {
+    const raw = (directionOrAngle !== undefined && directionOrAngle !== null
+      ? String(directionOrAngle)
+      : globalWipeAngle || '45'
+    ).toLowerCase().trim();
 
-  // --------------------------------------------------------------------------
-  // 1. Precise Arbitrary Angle (0-360 deg) Wipe Geometry via Polygon Clipping
-  // --------------------------------------------------------------------------
+    let angle = 45;
+    if (Object.prototype.hasOwnProperty.call(namedAngles, raw)) {
+      angle = namedAngles[raw];
+    } else {
+      const parsed = parseFloat(raw);
+      if (!Number.isNaN(parsed)) angle = parsed;
+    }
+    return ((angle % 360) + 360) % 360;
+  }
+
   function getClipPath(directionOrAngle, progress) {
     const p = Math.max(0, Math.min(1, progress));
     if (p <= 0.0001) return 'polygon(0% 0%, 0% 0%, 0% 0%)';
     if (p >= 0.9999) return 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)';
 
-    let raw = (directionOrAngle !== undefined && directionOrAngle !== null ? String(directionOrAngle) : (globalWipeAngle || '45')).toLowerCase().trim();
-    let angle = 45;
-
-    const namedAngles = {
-      'bottom': 0,
-      'bottom-left': 45,
-      'bottomleft': 45,
-      'left': 90,
-      'top-left': 135,
-      'topleft': 135,
-      'top': 180,
-      'top-right': 225,
-      'topright': 225,
-      'right': 270,
-      'bottom-right': 315,
-      'bottomright': 315
-    };
-
-    if (Object.prototype.hasOwnProperty.call(namedAngles, raw)) {
-      angle = namedAngles[raw];
-    } else {
-      const parsed = parseFloat(raw);
-      if (!isNaN(parsed)) {
-        angle = parsed;
-      }
-    }
-
-    // Normalize angle to [0, 360)
-    angle = ((angle % 360) + 360) % 360;
-
-    // Direction vector in screen space (x: right, y: down)
-    const rad = (angle * Math.PI) / 180;
+    const rad = (resolveAngleDegrees(directionOrAngle) * Math.PI) / 180;
     const dx = Math.sin(rad);
     const dy = -Math.cos(rad);
 
-    const corners = [
-      [0.0, 0.0],
-      [1.0, 0.0],
-      [1.0, 1.0],
-      [0.0, 1.0]
-    ];
-
-    const dots = corners.map(pt => pt[0] * dx + pt[1] * dy);
+    const corners = [[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]];
+    const dots = corners.map(([x, y]) => x * dx + y * dy);
     const vMin = Math.min(...dots);
     const vMax = Math.max(...dots);
     const thresh = vMin + p * (vMax - vMin);
@@ -177,41 +145,36 @@ export function initHomeBackgroundSlider(containerId = 'home-bg-slider') {
     const out = [];
     const len = corners.length;
     for (let i = 0; i < len; i++) {
-      const currPt = corners[i];
-      const prevPt = corners[(i - 1 + len) % len];
-      const currIn = (currPt[0] * dx + currPt[1] * dy) <= thresh + 1e-7;
-      const prevIn = (prevPt[0] * dx + prevPt[1] * dy) <= thresh + 1e-7;
+      const curr = corners[i];
+      const prev = corners[(i - 1 + len) % len];
+      const currIn = (curr[0] * dx + curr[1] * dy) <= thresh + 1e-7;
+      const prevIn = (prev[0] * dx + prev[1] * dy) <= thresh + 1e-7;
 
-      if (currIn) {
-        if (!prevIn) {
-          const denom = (currPt[0] - prevPt[0]) * dx + (currPt[1] - prevPt[1]) * dy;
-          const t = Math.abs(denom) < 1e-9 ? 0 : (thresh - (prevPt[0] * dx + prevPt[1] * dy)) / denom;
-          out.push([
-            prevPt[0] + t * (currPt[0] - prevPt[0]),
-            prevPt[1] + t * (currPt[1] - prevPt[1])
-          ]);
-        }
-        out.push(currPt);
-      } else if (prevIn) {
-        const denom = (currPt[0] - prevPt[0]) * dx + (currPt[1] - prevPt[1]) * dy;
-        const t = Math.abs(denom) < 1e-9 ? 0 : (thresh - (prevPt[0] * dx + prevPt[1] * dy)) / denom;
+      if (currIn !== prevIn) {
+        const denom = (curr[0] - prev[0]) * dx + (curr[1] - prev[1]) * dy;
+        const t = Math.abs(denom) < 1e-9 ? 0 : (thresh - (prev[0] * dx + prev[1] * dy)) / denom;
         out.push([
-          prevPt[0] + t * (currPt[0] - prevPt[0]),
-          prevPt[1] + t * (currPt[1] - prevPt[1])
+          prev[0] + t * (curr[0] - prev[0]),
+          prev[1] + t * (curr[1] - prev[1])
         ]);
       }
+      if (currIn) out.push(curr);
     }
 
     if (out.length === 0) return 'polygon(0% 0%, 0% 0%, 0% 0%)';
-    const ptsStr = out.map(pt => `${(pt[0] * 100).toFixed(2)}% ${(pt[1] * 100).toFixed(2)}%`).join(', ');
-    return `polygon(${ptsStr})`;
+    return `polygon(${out.map(([x, y]) => `${(x * 100).toFixed(2)}% ${(y * 100).toFixed(2)}%`).join(', ')})`;
   }
 
-  // --------------------------------------------------------------------------
-  // 2. Non-Priority / Lazy Media Loader (Images & Videos)
-  // --------------------------------------------------------------------------
+  function scheduleIdle(fn, timeoutMs, fallbackMs) {
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(fn, { timeout: timeoutMs });
+    } else {
+      setTimeout(fn, fallbackMs);
+    }
+  }
+
   function ensureSlideMediaLoaded(slide) {
-    if (!slide) return;
+    if (!slide || slide.getAttribute('data-loaded') === 'true') return;
     const mediaType = slide.getAttribute('data-type') || 'image';
 
     if (mediaType === 'video') {
@@ -244,98 +207,87 @@ export function initHomeBackgroundSlider(containerId = 'home-bg-slider') {
     let queueIdx = 1;
     function loadNext() {
       if (queueIdx >= totalSlides) return;
-      const s = slides[queueIdx];
-      const mediaType = s.getAttribute('data-type') || 'image';
-
-      if (mediaType === 'video') {
-        ensureSlideMediaLoaded(s);
+      const slide = slides[queueIdx];
+      if (!slide || slide.getAttribute('data-loaded') === 'true') {
         queueIdx++;
-        if ('requestIdleCallback' in window) {
-          requestIdleCallback(loadNext, { timeout: 2500 });
-        } else {
-          setTimeout(loadNext, 180);
-        }
+        scheduleIdle(loadNext, 2500, 200);
+        return;
+      }
+
+      const mediaType = slide.getAttribute('data-type') || 'image';
+      if (mediaType === 'video') {
+        ensureSlideMediaLoaded(slide);
+        queueIdx++;
+        scheduleIdle(loadNext, 3500, 350);
       } else {
-        const bgUrl = s.getAttribute('data-bg');
+        const bgUrl = slide.getAttribute('data-bg');
         if (!bgUrl) {
           queueIdx++;
-          loadNext();
+          scheduleIdle(loadNext, 2000, 150);
           return;
         }
         const img = new Image();
+        // Lowest network priority so page resources & background_00.webp always finish first
+        if ('fetchPriority' in img) img.fetchPriority = 'low';
+        img.decoding = 'async';
         img.onload = () => {
-          ensureSlideMediaLoaded(s);
+          ensureSlideMediaLoaded(slide);
           queueIdx++;
-          if ('requestIdleCallback' in window) {
-            requestIdleCallback(loadNext, { timeout: 2000 });
-          } else {
-            setTimeout(loadNext, 120);
-          }
+          scheduleIdle(loadNext, 3000, 250);
         };
         img.onerror = () => {
           queueIdx++;
-          loadNext();
+          scheduleIdle(loadNext, 3000, 250);
         };
         img.src = bgUrl;
       }
     }
 
+    const beginLastPriorityPrefetch = () => {
+      // Wait for post-load settle (fonts, scripts, canvas) before queuing lowest-priority slides
+      setTimeout(() => scheduleIdle(loadNext, 4000, 500), 1500);
+    };
+
     if (document.readyState === 'complete') {
-      if ('requestIdleCallback' in window) {
-        requestIdleCallback(loadNext, { timeout: 3000 });
-      } else {
-        setTimeout(loadNext, 400);
-      }
+      beginLastPriorityPrefetch();
     } else {
-      window.addEventListener('load', () => {
-        if ('requestIdleCallback' in window) {
-          requestIdleCallback(loadNext, { timeout: 3000 });
-        } else {
-          setTimeout(loadNext, 400);
-        }
-      });
+      window.addEventListener('load', beginLastPriorityPrefetch, { once: true });
     }
   }
 
-  // --------------------------------------------------------------------------
-  // 3. Continuous Scroll Scrubbing & Wipe Renderer (No Snapping, Direct Speed Match)
-  // --------------------------------------------------------------------------
+  let targetScroll = 0;
+  let currentScroll = 0;
+  let isRunning = false;
+
   function renderWipe(s) {
-    // Map continuous float s to cyclic [0, totalSlides)
     const normalized = ((s % totalSlides) + totalSlides) % totalSlides;
     const baseIndex = Math.floor(normalized);
     const incomingIndex = (baseIndex + 1) % totalSlides;
-    const progress = normalized - baseIndex; // [0, 1)
+    const progress = normalized - baseIndex;
 
     const baseSlide = slides[baseIndex];
     const incomingSlide = slides[incomingIndex];
 
-    // Ensure immediate and adjacent slide media are loaded
+    // Load only the visible slide immediately; incoming slide loads on demand once wiping starts
     ensureSlideMediaLoaded(baseSlide);
-    ensureSlideMediaLoaded(incomingSlide);
-    // Preload next and previous in background
-    ensureSlideMediaLoaded(slides[(incomingIndex + 1) % totalSlides]);
-    ensureSlideMediaLoaded(slides[(baseIndex - 1 + totalSlides) % totalSlides]);
 
-    // Handle base slide (underneath)
     baseSlide.style.visibility = 'visible';
     baseSlide.style.zIndex = '1';
     baseSlide.style.clipPath = 'none';
     baseSlide.classList.add('is-active');
 
     const baseVideo = baseSlide.querySelector('video');
-    if (baseVideo && baseVideo.paused) {
+    if (baseVideo && baseVideo.paused && !document.hidden) {
       baseVideo.play().catch(() => {});
     }
 
     if (progress < 0.0005) {
-      // Exactly on base slide, incoming slide not revealed
       incomingSlide.style.visibility = 'hidden';
       incomingSlide.style.zIndex = '0';
       incomingSlide.style.clipPath = 'none';
       incomingSlide.classList.remove('is-active');
     } else {
-      // Incoming slide is wiping on top
+      ensureSlideMediaLoaded(incomingSlide);
       const wipeAngle = incomingSlide.getAttribute('data-wipe-angle') || incomingSlide.getAttribute('data-wipe-from') || globalWipeAngle;
       incomingSlide.style.visibility = 'visible';
       incomingSlide.style.zIndex = '2';
@@ -343,21 +295,20 @@ export function initHomeBackgroundSlider(containerId = 'home-bg-slider') {
       incomingSlide.classList.add('is-active');
 
       const incomingVideo = incomingSlide.querySelector('video');
-      if (incomingVideo && incomingVideo.paused) {
+      if (incomingVideo && incomingVideo.paused && !document.hidden) {
         incomingVideo.play().catch(() => {});
       }
     }
 
-    // Hide all other slides and pause their videos to conserve resources
     for (let i = 0; i < totalSlides; i++) {
       if (i !== baseIndex && i !== incomingIndex) {
-        const otherSlide = slides[i];
-        otherSlide.style.visibility = 'hidden';
-        otherSlide.style.zIndex = '0';
-        otherSlide.style.clipPath = 'none';
-        otherSlide.classList.remove('is-active');
+        const other = slides[i];
+        other.style.visibility = 'hidden';
+        other.style.zIndex = '0';
+        other.style.clipPath = 'none';
+        other.classList.remove('is-active');
 
-        const otherVideo = otherSlide.querySelector('video');
+        const otherVideo = other.querySelector('video');
         if (otherVideo && !otherVideo.paused) {
           otherVideo.pause();
         }
@@ -365,14 +316,9 @@ export function initHomeBackgroundSlider(containerId = 'home-bg-slider') {
     }
   }
 
-  // --------------------------------------------------------------------------
-  // 4. Animation Loop (Silky Smooth rAF Dampening, Zero Snap)
-  // --------------------------------------------------------------------------
   function updateLoop() {
     const diff = targetScroll - currentScroll;
-
     if (Math.abs(diff) > 0.0003) {
-      // Responsive easing factor: tracks hand movement closely while absorbing discrete notches
       currentScroll += diff * 0.22;
       renderWipe(currentScroll);
       requestAnimationFrame(updateLoop);
@@ -390,28 +336,19 @@ export function initHomeBackgroundSlider(containerId = 'home-bg-slider') {
     }
   }
 
-  // --------------------------------------------------------------------------
-  // 5. Wheel Event Handler (Matches Scroll Speed, Direct Bi-Directional Scrub)
-  // --------------------------------------------------------------------------
   window.addEventListener('wheel', (e) => {
-    // Prevent default body bouncing
     e.preventDefault();
-
-    // Scroll distance required to wipe 1 full background:
-    // Scaled to viewport height (~750-900px) for 1:1 physical feel
     const scrollDistance = Math.max(500, window.innerHeight * 0.85);
-
-    // Delta directly adds to target scroll (positive = forward, negative = backwards)
-    targetScroll += (e.deltaY / scrollDistance);
+    targetScroll += e.deltaY / scrollDistance;
     startAnimation();
   }, { passive: false });
 
-  // --------------------------------------------------------------------------
-  // 6. Mobile & Touch Screen Swipe Navigation (1:1 Finger Tracking & Scrubbing)
-  // --------------------------------------------------------------------------
+  // Touch scrubbing (uses resolved angle to choose horizontal vs vertical drag)
   let lastTouchY = 0;
   let lastTouchX = 0;
   let isTouching = false;
+  const resolvedBaseDeg = resolveAngleDegrees(globalWipeAngle);
+  const isHorizontalWipe = (resolvedBaseDeg >= 45 && resolvedBaseDeg <= 135) || (resolvedBaseDeg >= 225 && resolvedBaseDeg <= 315);
 
   window.addEventListener('touchstart', (e) => {
     if (e.touches && e.touches.length > 0) {
@@ -425,28 +362,19 @@ export function initHomeBackgroundSlider(containerId = 'home-bg-slider') {
     if (!isTouching || !e.touches || e.touches.length === 0) return;
     const currentY = e.touches[0].clientY;
     const currentX = e.touches[0].clientX;
-
-    const deltaY = lastTouchY - currentY; // Drag up -> forward scrub
-    const deltaX = lastTouchX - currentX; // Drag left -> forward scrub
-
+    const deltaY = lastTouchY - currentY;
+    const deltaX = lastTouchX - currentX;
     lastTouchY = currentY;
     lastTouchX = currentX;
 
-    const isHorizontal = ['left', 'right'].includes(globalWipeFrom);
-    const primaryDelta = isHorizontal ? deltaX : deltaY;
-
+    const primaryDelta = isHorizontalWipe && Math.abs(deltaX) > Math.abs(deltaY) ? deltaX : deltaY;
     const scrollDistance = Math.max(380, window.innerHeight * 0.8);
-    targetScroll += (primaryDelta / scrollDistance);
+    targetScroll += primaryDelta / scrollDistance;
     startAnimation();
   }, { passive: true });
 
-  window.addEventListener('touchend', () => {
-    isTouching = false;
-  }, { passive: true });
+  window.addEventListener('touchend', () => { isTouching = false; }, { passive: true });
 
-  // --------------------------------------------------------------------------
-  // 7. Keyboard Navigation (Smooth 1-Slide Glides)
-  // --------------------------------------------------------------------------
   window.addEventListener('keydown', (e) => {
     if (e.target && ['input', 'textarea', 'select'].includes(e.target.tagName.toLowerCase())) return;
 
@@ -461,9 +389,15 @@ export function initHomeBackgroundSlider(containerId = 'home-bg-slider') {
     }
   });
 
-  // Initial render at position 0
-  renderWipe(0);
+  document.addEventListener('visibilitychange', () => {
+    slides.forEach((s) => {
+      const v = s.querySelector('video');
+      if (!v) return;
+      if (document.hidden) v.pause();
+      else if (s.classList.contains('is-active')) v.play().catch(() => {});
+    });
+  });
 
-  // Progressive lazy load remaining backgrounds
+  renderWipe(0);
   startLazyProgressiveLoading();
 }

@@ -1,8 +1,7 @@
 /**
  * Blog Engine JavaScript
- * Tree Navigation, 3-Tile Grid Filtering, Clickable Tags & Categories,
- * Pagination, Full Post Reader Modal with 100% Zoomable Image Lightbox,
- * Fixed Landscape Flank Preview Tiles, and Collapsible Code Blocks
+ * Tree Archive Navigation, Multi-Filter State, Pagination,
+ * Modal Reader with Zoomable GLightbox Images, and Collapsible Code Blocks
  */
 
 (function () {
@@ -14,7 +13,20 @@
   const postsPerPage = 6;
   let currentActivePostIndex = -1;
 
-  // Initialize Blog
+  const selectedCategories = new Set();
+  const selectedTags = new Set();
+  let activeDateFilter = null; // { type: 'year', year } | { type: 'month', year, month }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   function initBlog() {
     const dataEl = document.getElementById('blogPostsData');
     if (!dataEl) return;
@@ -28,59 +40,82 @@
 
     applyFilters();
 
-    // Check URL Hash for deep link (e.g. #camera-projections-in-nuke)
     const hash = window.location.hash.replace('#', '').trim();
     if (hash) {
-      const targetPost = allPosts.find(p => p.id === hash || p.slug === hash);
-      if (targetPost) {
-        openPostModal(targetPost.id);
-      }
+      const targetPost = allPosts.find((p) => p.id === hash || p.slug === hash);
+      if (targetPost) openPostModal(targetPost.id);
     }
 
-    // Keyboard navigation
-    window.addEventListener('keydown', function (e) {
+    window.addEventListener('keydown', (e) => {
       const overlay = document.getElementById('blogReaderOverlay');
-      if (overlay && overlay.classList.contains('active')) {
-        // If GLightbox is currently open, let GLightbox handle Escape and arrows
-        const isLightboxOpen = document.body.classList.contains('glightbox-open') ||
-                               document.querySelector('.glightbox-container:not(.inactive)');
-        if (isLightboxOpen) return;
+      if (!overlay || !overlay.classList.contains('active')) return;
 
-        if (e.key === 'Escape') {
-          closePostModal();
-        } else if (e.key === 'ArrowLeft') {
-          navigatePost(-1);
-        } else if (e.key === 'ArrowRight') {
-          navigatePost(1);
-        }
-      }
+      const isLightboxOpen = document.body.classList.contains('glightbox-open') ||
+                             document.querySelector('.glightbox-container:not(.inactive)');
+      if (isLightboxOpen) return;
+
+      if (e.key === 'Escape') closePostModal();
+      else if (e.key === 'ArrowLeft') navigatePost(-1);
+      else if (e.key === 'ArrowRight') navigatePost(1);
     });
 
-    // Close on overlay backdrop click & scroll listener for floating top button
-    const overlay = document.getElementById('blogReaderOverlay');
     const scrollContainer = document.getElementById('blogReaderScroll');
-
     if (scrollContainer) {
-      scrollContainer.addEventListener('click', function (e) {
-        if (e.target === scrollContainer) {
-          closePostModal();
-        }
+      scrollContainer.addEventListener('click', (e) => {
+        if (e.target === scrollContainer) closePostModal();
       });
 
-      scrollContainer.addEventListener('scroll', function () {
+      scrollContainer.addEventListener('scroll', () => {
         const topBtn = document.getElementById('readerBackToTop');
-        if (topBtn) {
-          if (scrollContainer.scrollTop > 240) {
-            topBtn.classList.add('visible');
-          } else {
-            topBtn.classList.remove('visible');
-          }
-        }
+        if (topBtn) topBtn.classList.toggle('visible', scrollContainer.scrollTop > 240);
       }, { passive: true });
+    }
+
+    // Delegated click handlers on grid cards (avoids inline onclick string quoting issues)
+    const gridEl = document.getElementById('blogGrid');
+    if (gridEl) {
+      gridEl.addEventListener('click', (e) => {
+        const catBadge = e.target.closest('.blog-category-badge[data-category]');
+        if (catBadge) {
+          e.stopPropagation();
+          filterByCategory(catBadge.getAttribute('data-category'));
+          return;
+        }
+
+        const tagPill = e.target.closest('.blog-tag-pill[data-tag]');
+        if (tagPill) {
+          e.stopPropagation();
+          filterByTag(tagPill.getAttribute('data-tag'));
+          return;
+        }
+
+        const openTrigger = e.target.closest('.blog-card-media, .blog-card-title');
+        if (openTrigger) {
+          const card = openTrigger.closest('.blog-card[data-post-id]');
+          if (card) openPostModal(card.getAttribute('data-post-id'));
+        }
+      });
+    }
+
+    // Delegated click handlers inside reader modal tags
+    const readerTags = document.getElementById('readerTags');
+    if (readerTags) {
+      readerTags.addEventListener('click', (e) => {
+        const pill = e.target.closest('.blog-tag-pill[data-tag]');
+        if (pill) filterByTagFromReader(pill.getAttribute('data-tag'));
+      });
+    }
+
+    // Clear pointer/touch focus on reader buttons so they never stay highlighted after tap/click
+    const readerControls = document.querySelector('#blogReaderOverlay .reader-bottom-controls');
+    if (readerControls) {
+      readerControls.addEventListener('pointerup', (e) => {
+        const btn = e.target.closest('button');
+        if (btn) setTimeout(() => btn.blur(), 0);
+      });
     }
   }
 
-  // Render Grid for Current Page
   function renderGrid() {
     const gridEl = document.getElementById('blogGrid');
     if (!gridEl) return;
@@ -98,44 +133,40 @@
     const startIdx = (currentPage - 1) * postsPerPage;
     const pagePosts = filteredPosts.slice(startIdx, startIdx + postsPerPage);
 
-    let html = '';
-    pagePosts.forEach(post => {
+    gridEl.innerHTML = pagePosts.map((post) => {
       const pCat = (post.category || '').toLowerCase();
       const isCatActive = selectedCategories.has(pCat) ? 'active' : '';
+      const catEsc = escapeHtml(post.category || '');
 
-      const tagsHtml = (post.tags || []).map(t => {
+      const tagsHtml = (post.tags || []).map((t) => {
+        const tEsc = escapeHtml(t);
         const isTagActive = selectedTags.has(t.toLowerCase()) ? 'active' : '';
-        return `<span class="blog-tag-pill ${isTagActive}" onclick="event.stopPropagation(); filterByTag('${escapeHtml(t)}');" title="Filter by tag: ${escapeHtml(t)}">${escapeHtml(t)}</span>`;
+        return `<span class="blog-tag-pill ${isTagActive}" data-tag="${tEsc}" title="Filter by tag: ${tEsc}">${tEsc}</span>`;
       }).join('');
-      
-      html += `
-      <article class="blog-card" data-post-id="${post.id}">
+
+      return `
+      <article class="blog-card" data-post-id="${escapeHtml(post.id)}">
         <div class="tile-circling-border" aria-hidden="true"></div>
         <div class="tile-inner blog-card-inner">
-          <div class="blog-card-media" onclick="openPostModal('${post.id}')">
-            <img src="${post.thumbnail}" alt="${escapeHtml(post.title)}" class="blog-card-img" loading="lazy">
-            <span class="blog-category-badge ${isCatActive}" onclick="event.stopPropagation(); filterByCategory('${escapeHtml(post.category)}');" title="Filter by category: ${escapeHtml(post.category)}">${escapeHtml(post.category)}</span>
+          <div class="blog-card-media">
+            <img src="${escapeHtml(post.thumbnail)}" alt="${escapeHtml(post.title)}" class="blog-card-img" loading="lazy" decoding="async">
+            <span class="blog-category-badge ${isCatActive}" data-category="${catEsc}" title="Filter by category: ${catEsc}">${catEsc}</span>
           </div>
           <div class="blog-card-body">
             <div class="blog-meta-strip">
-              <span class="blog-date">${post.date}</span>
+              <span class="blog-date">${escapeHtml(post.date)}</span>
               <span class="blog-meta-dot">&bull;</span>
               <span class="blog-read-time">${escapeHtml(post.readTime || '5 min read')}</span>
             </div>
-            <h2 class="blog-card-title" onclick="openPostModal('${post.id}')">${escapeHtml(post.title)}</h2>
+            <h2 class="blog-card-title">${escapeHtml(post.title)}</h2>
             <p class="blog-card-excerpt">${escapeHtml(post.subheading || '')}</p>
-            <div class="blog-card-tags">
-              ${tagsHtml}
-            </div>
+            <div class="blog-card-tags">${tagsHtml}</div>
           </div>
         </div>
       </article>`;
-    });
-
-    gridEl.innerHTML = html;
+    }).join('');
   }
 
-  // Render Pagination
   function renderPagination() {
     const paginationEl = document.getElementById('blogPagination');
     if (!paginationEl) return;
@@ -151,26 +182,31 @@
     const nextBtn = document.getElementById('nextPageBtn');
     const numbersWrap = document.getElementById('pageNumbers');
 
-    if (prevBtn) prevBtn.disabled = (currentPage === 1);
-    if (nextBtn) nextBtn.disabled = (currentPage === totalPages);
+    if (prevBtn) prevBtn.disabled = currentPage === 1;
+    if (nextBtn) nextBtn.disabled = currentPage === totalPages;
 
-    let numHtml = '';
-    for (let i = 1; i <= totalPages; i++) {
-      const activeClass = (i === currentPage) ? 'active' : '';
-      numHtml += `<button type="button" class="page-number-btn ${activeClass}" onclick="goToPage(${i})">${i}</button>`;
+    if (numbersWrap) {
+      let numHtml = '';
+      for (let i = 1; i <= totalPages; i++) {
+        numHtml += `<button type="button" class="page-number-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+      }
+      numbersWrap.innerHTML = numHtml;
     }
-    if (numbersWrap) numbersWrap.innerHTML = numHtml;
   }
 
-  // Pagination Handlers
+  function scrollToGridTop() {
+    const target = document.getElementById('blogGrid');
+    if (target) {
+      const y = target.getBoundingClientRect().top + window.scrollY - 90;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+  }
+
   window.changePage = function (delta) {
     const totalPages = Math.ceil(filteredPosts.length / postsPerPage) || 1;
     const newPage = currentPage + delta;
     if (newPage >= 1 && newPage <= totalPages) {
-      currentPage = newPage;
-      renderGrid();
-      renderPagination();
-      scrollToGridTop();
+      goToPage(newPage);
     }
   };
 
@@ -181,52 +217,21 @@
     scrollToGridTop();
   };
 
-  function scrollToGridTop() {
-    const target = document.getElementById('blogGrid');
-    if (target) {
-      const yOffset = -90;
-      const y = target.getBoundingClientRect().top + window.pageYOffset + yOffset;
-      window.scrollTo({ top: y, behavior: 'smooth' });
-    }
-  }
-
-  // --------------------------------------------------------------------------
-  // Multi-Filter State & Tree, Category, Tag Filters
-  // --------------------------------------------------------------------------
-  const selectedCategories = new Set();
-  const selectedTags = new Set();
-  let activeDateFilter = null; // { type: 'year', year: '2026' } or { type: 'month', year: '2026', month: 'March' }
-
   function applyFilters() {
-    filteredPosts = allPosts.filter(post => {
-      // 1. Date filter (from archive tree)
+    filteredPosts = allPosts.filter((post) => {
       if (activeDateFilter) {
         const postYear = String(post.year || (post.date ? post.date.split('-')[0] : ''));
-        if (activeDateFilter.type === 'year' && postYear !== String(activeDateFilter.year)) {
-          return false;
-        }
-        if (activeDateFilter.type === 'month') {
-          if (postYear !== String(activeDateFilter.year) || post.month_name !== activeDateFilter.month) {
-            return false;
-          }
-        }
+        if (postYear !== String(activeDateFilter.year)) return false;
+        if (activeDateFilter.type === 'month' && post.month_name !== activeDateFilter.month) return false;
       }
 
-      // 2. Category filter (works alongside date & tags)
-      if (selectedCategories.size > 0) {
-        const pCat = (post.category || '').toLowerCase();
-        if (!selectedCategories.has(pCat)) {
-          return false;
-        }
+      if (selectedCategories.size > 0 && !selectedCategories.has((post.category || '').toLowerCase())) {
+        return false;
       }
 
-      // 3. Tag filter (works alongside date & categories)
       if (selectedTags.size > 0) {
-        const pTags = (post.tags || []).map(t => t.toLowerCase());
-        const hasMatchingTag = pTags.some(t => selectedTags.has(t));
-        if (!hasMatchingTag) {
-          return false;
-        }
+        const pTags = (post.tags || []).map((t) => t.toLowerCase());
+        if (!pTags.some((t) => selectedTags.has(t))) return false;
       }
 
       return true;
@@ -239,60 +244,38 @@
   }
 
   function updateFilterUI() {
-    const isCatAll = (selectedCategories.size === 0);
-    const isTagAll = (selectedTags.size === 0);
+    const isCatAll = selectedCategories.size === 0;
+    const isTagAll = selectedTags.size === 0;
     const isDateAll = !activeDateFilter;
 
-    // 1. Sidebar Category Pills
-    document.querySelectorAll('.category-filter-pill').forEach(btn => {
-      const catVal = (btn.dataset.category || btn.textContent).trim().toLowerCase();
-      if (catVal === 'all') {
-        if (isCatAll) btn.classList.add('active');
-        else btn.classList.remove('active');
-      } else {
-        if (selectedCategories.has(catVal)) {
-          btn.classList.add('active');
-        } else {
-          btn.classList.remove('active');
-        }
-      }
+    document.querySelectorAll('.category-filter-pill').forEach((btn) => {
+      const val = (btn.dataset.category || btn.textContent).trim().toLowerCase();
+      btn.classList.toggle('active', val === 'all' ? isCatAll : selectedCategories.has(val));
     });
 
-    // 2. Sidebar Tag Pills
-    document.querySelectorAll('.tag-filter-pill').forEach(btn => {
-      const tagVal = (btn.dataset.tag || btn.textContent).trim().toLowerCase();
-      if (tagVal === 'all') {
-        if (isTagAll) btn.classList.add('active');
-        else btn.classList.remove('active');
-      } else {
-        if (selectedTags.has(tagVal)) {
-          btn.classList.add('active');
-        } else {
-          btn.classList.remove('active');
-        }
-      }
+    document.querySelectorAll('.tag-filter-pill').forEach((btn) => {
+      const val = (btn.dataset.tag || btn.textContent).trim().toLowerCase();
+      btn.classList.toggle('active', val === 'all' ? isTagAll : selectedTags.has(val));
     });
 
-    // 3. Date / Archive All button
-    document.querySelectorAll('.date-filter-pill').forEach(btn => {
-      if (isDateAll) btn.classList.add('active');
-      else btn.classList.remove('active');
+    document.querySelectorAll('.date-filter-pill').forEach((btn) => {
+      btn.classList.toggle('active', isDateAll);
     });
 
-    // 4. Cards category badges & tag pills
-    document.querySelectorAll('.blog-card').forEach(card => {
+    document.querySelectorAll('.blog-card').forEach((card) => {
       const catBadge = card.querySelector('.blog-category-badge');
       if (catBadge) {
-        const catVal = catBadge.textContent.trim().toLowerCase();
-        if (selectedCategories.has(catVal)) catBadge.classList.add('active');
-        else catBadge.classList.remove('active');
+        catBadge.classList.toggle('active', selectedCategories.has(catBadge.textContent.trim().toLowerCase()));
       }
-      card.querySelectorAll('.blog-tag-pill').forEach(tagEl => {
-        const tagVal = tagEl.textContent.trim().toLowerCase();
-        if (selectedTags.has(tagVal)) tagEl.classList.add('active');
-        else tagEl.classList.remove('active');
+      card.querySelectorAll('.blog-tag-pill').forEach((tagEl) => {
+        tagEl.classList.toggle('active', selectedTags.has(tagEl.textContent.trim().toLowerCase()));
       });
     });
+  }
+
+  function clearActiveTreeSelection() {
+    document.querySelectorAll('.tree-month').forEach((el) => el.classList.remove('active'));
+    document.querySelectorAll('.tree-year').forEach((el) => el.classList.remove('active-year'));
   }
 
   window.toggleTreeNode = function (nodeEl, year) {
@@ -300,14 +283,10 @@
     const yearStr = String(year);
 
     if (activeDateFilter && activeDateFilter.type === 'year' && activeDateFilter.year === yearStr) {
-      // Already filtering by this year: collapse and reset date to all
       if (item) item.classList.remove('open');
       clearActiveTreeSelection();
       activeDateFilter = null;
-      const allItem = document.querySelector('.tree-all');
-      if (allItem) allItem.classList.add('active');
     } else {
-      // Expand and filter by this year
       if (item) item.classList.add('open');
       clearActiveTreeSelection();
       if (item) item.classList.add('active-year');
@@ -316,95 +295,48 @@
     applyFilters();
   };
 
-  window.filterByTree = function (type) {
+  window.filterByTree = function () {
     clearActiveTreeSelection();
     activeDateFilter = null;
-    const allItem = document.querySelector('.tree-all');
-    if (allItem) allItem.classList.add('active');
     applyFilters();
-  };
-
-  window.filterByYear = function (year) {
-    const yearStr = String(year);
-    const yearItem = document.querySelector(`.tree-year[data-year="${yearStr}"]`);
-    toggleTreeNode(yearItem, yearStr);
   };
 
   window.filterByMonth = function (year, monthName) {
     const yearStr = String(year);
     if (activeDateFilter && activeDateFilter.type === 'month' && activeDateFilter.year === yearStr && activeDateFilter.month === monthName) {
-      // Toggle off month filter
       clearActiveTreeSelection();
       activeDateFilter = null;
-      const allItem = document.querySelector('.tree-all');
-      if (allItem) allItem.classList.add('active');
     } else {
       clearActiveTreeSelection();
       const monthEl = document.querySelector(`.tree-month[data-year="${yearStr}"][data-month="${monthName}"]`);
       if (monthEl) monthEl.classList.add('active');
       const yearItem = document.querySelector(`.tree-year[data-year="${yearStr}"]`);
-      if (yearItem) item_open(yearItem);
+      if (yearItem) yearItem.classList.add('open');
       activeDateFilter = { type: 'month', year: yearStr, month: monthName };
     }
     applyFilters();
   };
 
-  function item_open(el) {
-    if (el) el.classList.add('open');
+  function toggleFilterSet(set, rawVal, defaultVal) {
+    const lower = (rawVal || defaultVal).trim().toLowerCase();
+    if (lower === 'all') {
+      set.clear();
+    } else if (set.has(lower)) {
+      set.delete(lower);
+    } else {
+      set.add(lower);
+    }
+    applyFilters();
+    scrollToGridTop();
   }
 
-  window.filterByCategory = function (category) {
-    const catLower = (category || 'all').trim().toLowerCase();
-
-    if (catLower === 'all') {
-      selectedCategories.clear(); // Resets category filter to All
-    } else {
-      // Toggle category: enables 2 or more filters simultaneously, resets individual on click
-      if (selectedCategories.has(catLower)) {
-        selectedCategories.delete(catLower); // Individual reset / toggle off
-      } else {
-        selectedCategories.add(catLower);
-      }
-    }
-
-    applyFilters();
-    scrollToGridTop();
-  };
-
-  window.filterByTag = function (tagName) {
-    const tagLower = (tagName || 'all').trim().toLowerCase();
-
-    if (tagLower === 'all') {
-      selectedTags.clear(); // Tag All resets tag filter, same way as category all
-    } else {
-      // Toggle tag: enables 2 or more filters simultaneously, resets individual on click
-      if (selectedTags.has(tagLower)) {
-        selectedTags.delete(tagLower); // Individual reset / toggle off
-      } else {
-        selectedTags.add(tagLower);
-      }
-    }
-
-    applyFilters();
-    scrollToGridTop();
-  };
-
-  window.filterByCategoryFromReader = function (category) {
-    closePostModal();
-    const catLower = (category || '').trim().toLowerCase();
-    if (catLower && !selectedCategories.has(catLower)) {
-      selectedCategories.add(catLower);
-    }
-    applyFilters();
-    scrollToGridTop();
-  };
+  window.filterByCategory = (category) => toggleFilterSet(selectedCategories, category, 'all');
+  window.filterByTag = (tagName) => toggleFilterSet(selectedTags, tagName, 'all');
 
   window.filterByTagFromReader = function (tagName) {
     closePostModal();
-    const tagLower = (tagName || '').trim().toLowerCase();
-    if (tagLower && !selectedTags.has(tagLower)) {
-      selectedTags.add(tagLower);
-    }
+    const lower = (tagName || '').trim().toLowerCase();
+    if (lower && !selectedTags.has(lower)) selectedTags.add(lower);
     applyFilters();
     scrollToGridTop();
   };
@@ -414,60 +346,39 @@
     selectedTags.clear();
     activeDateFilter = null;
     clearActiveTreeSelection();
-    document.querySelectorAll('.tree-year').forEach(el => el.classList.remove('open'));
-    const allItem = document.querySelector('.tree-all');
-    if (allItem) allItem.classList.add('active');
-
+    document.querySelectorAll('.tree-year').forEach((el) => el.classList.remove('open'));
     applyFilters();
     scrollToGridTop();
   };
-
-  function clearActiveTreeSelection() {
-    document.querySelectorAll('.tree-all, .tree-month').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.tree-year').forEach(el => el.classList.remove('active-year'));
-  }
 
   // --------------------------------------------------------------------------
   // Full Post Reader Modal
   // --------------------------------------------------------------------------
   window.openPostModal = function (postId) {
-    const postIdx = allPosts.findIndex(p => p.id === postId || p.slug === postId);
+    const postIdx = allPosts.findIndex((p) => p.id === postId || p.slug === postId);
     if (postIdx === -1) return;
 
     currentActivePostIndex = postIdx;
     const post = allPosts[postIdx];
-
     const overlay = document.getElementById('blogReaderOverlay');
     if (!overlay) return;
 
-    // Header Info
-    const catEl = document.getElementById('readerCategory');
-    if (catEl) {
-      catEl.textContent = post.category || 'Article';
-      catEl.onclick = function () {
-        filterByCategoryFromReader(post.category || 'all');
-      };
-    }
-
     document.getElementById('readerTitle').textContent = post.title || '';
-    const readerSubheading = document.getElementById('readerSubheading');
-    if (readerSubheading) readerSubheading.textContent = '';
     document.getElementById('readerDate').textContent = post.date || '';
     document.getElementById('readerReadTime').textContent = post.readTime || '5 min read';
     document.getElementById('readerAuthor').textContent = post.author || 'Prasannakumar T Bhat';
 
-    // Clickable Tag Pills in Reader Header
     const tagsEl = document.getElementById('readerTags');
     if (tagsEl) {
-      tagsEl.innerHTML = (post.tags || []).map(t => 
-        `<span class="blog-tag-pill" onclick="filterByTagFromReader('${escapeHtml(t)}')" title="Filter by tag: ${escapeHtml(t)}">${escapeHtml(t)}</span>`
-      ).join('');
+      tagsEl.innerHTML = (post.tags || []).map((t) => {
+        const tEsc = escapeHtml(t);
+        return `<span class="blog-tag-pill" data-tag="${tEsc}" title="Filter by tag: ${tEsc}">${tEsc}</span>`;
+      }).join('');
     }
 
-    // Hero Image
     const heroWrap = document.getElementById('readerHeroWrap');
     const heroImg = document.getElementById('readerHeroImg');
-    if (post.thumbnail && heroImg) {
+    if (post.thumbnail && heroImg && heroWrap) {
       heroImg.src = post.thumbnail;
       heroImg.alt = post.title;
       heroWrap.style.display = 'block';
@@ -475,62 +386,23 @@
       heroWrap.style.display = 'none';
     }
 
-    // Body content
     const bodyEl = document.getElementById('readerBody');
     if (bodyEl) {
       bodyEl.innerHTML = post.rendered_html || '';
-
-      // Auto-wrap any standard pre code blocks with code-block-card and copy button
-      bodyEl.querySelectorAll('pre').forEach(pre => {
-        if (!pre.closest('.code-block-card') && !pre.querySelector('.btn-code-copy')) {
-          const wrapper = document.createElement('div');
-          wrapper.className = 'code-block-card';
-          const header = document.createElement('div');
-          header.className = 'code-block-header';
-          const codeEl = pre.querySelector('code');
-          let lang = 'code';
-          if (codeEl) {
-            const m = codeEl.className.match(/language-(\w+)/);
-            if (m) lang = m[1];
-          }
-          header.innerHTML = `
-            <span class="code-lang-badge">${lang}</span>
-            <div class="code-actions">
-              <button type="button" class="btn-code-copy" onclick="copyCodeBlock(this)">Copy</button>
-            </div>
-          `;
-          pre.parentNode.insertBefore(wrapper, pre);
-          wrapper.appendChild(header);
-          wrapper.appendChild(pre);
-        }
-      });
-
-      // Trigger Prism highlighting on code elements
-      if (window.Prism) {
-        window.Prism.highlightAllUnder(bodyEl);
-      }
+      if (window.Prism) window.Prism.highlightAllUnder(bodyEl);
     }
 
-    // Attach 100% Zoomable Fullscreen Lightbox to ALL Images in Post
     setupPostImagesLightbox(post);
-
-    // Update Bottom Prev/Next Buttons & Fixed Flank Tiles
     updateReaderNavButtons();
 
-    // Show modal & lock background scrolling without creating double scrollbars
     overlay.classList.add('active');
+    overlay.setAttribute('aria-hidden', 'false');
     document.documentElement.classList.add('blog-reader-active');
     document.body.classList.add('blog-reader-active');
-    document.documentElement.style.overflow = 'hidden';
-    document.body.style.overflow = 'hidden';
     window.location.hash = '#' + (post.slug || post.id);
 
-    // Scroll reader container to top immediately
     const scrollContainer = document.getElementById('blogReaderScroll');
-    if (scrollContainer) {
-      scrollContainer.scrollTop = 0;
-      scrollContainer.scrollTo({ top: 0, behavior: 'auto' });
-    }
+    if (scrollContainer) scrollContainer.scrollTop = 0;
 
     const readerBackToTop = document.getElementById('readerBackToTop');
     if (readerBackToTop) readerBackToTop.classList.remove('visible');
@@ -538,21 +410,17 @@
 
   window.scrollReaderToTop = function () {
     const scrollContainer = document.getElementById('blogReaderScroll');
-    if (scrollContainer) {
-      scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    if (scrollContainer) scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   window.closePostModal = function () {
     const overlay = document.getElementById('blogReaderOverlay');
     if (overlay) {
       overlay.classList.remove('active');
+      overlay.setAttribute('aria-hidden', 'true');
       document.documentElement.classList.remove('blog-reader-active');
       document.body.classList.remove('blog-reader-active');
-      document.documentElement.style.overflow = '';
-      document.body.style.overflow = '';
     }
-    // Remove hash without scrolling
     if (window.history && window.history.replaceState) {
       window.history.replaceState(null, null, window.location.pathname + window.location.search);
     }
@@ -563,159 +431,85 @@
     const newIdx = currentActivePostIndex + delta;
     if (newIdx >= 0 && newIdx < allPosts.length) {
       openPostModal(allPosts[newIdx].id);
-      const scrollContainer = document.getElementById('blogReaderScroll');
-      if (scrollContainer) {
-        scrollContainer.scrollTop = 0;
-        scrollContainer.scrollTo({ top: 0, behavior: 'auto' });
-      }
     }
   };
 
-  // --------------------------------------------------------------------------
-  // Attach 100% Zoomable Fullscreen Lightbox to Post Images
-  // --------------------------------------------------------------------------
-  let blogActiveLightbox = null;
-
-  function openPostImageLightbox(postImages, startIndex = 0) {
-    if (typeof window.openLightbox === 'function') {
-      window.openLightbox(postImages.map(p => ({ src: p.src, caption: p.caption })), startIndex);
-      return;
-    }
-
-    if (blogActiveLightbox) {
-      try { blogActiveLightbox.destroy(); } catch (e) {}
-      blogActiveLightbox = null;
-    }
-
-    if (typeof GLightbox !== 'undefined') {
-      try {
-        blogActiveLightbox = GLightbox({
-          elements: postImages.map(p => ({ href: p.src, type: 'image', title: p.caption || '' })),
-          startAt: startIndex,
-          loop: postImages.length > 1,
-          zoomable: true,
-          touchNavigation: true,
-          openEffect: 'fade',
-          closeEffect: 'fade',
-          slideEffect: 'fade'
-        });
-
-        blogActiveLightbox.on('open', () => {
-          document.body.classList.add('lightbox-active');
-        });
-
-        blogActiveLightbox.on('close', () => {
-          document.body.classList.remove('lightbox-active');
-          if (blogActiveLightbox) {
-            try { blogActiveLightbox.destroy(); } catch (e) {}
-            blogActiveLightbox = null;
-          }
-        });
-
-        blogActiveLightbox.open();
-      } catch (err) {
-        console.error('Error opening GLightbox:', err);
-      }
-    }
-  }
-
   function setupPostImagesLightbox(post) {
     const postImages = [];
-
-    // 1. Hero image
     const heroImg = document.getElementById('readerHeroImg');
     const heroWrap = document.getElementById('readerHeroWrap');
+
     if (heroImg && heroWrap && heroWrap.style.display !== 'none' && heroImg.src) {
-      postImages.push({
-        el: heroImg,
-        src: heroImg.src,
-        caption: heroImg.alt || post.title || 'Cover image'
-      });
+      postImages.push({ src: heroImg.src, caption: heroImg.alt || post.title || 'Cover image', el: heroImg });
     }
 
-    // 2. All images in markdown body
-    const bodyImgs = document.querySelectorAll('#readerBody img');
-    bodyImgs.forEach((img, i) => {
+    document.querySelectorAll('#readerBody img').forEach((img, i) => {
       postImages.push({
         el: img,
         src: img.src,
-        caption: img.alt || img.title || (post.title + ' - Image ' + (i + 1))
+        caption: img.alt || img.title || `${post.title} - Image ${i + 1}`
       });
     });
 
-    // Make each image clickable with zoom-in cursor
     postImages.forEach((item, idx) => {
       item.el.style.cursor = 'zoom-in';
       item.el.title = 'Click to open in zoomable lightbox';
-      item.el.onclick = function (e) {
+      item.el.onclick = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        openPostImageLightbox(postImages, idx);
+        if (typeof window.openLightbox === 'function') {
+          window.openLightbox(postImages, idx);
+        }
       };
     });
   }
 
-  // --------------------------------------------------------------------------
-  // Update Bottom Nav Buttons & Pinned Side Navigation Arrows
-  // --------------------------------------------------------------------------
   function updateReaderNavButtons() {
-    const prevBtn = document.getElementById('readerPrevBtn');
-    const nextBtn = document.getElementById('readerNextBtn');
-    const prevTitle = document.getElementById('readerPrevTitle');
-    const nextTitle = document.getElementById('readerNextTitle');
-    const sidePrev = document.getElementById('readerSidePrev');
-    const sideNext = document.getElementById('readerSideNext');
+    const navConfigs = [
+      {
+        targetIdx: currentActivePostIndex - 1,
+        valid: currentActivePostIndex > 0,
+        btnId: 'readerPrevBtn',
+        titleId: 'readerPrevTitle',
+        sideId: 'readerSidePrev',
+        prefix: 'Previous: '
+      },
+      {
+        targetIdx: currentActivePostIndex + 1,
+        valid: currentActivePostIndex < allPosts.length - 1,
+        btnId: 'readerNextBtn',
+        titleId: 'readerNextTitle',
+        sideId: 'readerSideNext',
+        prefix: 'Next: '
+      }
+    ];
 
-    // Bottom Footer Prev Button & Pinned Side Prev Arrow
-    if (currentActivePostIndex > 0) {
-      const prevPost = allPosts[currentActivePostIndex - 1];
-      if (prevBtn) {
-        prevBtn.style.display = 'flex';
-        prevBtn.disabled = false;
-      }
-      if (prevTitle) prevTitle.textContent = prevPost.title;
-      if (sidePrev) {
-        sidePrev.style.display = 'flex';
-        sidePrev.title = 'Previous: ' + prevPost.title;
-        sidePrev.setAttribute('aria-label', 'Previous: ' + prevPost.title);
-      }
-    } else {
-      if (prevBtn) {
-        prevBtn.style.display = 'none';
-        prevBtn.disabled = true;
-      }
-      if (sidePrev) {
-        sidePrev.style.display = 'none';
-      }
-    }
+    navConfigs.forEach(({ targetIdx, valid, btnId, titleId, sideId, prefix }) => {
+      const btn = document.getElementById(btnId);
+      const titleEl = document.getElementById(titleId);
+      const side = document.getElementById(sideId);
+      const targetPost = valid ? allPosts[targetIdx] : null;
 
-    // Bottom Footer Next Button & Pinned Side Next Arrow
-    if (currentActivePostIndex < allPosts.length - 1) {
-      const nextPost = allPosts[currentActivePostIndex + 1];
-      if (nextBtn) {
-        nextBtn.style.display = 'flex';
-        nextBtn.disabled = false;
+      if (btn) {
+        btn.style.display = targetPost ? 'flex' : 'none';
+        btn.disabled = !targetPost;
       }
-      if (nextTitle) nextTitle.textContent = nextPost.title;
-      if (sideNext) {
-        sideNext.style.display = 'flex';
-        sideNext.title = 'Next: ' + nextPost.title;
-        sideNext.setAttribute('aria-label', 'Next: ' + nextPost.title);
+      if (titleEl && targetPost) titleEl.textContent = targetPost.title;
+      if (side) {
+        side.classList.toggle('is-unavailable', !targetPost);
+        side.disabled = !targetPost;
+        if (targetPost) {
+          side.title = prefix + targetPost.title;
+          side.setAttribute('aria-label', prefix + targetPost.title);
+        } else {
+          const fallbackLabel = sideId === 'readerSidePrev' ? 'No previous post' : 'No next post';
+          side.title = fallbackLabel;
+          side.setAttribute('aria-label', fallbackLabel);
+        }
       }
-    } else {
-      if (nextBtn) {
-        nextBtn.style.display = 'none';
-        nextBtn.disabled = true;
-      }
-      if (sideNext) {
-        sideNext.style.display = 'none';
-      }
-    }
+    });
   }
 
-  // --------------------------------------------------------------------------
-  // Collapsible Code Blocks & Copy Button
-  // --------------------------------------------------------------------------
   window.toggleCodeBlock = function (btn) {
     const card = btn.closest('.code-block-card');
     if (!card) return;
@@ -725,8 +519,7 @@
 
   window.copyCodeBlock = function (btn) {
     const card = btn.closest('.code-block-card');
-    if (!card) return;
-    const codeEl = card.querySelector('pre code');
+    const codeEl = card && card.querySelector('pre code');
     if (!codeEl) return;
 
     const text = codeEl.innerText || codeEl.textContent;
@@ -738,21 +531,14 @@
         btn.textContent = origText;
         btn.classList.remove('is-copied');
       }, 2000);
-    }).catch(err => {
+    }).catch((err) => {
       console.error('Could not copy code:', err);
     });
   };
 
-  function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  }
-
-  // Run on DOM ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initBlog);
   } else {
     initBlog();
   }
-
 })();

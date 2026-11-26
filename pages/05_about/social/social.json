@@ -16,7 +16,7 @@
   },
   {
     "name": "GitHub",
-    "image": "github.png",
+    "image": "github.webp",
     "link": "https://github.com/pbhat99"
   },
   {
@@ -25,13 +25,18 @@
     "link": "https://vimeo.com/835414002"
   },
   {
+    "name": "youtube",
+    "image": "youtube.webp",
+    "link": "https://www.youtube.com/@pbhat99"
+  },
+  {
     "name": "IMDb",
     "image": "imdb.webp",
     "link": "https://www.imdb.com/name/nm9329447/"
   },
   {
     "name": "ArtStation",
-    "image": "artstation.png",
+    "image": "artstation.webp",
     "link": "https://www.artstation.com"
   },
   {

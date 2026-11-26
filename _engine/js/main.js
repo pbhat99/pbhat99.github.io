@@ -1,10 +1,9 @@
 import { initLightbox } from './lightbox.js';
 
 function initMainApp() {
-  // Mobile Nav Toggle & Unified Header Controller
+  // 1. Mobile Navigation Drawer
   const mobileToggle = document.querySelector('.mobile-nav-toggle');
   const navLinks = document.querySelector('.nav-links');
-  const siteHeader = document.querySelector('.site-header');
 
   if (mobileToggle && navLinks) {
     function toggleNav(forceState) {
@@ -12,222 +11,169 @@ function initMainApp() {
       navLinks.classList.toggle('active', willOpen);
       mobileToggle.classList.toggle('active', willOpen);
       mobileToggle.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+      document.documentElement.classList.toggle('mobile-nav-open', willOpen);
       document.body.classList.toggle('mobile-nav-open', willOpen);
     }
+
+    mobileToggle.addEventListener('pointerup', () => {
+      setTimeout(() => mobileToggle.blur(), 0);
+    });
 
     mobileToggle.addEventListener('click', (e) => {
       e.stopPropagation();
       toggleNav();
     });
 
-    // Close when clicking outside
     document.addEventListener('click', (e) => {
       if (navLinks.classList.contains('active') && !navLinks.contains(e.target) && !mobileToggle.contains(e.target)) {
         toggleNav(false);
       }
     });
 
-    // Close on Escape key (Universal Modal & Drawer Closer)
     window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        if (navLinks.classList.contains('active')) {
-          toggleNav(false);
-        }
-        const blogModal = document.getElementById('blogModalReader');
-        if (blogModal && blogModal.classList.contains('active')) {
-          const closeBtn = document.getElementById('readerCloseBtn');
-          if (closeBtn) closeBtn.click();
-        }
-        const photoViewer = document.getElementById('photoViewer');
-        if (photoViewer && photoViewer.classList.contains('active')) {
-          const closeViewer = document.getElementById('photoViewerClose');
-          if (closeViewer) closeViewer.click();
-        }
-      }
-    });
-
-    // Close on link click
-    navLinks.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => {
+      if (e.key === 'Escape' && navLinks.classList.contains('active')) {
         toggleNav(false);
+      }
+    });
+
+    navLinks.querySelectorAll('a').forEach((link) => {
+      link.addEventListener('click', () => toggleNav(false));
+    });
+  }
+
+  // 2. VFX Portfolio Category & Tag Filtering
+  const isVfxPage = Boolean(document.querySelector('.company-section'));
+  if (isVfxPage) {
+    let currentCategory = 'all';
+    let currentTag = null;
+    let sectionHideTimer = null;
+
+    function updateCategoryButtons() {
+      document.querySelectorAll('.filter-bar .filter-btn[data-filter]').forEach((btn) => {
+        btn.classList.toggle('active', btn.getAttribute('data-filter') === currentCategory);
       });
-    });
-  }
-
-  // Navigation bar scrolls naturally with page; zero background blur on scroll
-
-  // Portfolio & VFX Tag / Category Filtering
-  let currentCategory = 'all';
-  let currentTag = null;
-
-  function updateCategoryButtons() {
-    const filterBtns = document.querySelectorAll('.filter-bar .filter-btn[data-filter]');
-    filterBtns.forEach(b => {
-      if (b.getAttribute('data-filter') === currentCategory) {
-        b.classList.add('active');
-      } else {
-        b.classList.remove('active');
-      }
-    });
-  }
-
-  function applyFilters() {
-    const tiles = document.querySelectorAll('.project-tile, .project-card');
-    const companySections = document.querySelectorAll('.company-section');
-
-    tiles.forEach(tile => {
-      const category = tile.getAttribute('data-category');
-      const tagsAttr = tile.getAttribute('data-tags') || '';
-      const tags = tagsAttr.split(',').map(t => t.trim().toLowerCase());
-
-      const matchCategory = (currentCategory === 'all' || category === currentCategory);
-      const matchTag = (!currentTag || tags.includes(currentTag.toLowerCase()));
-
-      if (matchCategory && matchTag) {
-        tile.style.display = 'block';
-        setTimeout(() => { tile.style.opacity = '1'; }, 10);
-      } else {
-        tile.style.opacity = '0';
-        setTimeout(() => { tile.style.display = 'none'; }, 200);
-      }
-    });
-
-    // Highlight active tags
-    document.querySelectorAll('.tile-tag').forEach(tagEl => {
-      const tagVal = tagEl.getAttribute('data-tag');
-      if (currentTag && tagVal && tagVal.toLowerCase() === currentTag.toLowerCase()) {
-        tagEl.classList.add('active');
-      } else {
-        tagEl.classList.remove('active');
-      }
-    });
-
-    // Update active tag banner
-    const tagStatus = document.querySelector('.tag-filter-status');
-    if (tagStatus) {
-      if (currentTag) {
-        tagStatus.innerHTML = `Filter: <strong>#${currentTag}</strong> <button class="tag-filter-clear" title="Clear tag filter">&times;</button>`;
-        tagStatus.style.display = 'inline-flex';
-      } else {
-        tagStatus.style.display = 'none';
-      }
     }
 
-    // Update company sections visibility
-    setTimeout(() => {
-      companySections.forEach(section => {
-        const visibleTiles = section.querySelectorAll('.project-tile:not([style*="display: none"]), .project-card:not([style*="display: none"])');
-        if (visibleTiles.length === 0) {
-          section.style.display = 'none';
+    function applyFilters() {
+      const tiles = document.querySelectorAll('.project-tile');
+      const companySections = document.querySelectorAll('.company-section');
+
+      clearTimeout(sectionHideTimer);
+
+      tiles.forEach((tile) => {
+        clearTimeout(tile._hideTimer);
+        clearTimeout(tile._fadeTimer);
+
+        const category = tile.getAttribute('data-category');
+        const tagsAttr = tile.getAttribute('data-tags') || '';
+        const tags = tagsAttr.split(',').map((t) => t.trim().toLowerCase());
+
+        const matchCategory = currentCategory === 'all' || category === currentCategory;
+        const matchTag = !currentTag || tags.includes(currentTag.toLowerCase());
+
+        if (matchCategory && matchTag) {
+          tile.style.display = 'block';
+          tile._fadeTimer = setTimeout(() => { tile.style.opacity = '1'; }, 10);
         } else {
-          section.style.display = 'block';
-          section.style.opacity = '1';
+          tile.style.opacity = '0';
+          tile._hideTimer = setTimeout(() => { tile.style.display = 'none'; }, 200);
         }
       });
-    }, 220);
-  }
 
-  // Category Button Click (Delegated for dynamically generated pills on VFX page)
-  document.addEventListener('click', (e) => {
-    const btn = e.target.closest('.filter-bar .filter-btn[data-filter]');
-    if (btn && document.querySelector('.company-section')) {
-      e.preventDefault();
-      currentCategory = btn.getAttribute('data-filter') || 'all';
-      currentTag = null;
-      updateCategoryButtons();
-      applyFilters();
-    }
-  });
+      document.querySelectorAll('.tile-tag').forEach((tagEl) => {
+        const tagVal = tagEl.getAttribute('data-tag');
+        tagEl.classList.toggle('active', Boolean(currentTag && tagVal && tagVal.toLowerCase() === currentTag.toLowerCase()));
+      });
 
-  // Delegated clicks for interactive Category Pills and Clickable Tags on Tiles
-  document.addEventListener('click', (e) => {
-    // Tag Click
-    const tagBtn = e.target.closest('.tile-tag');
-    if (tagBtn) {
-      e.preventDefault();
-      e.stopPropagation();
-      const clickedTag = tagBtn.getAttribute('data-tag');
-      if (currentTag && currentTag.toLowerCase() === clickedTag.toLowerCase()) {
-        currentTag = null; // toggle off
-      } else {
-        currentTag = clickedTag;
+      const tagStatus = document.querySelector('.tag-filter-status');
+      if (tagStatus) {
+        if (currentTag) {
+          tagStatus.textContent = '';
+          const label = document.createElement('span');
+          label.innerHTML = 'Filter: ';
+          const strong = document.createElement('strong');
+          strong.textContent = `#${currentTag}`;
+          const clearBtn = document.createElement('button');
+          clearBtn.type = 'button';
+          clearBtn.className = 'tag-filter-clear';
+          clearBtn.title = 'Clear tag filter';
+          clearBtn.setAttribute('aria-label', 'Clear tag filter');
+          clearBtn.innerHTML = '&times;';
+          tagStatus.append(label, strong, clearBtn);
+          tagStatus.style.display = 'inline-flex';
+        } else {
+          tagStatus.style.display = 'none';
+        }
       }
-      applyFilters();
-      return;
+
+      sectionHideTimer = setTimeout(() => {
+        companySections.forEach((section) => {
+          const hasVisible = Array.from(section.querySelectorAll('.project-tile'))
+            .some((t) => t.style.display !== 'none');
+          section.style.display = hasVisible ? 'block' : 'none';
+          if (hasVisible) section.style.opacity = '1';
+        });
+      }, 220);
     }
 
-    // Category Pill Click
-    const catPill = e.target.closest('.tile-category-pill');
-    if (catPill) {
-      e.preventDefault();
-      e.stopPropagation();
-      currentCategory = catPill.getAttribute('data-filter-category') || 'all';
-      currentTag = null;
-      updateCategoryButtons();
-      applyFilters();
-      return;
-    }
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('.filter-bar .filter-btn[data-filter]');
+      if (btn) {
+        e.preventDefault();
+        currentCategory = btn.getAttribute('data-filter') || 'all';
+        currentTag = null;
+        updateCategoryButtons();
+        applyFilters();
+        return;
+      }
 
-    // Clear Tag Filter
-    if (e.target.classList.contains('tag-filter-clear') || e.target.closest('.tag-filter-clear')) {
-      e.preventDefault();
-      currentTag = null;
-      applyFilters();
-      return;
-    }
-  });
+      const tagBtn = e.target.closest('.tile-tag');
+      if (tagBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const clickedTag = tagBtn.getAttribute('data-tag');
+        currentTag = (currentTag && currentTag.toLowerCase() === clickedTag.toLowerCase()) ? null : clickedTag;
+        applyFilters();
+        return;
+      }
 
-  // Scroll to Top Floating Button (Show only when scrolled past one screen height)
-  let backToTopBtn = document.getElementById('back-to-top');
-  if (!backToTopBtn) {
-    backToTopBtn = document.createElement('button');
-    backToTopBtn.id = 'back-to-top';
-    backToTopBtn.className = 'back-to-top';
-    backToTopBtn.setAttribute('aria-label', 'Scroll to top');
-    backToTopBtn.setAttribute('title', 'Scroll to top');
-    backToTopBtn.innerHTML = `
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="18 15 12 9 6 15"></polyline>
-      </svg>
-    `;
-    document.body.appendChild(backToTopBtn);
-  }
+      const catPill = e.target.closest('.tile-category-pill');
+      if (catPill) {
+        e.preventDefault();
+        e.stopPropagation();
+        currentCategory = catPill.getAttribute('data-filter-category') || 'all';
+        currentTag = null;
+        updateCategoryButtons();
+        applyFilters();
+        return;
+      }
 
-  function handleScroll() {
-    const scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-    const threshold = Math.min(280, (window.innerHeight || 600) * 0.5);
-    if (scrollY > threshold) {
-      backToTopBtn.classList.add('visible');
-    } else {
-      backToTopBtn.classList.remove('visible');
-    }
-  }
-
-  window.addEventListener('scroll', handleScroll, { passive: true });
-  document.addEventListener('scroll', handleScroll, { passive: true });
-  backToTopBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    document.documentElement.scrollTo({ top: 0, behavior: 'smooth' });
-  });
-  handleScroll();
-
-  // Showreel Timestamp Jumpers
-  const reelBadges = document.querySelectorAll('.reel-time-badge');
-  const reelIframe = document.querySelector('.hero-reel-card iframe');
-
-  reelBadges.forEach(badge => {
-    badge.addEventListener('click', () => {
-      const seconds = badge.getAttribute('data-seconds');
-      if (reelIframe && seconds) {
-        // Post message to Vimeo player or jump URL
-        const currentSrc = reelIframe.src.split('#')[0];
-        reelIframe.src = `${currentSrc}#t=${seconds}s`;
+      if (e.target.closest('.tag-filter-clear')) {
+        e.preventDefault();
+        currentTag = null;
+        applyFilters();
       }
     });
-  });
+  }
 
-  // Initialize active interactive modules
+  // 3. Scroll-to-Top Floating Button
+  const backToTopBtn = document.getElementById('back-to-top');
+  if (backToTopBtn) {
+    const handleScroll = () => {
+      const scrollY = window.scrollY || document.documentElement.scrollTop || 0;
+      const threshold = Math.min(280, (window.innerHeight || 600) * 0.5);
+      backToTopBtn.classList.toggle('visible', scrollY > threshold);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    backToTopBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    handleScroll();
+  }
+
+  // 4. Initialize GLightbox when present on page
   initLightbox();
 }
 
@@ -236,4 +182,3 @@ if (document.readyState === 'loading') {
 } else {
   initMainApp();
 }
-

@@ -7,34 +7,23 @@ export function initInteractiveBackground(canvasId = 'bg-canvas') {
   if (!canvas) return;
 
   const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
   let width = window.innerWidth;
   let height = window.innerHeight;
   let dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // Mouse State
   const mouse = {
     x: width / 2,
     y: height / 2,
     targetX: width / 2,
     targetY: height / 2,
     radius: 220,
+    radiusSq: 220 * 220,
     active: true
   };
 
-  function resize() {
-    width = window.innerWidth;
-    height = window.innerHeight;
-    canvas.width = width * dpr;
-    canvas.height = height * dpr;
-    canvas.style.width = width + 'px';
-    canvas.style.height = height + 'px';
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  }
-
-  const count = window.innerWidth < 768 ? 45 : 85;
-  const particles = [];
-  
-  // Custom Color Palette: #f98603 and off-whites
   const palette = [
     { r: 249, g: 134, b: 3 },   // Vibrant Orange (#f98603)
     { r: 251, g: 175, b: 75 },  // Warm Amber
@@ -42,14 +31,23 @@ export function initInteractiveBackground(canvasId = 'bg-canvas') {
     { r: 226, g: 232, b: 240 }  // Muted Off-white
   ];
 
+  function resize() {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  const particles = [];
+
   class Particle {
     constructor() {
-      this.reset(true);
-    }
-
-    reset(randomPosition = false) {
-      this.x = randomPosition ? Math.random() * width : (Math.random() > 0.5 ? 0 : width);
-      this.y = randomPosition ? Math.random() * height : Math.random() * height;
+      this.x = Math.random() * width;
+      this.y = Math.random() * height;
       this.vx = (Math.random() - 0.5) * 0.75;
       this.vy = (Math.random() - 0.5) * 0.75;
       this.baseRadius = Math.random() * 2 + 1.2;
@@ -64,18 +62,17 @@ export function initInteractiveBackground(canvasId = 'bg-canvas') {
     update() {
       this.x += this.vx;
       this.y += this.vy;
-
       this.pulseAngle += this.pulseSpeed;
       this.alpha = this.baseAlpha + Math.sin(this.pulseAngle) * 0.15;
 
-      // Mouse Proximity Gravity & Swirl
       if (mouse.active) {
         const dx = mouse.x - this.x;
         const dy = mouse.y - this.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
+        const distSq = dx * dx + dy * dy;
 
-        if (dist < mouse.radius && dist > 1) {
-          const force = (1 - dist / mouse.radius);
+        if (distSq < mouse.radiusSq && distSq > 1) {
+          const dist = Math.sqrt(distSq);
+          const force = 1 - dist / mouse.radius;
           this.vx += (dx / dist) * force * 0.22;
           this.vy += (dy / dist) * force * 0.22;
           this.alpha = Math.min(1, this.alpha + force * 0.5);
@@ -89,9 +86,9 @@ export function initInteractiveBackground(canvasId = 'bg-canvas') {
       this.vy *= 0.98;
 
       if (this.x < -10) this.x = width + 10;
-      if (this.x > width + 10) this.x = -10;
+      else if (this.x > width + 10) this.x = -10;
       if (this.y < -10) this.y = height + 10;
-      if (this.y > height + 10) this.y = -10;
+      else if (this.y > height + 10) this.y = -10;
     }
 
     draw() {
@@ -106,6 +103,7 @@ export function initInteractiveBackground(canvasId = 'bg-canvas') {
   }
 
   function initParticles() {
+    const count = width < 768 ? 45 : 85;
     particles.length = 0;
     for (let i = 0; i < count; i++) {
       particles.push(new Particle());
@@ -114,15 +112,18 @@ export function initInteractiveBackground(canvasId = 'bg-canvas') {
 
   function drawConnections() {
     const maxDist = 125;
+    const maxDistSq = maxDist * maxDist;
+
     for (let i = 0; i < particles.length; i++) {
+      const p1 = particles[i];
       for (let j = i + 1; j < particles.length; j++) {
-        const p1 = particles[i];
         const p2 = particles[j];
         const dx = p1.x - p2.x;
         const dy = p1.y - p2.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
+        const distSq = dx * dx + dy * dy;
 
-        if (dist < maxDist) {
+        if (distSq < maxDistSq) {
+          const dist = Math.sqrt(distSq);
           const alpha = (1 - dist / maxDist) * 0.25;
           ctx.beginPath();
           ctx.moveTo(p1.x, p1.y);
@@ -133,15 +134,15 @@ export function initInteractiveBackground(canvasId = 'bg-canvas') {
         }
       }
 
-      // Connect to cursor
       if (mouse.active) {
-        const dx = particles[i].x - mouse.x;
-        const dy = particles[i].y - mouse.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < mouse.radius) {
+        const dx = p1.x - mouse.x;
+        const dy = p1.y - mouse.y;
+        const distSq = dx * dx + dy * dy;
+        if (distSq < mouse.radiusSq) {
+          const dist = Math.sqrt(distSq);
           const alpha = (1 - dist / mouse.radius) * 0.45;
           ctx.beginPath();
-          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.moveTo(p1.x, p1.y);
           ctx.lineTo(mouse.x, mouse.y);
           ctx.strokeStyle = `rgba(251, 175, 75, ${alpha})`;
           ctx.lineWidth = 1.1;
@@ -170,16 +171,23 @@ export function initInteractiveBackground(canvasId = 'bg-canvas') {
     ctx.fill();
   }
 
-  let reqId;
-  function render() {
+  let reqId = null;
+
+  function drawFrame() {
     ctx.clearRect(0, 0, width, height);
     drawCursorGlow();
     for (let i = 0; i < particles.length; i++) {
-      particles[i].update();
+      if (!reducedMotion) particles[i].update();
       particles[i].draw();
     }
     drawConnections();
-    reqId = requestAnimationFrame(render);
+  }
+
+  function render() {
+    drawFrame();
+    if (!reducedMotion) {
+      reqId = requestAnimationFrame(render);
+    }
   }
 
   function handlePointer(x, y) {
@@ -192,23 +200,36 @@ export function initInteractiveBackground(canvasId = 'bg-canvas') {
     }
   }
 
-  window.addEventListener('pointermove', (e) => handlePointer(e.clientX, e.clientY));
-  window.addEventListener('mousemove', (e) => handlePointer(e.clientX, e.clientY));
-  window.addEventListener('touchmove', (e) => {
-    if (e.touches && e.touches[0]) handlePointer(e.touches[0].clientX, e.touches[0].clientY);
-  }, { passive: true });
-  window.addEventListener('mouseleave', () => { mouse.active = false; });
-  window.addEventListener('touchend', () => { mouse.active = false; });
+  if (!reducedMotion) {
+    window.addEventListener('pointermove', (e) => handlePointer(e.clientX, e.clientY), { passive: true });
+    window.addEventListener('mousemove', (e) => handlePointer(e.clientX, e.clientY), { passive: true });
+    window.addEventListener('touchmove', (e) => {
+      if (e.touches && e.touches[0]) handlePointer(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: true });
+    window.addEventListener('mouseleave', () => { mouse.active = false; });
+    window.addEventListener('touchend', () => { mouse.active = false; });
 
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        if (reqId) cancelAnimationFrame(reqId);
+        reqId = null;
+      } else if (!reqId) {
+        render();
+      }
+    });
+  } else {
+    mouse.active = false;
+  }
+
+  let resizeTimer = null;
   window.addEventListener('resize', () => {
-    resize();
-    initParticles();
-  });
-
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) cancelAnimationFrame(reqId);
-    else render();
-  });
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      resize();
+      initParticles();
+      if (reducedMotion) drawFrame();
+    }, 100);
+  }, { passive: true });
 
   resize();
   initParticles();

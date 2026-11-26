@@ -14,36 +14,31 @@
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-
     gtag('config', 'G-PTGZPG59ZS');
   </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Photography & Panoramas | Pra - Motions</title>
+  <title>Photography &amp; Panoramas | Pra - Motions</title>
+  <meta name="description" content="High-resolution 360° environment captures, HDRI light probes, and cinematic stills gallery.">
   <!-- SEO & Canonical Link -->
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://pbhat99.github.io/photography.html">
 
-  <!-- Open Graph / Social Media Sharing (Facebook, LinkedIn, Discord) -->
+  <!-- Open Graph / Social Media Sharing -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://pbhat99.github.io/photography.html">
-  <meta property="og:title" content="Photography & Panoramas | Pra - Motions">
+  <meta property="og:title" content="Photography &amp; Panoramas | Pra - Motions">
   <meta property="og:description" content="High-resolution 360° environment captures, HDRI light probes, and cinematic stills gallery.">
   <meta property="og:image" content="https://pbhat99.github.io/_engine/images/logo.png">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:url" content="https://pbhat99.github.io/photography.html">
-  <meta name="twitter:title" content="Photography & Panoramas | Pra - Motions">
+  <meta name="twitter:title" content="Photography &amp; Panoramas | Pra - Motions">
   <meta name="twitter:description" content="High-resolution 360° environment captures, HDRI light probes, and cinematic stills gallery.">
   <meta name="twitter:image" content="https://pbhat99.github.io/_engine/images/logo.png">
   <link rel="icon" type="image/png" href="_engine/images/logo.png">
-  <!-- Local Pre-Compressed WOFF2 Typography (Zero Network Roundtrips) -->
   <link rel="stylesheet" href="_engine/css/fonts.css">
-  <!-- Fallback Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,700&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="_engine/css/main.css">
   <link rel="stylesheet" href="_engine/css/components.css">
   <link rel="stylesheet" href="_engine/css/pannellum.css">
@@ -55,17 +50,18 @@
   <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WZLPRH6G"
   height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <!-- End Google Tag Manager (noscript) -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
   <div class="site-bg-image" style="background-image: url('pages/04_photography/background.webp?v=1794671480');"></div>
   <div class="site-bg-overlay" style="opacity: 0.65;"></div>
 
   <header class="site-header">
     <div class="nav-wrapper">
       <a href="index.html" class="brand-logo">
-        <img src="_engine/images/logo.png" alt="Pra Motions Logo" width="34" height="34" style="border-radius: 6px;">
+        <img src="_engine/images/logo.png" alt="Pra Motions Logo" width="34" height="34">
         <span>Pra - <span class="brand-badge">Motions</span></span>
       </a>
 
-      <button class="mobile-nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+      <button type="button" class="mobile-nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
 
@@ -75,31 +71,25 @@
     </div>
   </header>
 
-  <main style="padding-top: clamp(84px, 7vw, 110px); padding-bottom: clamp(36px, 5vw, 64px);">
+  <main id="main-content" class="page-main">
     <div class="container-wide">
       <div class="section-header">
-        <h1 class="section-title">Photography & Panoramas</h1>
+        <h1 class="section-title">Photography &amp; Panoramas</h1>
         <p class="section-desc">High-resolution 360° environment captures, HDRI light probes, and cinematic stills gallery.</p>
       </div>
-
-      <!-- Gallery Filter Tabs (All, Panoramas, Photos matching VFX page pills) -->
-      <div class="filter-bar filter-bar-center" style="margin-bottom: 32px;">
-        <button type="button" class="filter-btn active" id="tabBtnAll" data-tab="all" onclick="switchGalleryTab('all', event)">All</button>
-        <button type="button" class="filter-btn" id="tabBtnPanos" data-tab="panos" onclick="switchGalleryTab('panos', event)">Panoramas</button>
-        <button type="button" class="filter-btn" id="tabBtnPhotos" data-tab="photos" onclick="switchGalleryTab('photos', event)">Photos</button>
+      <div class="filter-bar filter-bar-center">
+        <button type="button" class="filter-btn active" id="tabBtnAll" data-tab="all">All</button>
+        <button type="button" class="filter-btn" id="tabBtnPanos" data-tab="panos">Panoramas</button>
+        <button type="button" class="filter-btn" id="tabBtnPhotos" data-tab="photos">Photos</button>
       </div>
-
-      <!-- Unified Waterfall Gallery Grid (3 Columns in All & Photos, 2 Columns in Panoramas) -->
       <section class="photo-gallery-section" id="gallery-container">
         <div class="waterfall-container waterfall-3-col" id="photoWaterfallContainer">
-          
         <div class="waterfall-col">
-          
         <div class="waterfall-item" data-type="panos" data-aspect="2.0" style="--aspect: 2.0;">
-          <article class="project-tile pano-tile" onclick="openPanoViewer(0)" title="Atacama Large Millimeter Array" style="--aspect: 2.0; aspect-ratio: 2.0;">
+          <article class="project-tile pano-tile" data-pano-idx="0" tabindex="0" role="button" aria-label="Atacama Large Millimeter Array" title="Atacama Large Millimeter Array" style="--aspect: 2.0; aspect-ratio: 2.0;">
             <div class="tile-circling-border" aria-hidden="true"></div>
             <div class="tile-inner" style="aspect-ratio: 2.0;">
-              <img src="pages/04_photography/panos/001_Atacama Large Millimeter Array.webp" alt="Atacama Large Millimeter Array" class="tile-img" loading="lazy" decoding="async">
+              <img src="_engine/thumbs/photography/panos/001_Atacama Large Millimeter Array.webp" alt="Atacama Large Millimeter Array" class="tile-img" loading="lazy" decoding="async">
               <span class="pano-badge">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
                 360° Panorama
@@ -109,82 +99,17 @@
               </div>
               <div class="tile-hover-overlay">
                 <div class="tile-hover-content">
-                  <h3 class="tile-title">
-                    <span>Atacama Large Millimeter Array</span>
-                  </h3>
-                </div>
-              </div>
-            </div>
-          </article>
-        </div>
-        <div class="waterfall-item" data-type="photos" data-aspect="1.333" style="--aspect: 1.333;">
-          <article class="project-tile photo-tile" onclick="openPhotoViewer(0)" title="Anjaniputra Release Poster" style="--aspect: 1.333; aspect-ratio: 1.333;">
-            <div class="tile-circling-border" aria-hidden="true"></div>
-            <div class="tile-inner" style="aspect-ratio: 1.333;">
-              <img src="pages/04_photography/photos/001_Anjaniputra Release Poster.webp" alt="Anjaniputra Release Poster" class="tile-img" loading="lazy" decoding="async">
-              <div class="tile-hover-overlay">
-                <div class="tile-hover-content">
-                  <h3 class="tile-title">
-                    <span>Anjaniputra Release Poster</span>
-                  </h3>
-                </div>
-              </div>
-            </div>
-          </article>
-        </div>
-        <div class="waterfall-item" data-type="photos" data-aspect="1.777" style="--aspect: 1.777;">
-          <article class="project-tile photo-tile" onclick="openPhotoViewer(1)" title="Adidas Create The Answer" style="--aspect: 1.777; aspect-ratio: 1.777;">
-            <div class="tile-circling-border" aria-hidden="true"></div>
-            <div class="tile-inner" style="aspect-ratio: 1.777;">
-              <img src="pages/04_photography/photos/002_Adidas Create The Answer.webp" alt="Adidas Create The Answer" class="tile-img" loading="lazy" decoding="async">
-              <div class="tile-hover-overlay">
-                <div class="tile-hover-content">
-                  <h3 class="tile-title">
-                    <span>Adidas Create The Answer</span>
-                  </h3>
-                </div>
-              </div>
-            </div>
-          </article>
-        </div>
-        <div class="waterfall-item" data-type="photos" data-aspect="1.777" style="--aspect: 1.777;">
-          <article class="project-tile photo-tile" onclick="openPhotoViewer(4)" title="Busch Light Forest Camp" style="--aspect: 1.777; aspect-ratio: 1.777;">
-            <div class="tile-circling-border" aria-hidden="true"></div>
-            <div class="tile-inner" style="aspect-ratio: 1.777;">
-              <img src="pages/04_photography/photos/005_Busch Light Forest Camp.webp" alt="Busch Light Forest Camp" class="tile-img" loading="lazy" decoding="async">
-              <div class="tile-hover-overlay">
-                <div class="tile-hover-content">
-                  <h3 class="tile-title">
-                    <span>Busch Light Forest Camp</span>
-                  </h3>
-                </div>
-              </div>
-            </div>
-          </article>
-        </div>
-        </div>
-        <div class="waterfall-col">
-          
-        <div class="waterfall-item" data-type="photos" data-aspect="0.681" style="--aspect: 0.681;">
-          <article class="project-tile photo-tile" onclick="openPhotoViewer(5)" title="Pepsi Super Bowl Commercial" style="--aspect: 0.681; aspect-ratio: 0.681;">
-            <div class="tile-circling-border" aria-hidden="true"></div>
-            <div class="tile-inner" style="aspect-ratio: 0.681;">
-              <img src="pages/04_photography/photos/006_Pepsi Super Bowl Commercial.webp" alt="Pepsi Super Bowl Commercial" class="tile-img" loading="lazy" decoding="async">
-              <div class="tile-hover-overlay">
-                <div class="tile-hover-content">
-                  <h3 class="tile-title">
-                    <span>Pepsi Super Bowl Commercial</span>
-                  </h3>
+                  <h3 class="tile-title"><span>Atacama Large Millimeter Array</span></h3>
                 </div>
               </div>
             </div>
           </article>
         </div>
         <div class="waterfall-item" data-type="panos" data-aspect="2.0" style="--aspect: 2.0;">
-          <article class="project-tile pano-tile" onclick="openPanoViewer(1)" title="Cerro Toco High Altitude Observatory" style="--aspect: 2.0; aspect-ratio: 2.0;">
+          <article class="project-tile pano-tile" data-pano-idx="1" tabindex="0" role="button" aria-label="Cerro Toco High Altitude Observatory" title="Cerro Toco High Altitude Observatory" style="--aspect: 2.0; aspect-ratio: 2.0;">
             <div class="tile-circling-border" aria-hidden="true"></div>
             <div class="tile-inner" style="aspect-ratio: 2.0;">
-              <img src="pages/04_photography/panos/002_Cerro Toco High Altitude Observatory.webp" alt="Cerro Toco High Altitude Observatory" class="tile-img" loading="lazy" decoding="async">
+              <img src="_engine/thumbs/photography/panos/002_Cerro Toco High Altitude Observatory.webp" alt="Cerro Toco High Altitude Observatory" class="tile-img" loading="lazy" decoding="async">
               <span class="pano-badge">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
                 360° Panorama
@@ -194,37 +119,17 @@
               </div>
               <div class="tile-hover-overlay">
                 <div class="tile-hover-content">
-                  <h3 class="tile-title">
-                    <span>Cerro Toco High Altitude Observatory</span>
-                  </h3>
+                  <h3 class="tile-title"><span>Cerro Toco High Altitude Observatory</span></h3>
                 </div>
               </div>
             </div>
           </article>
         </div>
-        <div class="waterfall-item" data-type="photos" data-aspect="1.777" style="--aspect: 1.777;">
-          <article class="project-tile photo-tile" onclick="openPhotoViewer(2)" title="Adidas Football Still" style="--aspect: 1.777; aspect-ratio: 1.777;">
-            <div class="tile-circling-border" aria-hidden="true"></div>
-            <div class="tile-inner" style="aspect-ratio: 1.777;">
-              <img src="pages/04_photography/photos/003_Adidas Football Still.webp" alt="Adidas Football Still" class="tile-img" loading="lazy" decoding="async">
-              <div class="tile-hover-overlay">
-                <div class="tile-hover-content">
-                  <h3 class="tile-title">
-                    <span>Adidas Football Still</span>
-                  </h3>
-                </div>
-              </div>
-            </div>
-          </article>
-        </div>
-        </div>
-        <div class="waterfall-col">
-          
         <div class="waterfall-item" data-type="panos" data-aspect="2.0" style="--aspect: 2.0;">
-          <article class="project-tile pano-tile" onclick="openPanoViewer(2)" title="Baltimore Museum of Art Sculpture Garden" style="--aspect: 2.0; aspect-ratio: 2.0;">
+          <article class="project-tile pano-tile" data-pano-idx="2" tabindex="0" role="button" aria-label="Baltimore Museum of Art Sculpture Garden" title="Baltimore Museum of Art Sculpture Garden" style="--aspect: 2.0; aspect-ratio: 2.0;">
             <div class="tile-circling-border" aria-hidden="true"></div>
             <div class="tile-inner" style="aspect-ratio: 2.0;">
-              <img src="pages/04_photography/panos/003_Baltimore Museum of Art Sculpture Garden.webp" alt="Baltimore Museum of Art Sculpture Garden" class="tile-img" loading="lazy" decoding="async">
+              <img src="_engine/thumbs/photography/panos/003_Baltimore Museum of Art Sculpture Garden.webp" alt="Baltimore Museum of Art Sculpture Garden" class="tile-img" loading="lazy" decoding="async">
               <span class="pano-badge">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
                 360° Panorama
@@ -234,49 +139,17 @@
               </div>
               <div class="tile-hover-overlay">
                 <div class="tile-hover-content">
-                  <h3 class="tile-title">
-                    <span>Baltimore Museum of Art Sculpture Garden</span>
-                  </h3>
-                </div>
-              </div>
-            </div>
-          </article>
-        </div>
-        <div class="waterfall-item" data-type="photos" data-aspect="1.777" style="--aspect: 1.777;">
-          <article class="project-tile photo-tile" onclick="openPhotoViewer(3)" title="Busch Light Mountain Expedition" style="--aspect: 1.777; aspect-ratio: 1.777;">
-            <div class="tile-circling-border" aria-hidden="true"></div>
-            <div class="tile-inner" style="aspect-ratio: 1.777;">
-              <img src="pages/04_photography/photos/004_Busch Light Mountain Expedition.webp" alt="Busch Light Mountain Expedition" class="tile-img" loading="lazy" decoding="async">
-              <div class="tile-hover-overlay">
-                <div class="tile-hover-content">
-                  <h3 class="tile-title">
-                    <span>Busch Light Mountain Expedition</span>
-                  </h3>
-                </div>
-              </div>
-            </div>
-          </article>
-        </div>
-        <div class="waterfall-item" data-type="photos" data-aspect="1.777" style="--aspect: 1.777;">
-          <article class="project-tile photo-tile" onclick="openPhotoViewer(6)" title="Pepsi The Call Cinematic Still" style="--aspect: 1.777; aspect-ratio: 1.777;">
-            <div class="tile-circling-border" aria-hidden="true"></div>
-            <div class="tile-inner" style="aspect-ratio: 1.777;">
-              <img src="pages/04_photography/photos/007_Pepsi The Call Cinematic Still.webp" alt="Pepsi The Call Cinematic Still" class="tile-img" loading="lazy" decoding="async">
-              <div class="tile-hover-overlay">
-                <div class="tile-hover-content">
-                  <h3 class="tile-title">
-                    <span>Pepsi The Call Cinematic Still</span>
-                  </h3>
+                  <h3 class="tile-title"><span>Baltimore Museum of Art Sculpture Garden</span></h3>
                 </div>
               </div>
             </div>
           </article>
         </div>
         <div class="waterfall-item" data-type="panos" data-aspect="2.768" style="--aspect: 2.768;">
-          <article class="project-tile pano-tile" onclick="openPanoViewer(3)" title="Charles Street Historic Center" style="--aspect: 2.768; aspect-ratio: 2.768;">
+          <article class="project-tile pano-tile" data-pano-idx="3" tabindex="0" role="button" aria-label="Charles Street Historic Center" title="Charles Street Historic Center" style="--aspect: 2.768; aspect-ratio: 2.768;">
             <div class="tile-circling-border" aria-hidden="true"></div>
             <div class="tile-inner" style="aspect-ratio: 2.768;">
-              <img src="pages/04_photography/panos/004_Charles Street Historic Center.webp" alt="Charles Street Historic Center" class="tile-img" loading="lazy" decoding="async">
+              <img src="_engine/thumbs/photography/panos/004_Charles Street Historic Center.webp" alt="Charles Street Historic Center" class="tile-img" loading="lazy" decoding="async">
               <span class="pano-badge">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
                 360° Panorama
@@ -286,24 +159,115 @@
               </div>
               <div class="tile-hover-overlay">
                 <div class="tile-hover-content">
-                  <h3 class="tile-title">
-                    <span>Charles Street Historic Center</span>
-                  </h3>
+                  <h3 class="tile-title"><span>Charles Street Historic Center</span></h3>
                 </div>
               </div>
             </div>
           </article>
         </div>
         <div class="waterfall-item" data-type="photos" data-aspect="1.777" style="--aspect: 1.777;">
-          <article class="project-tile photo-tile" onclick="openPhotoViewer(7)" title="Xbox Forza Horizon Getaway" style="--aspect: 1.777; aspect-ratio: 1.777;">
+          <article class="project-tile photo-tile" data-photo-idx="7" tabindex="0" role="button" aria-label="Xbox Forza Horizon Getaway" title="Xbox Forza Horizon Getaway" style="--aspect: 1.777; aspect-ratio: 1.777;">
             <div class="tile-circling-border" aria-hidden="true"></div>
             <div class="tile-inner" style="aspect-ratio: 1.777;">
-              <img src="pages/04_photography/photos/008_Xbox Forza Horizon Getaway.webp" alt="Xbox Forza Horizon Getaway" class="tile-img" loading="lazy" decoding="async">
+              <img src="_engine/thumbs/photography/photos/008_Xbox Forza Horizon Getaway.webp" alt="Xbox Forza Horizon Getaway" class="tile-img" loading="lazy" decoding="async">
               <div class="tile-hover-overlay">
                 <div class="tile-hover-content">
-                  <h3 class="tile-title">
-                    <span>Xbox Forza Horizon Getaway</span>
-                  </h3>
+                  <h3 class="tile-title"><span>Xbox Forza Horizon Getaway</span></h3>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+        </div>
+        <div class="waterfall-col">
+        <div class="waterfall-item" data-type="photos" data-aspect="1.333" style="--aspect: 1.333;">
+          <article class="project-tile photo-tile" data-photo-idx="0" tabindex="0" role="button" aria-label="Anjaniputra Release Poster" title="Anjaniputra Release Poster" style="--aspect: 1.333; aspect-ratio: 1.333;">
+            <div class="tile-circling-border" aria-hidden="true"></div>
+            <div class="tile-inner" style="aspect-ratio: 1.333;">
+              <img src="_engine/thumbs/photography/photos/001_Anjaniputra Release Poster.webp" alt="Anjaniputra Release Poster" class="tile-img" loading="lazy" decoding="async">
+              <div class="tile-hover-overlay">
+                <div class="tile-hover-content">
+                  <h3 class="tile-title"><span>Anjaniputra Release Poster</span></h3>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+        <div class="waterfall-item" data-type="photos" data-aspect="1.777" style="--aspect: 1.777;">
+          <article class="project-tile photo-tile" data-photo-idx="3" tabindex="0" role="button" aria-label="Busch Light Mountain Expedition" title="Busch Light Mountain Expedition" style="--aspect: 1.777; aspect-ratio: 1.777;">
+            <div class="tile-circling-border" aria-hidden="true"></div>
+            <div class="tile-inner" style="aspect-ratio: 1.777;">
+              <img src="_engine/thumbs/photography/photos/004_Busch Light Mountain Expedition.webp" alt="Busch Light Mountain Expedition" class="tile-img" loading="lazy" decoding="async">
+              <div class="tile-hover-overlay">
+                <div class="tile-hover-content">
+                  <h3 class="tile-title"><span>Busch Light Mountain Expedition</span></h3>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+        <div class="waterfall-item" data-type="photos" data-aspect="0.681" style="--aspect: 0.681;">
+          <article class="project-tile photo-tile" data-photo-idx="5" tabindex="0" role="button" aria-label="Pepsi Super Bowl Commercial" title="Pepsi Super Bowl Commercial" style="--aspect: 0.681; aspect-ratio: 0.681;">
+            <div class="tile-circling-border" aria-hidden="true"></div>
+            <div class="tile-inner" style="aspect-ratio: 0.681;">
+              <img src="_engine/thumbs/photography/photos/006_Pepsi Super Bowl Commercial.webp" alt="Pepsi Super Bowl Commercial" class="tile-img" loading="lazy" decoding="async">
+              <div class="tile-hover-overlay">
+                <div class="tile-hover-content">
+                  <h3 class="tile-title"><span>Pepsi Super Bowl Commercial</span></h3>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+        </div>
+        <div class="waterfall-col">
+        <div class="waterfall-item" data-type="photos" data-aspect="1.777" style="--aspect: 1.777;">
+          <article class="project-tile photo-tile" data-photo-idx="1" tabindex="0" role="button" aria-label="Adidas Create The Answer" title="Adidas Create The Answer" style="--aspect: 1.777; aspect-ratio: 1.777;">
+            <div class="tile-circling-border" aria-hidden="true"></div>
+            <div class="tile-inner" style="aspect-ratio: 1.777;">
+              <img src="_engine/thumbs/photography/photos/002_Adidas Create The Answer.webp" alt="Adidas Create The Answer" class="tile-img" loading="lazy" decoding="async">
+              <div class="tile-hover-overlay">
+                <div class="tile-hover-content">
+                  <h3 class="tile-title"><span>Adidas Create The Answer</span></h3>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+        <div class="waterfall-item" data-type="photos" data-aspect="1.777" style="--aspect: 1.777;">
+          <article class="project-tile photo-tile" data-photo-idx="2" tabindex="0" role="button" aria-label="Adidas Football Still" title="Adidas Football Still" style="--aspect: 1.777; aspect-ratio: 1.777;">
+            <div class="tile-circling-border" aria-hidden="true"></div>
+            <div class="tile-inner" style="aspect-ratio: 1.777;">
+              <img src="_engine/thumbs/photography/photos/003_Adidas Football Still.webp" alt="Adidas Football Still" class="tile-img" loading="lazy" decoding="async">
+              <div class="tile-hover-overlay">
+                <div class="tile-hover-content">
+                  <h3 class="tile-title"><span>Adidas Football Still</span></h3>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+        <div class="waterfall-item" data-type="photos" data-aspect="1.777" style="--aspect: 1.777;">
+          <article class="project-tile photo-tile" data-photo-idx="4" tabindex="0" role="button" aria-label="Busch Light Forest Camp" title="Busch Light Forest Camp" style="--aspect: 1.777; aspect-ratio: 1.777;">
+            <div class="tile-circling-border" aria-hidden="true"></div>
+            <div class="tile-inner" style="aspect-ratio: 1.777;">
+              <img src="_engine/thumbs/photography/photos/005_Busch Light Forest Camp.webp" alt="Busch Light Forest Camp" class="tile-img" loading="lazy" decoding="async">
+              <div class="tile-hover-overlay">
+                <div class="tile-hover-content">
+                  <h3 class="tile-title"><span>Busch Light Forest Camp</span></h3>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+        <div class="waterfall-item" data-type="photos" data-aspect="1.777" style="--aspect: 1.777;">
+          <article class="project-tile photo-tile" data-photo-idx="6" tabindex="0" role="button" aria-label="Pepsi The Call Cinematic Still" title="Pepsi The Call Cinematic Still" style="--aspect: 1.777; aspect-ratio: 1.777;">
+            <div class="tile-circling-border" aria-hidden="true"></div>
+            <div class="tile-inner" style="aspect-ratio: 1.777;">
+              <img src="_engine/thumbs/photography/photos/007_Pepsi The Call Cinematic Still.webp" alt="Pepsi The Call Cinematic Still" class="tile-img" loading="lazy" decoding="async">
+              <div class="tile-hover-overlay">
+                <div class="tile-hover-content">
+                  <h3 class="tile-title"><span>Pepsi The Call Cinematic Still</span></h3>
                 </div>
               </div>
             </div>
@@ -312,7 +276,6 @@
         </div>
         </div>
       </section>
-
     </div>
   </main>
 
@@ -326,34 +289,21 @@
       <div class="viewer-top-actions">
         <button type="button" class="viewer-close-btn" id="photoViewerCloseBtn" onclick="closePhotoViewer()" aria-label="Close viewer" title="Close (Esc)">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
+            <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
         </button>
       </div>
     </div>
-
     <div class="viewer-stage" id="photoViewerStage">
-      <button type="button" class="viewer-side-arrow viewer-prev-arrow" onclick="navPhotoViewer(-1)" aria-label="Previous photo" title="Previous photo (←)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
-          <polyline points="15 18 9 12 15 6"></polyline>
-        </svg>
+      <button type="button" class="viewer-side-arrow viewer-prev-arrow" onclick="navPhotoViewer(-1)" aria-label="Previous photo" title="Previous photo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><polyline points="15 18 9 12 15 6"></polyline></svg>
       </button>
-
-      <div class="viewer-img-container">
-        <img id="photoViewerImg" src="" alt="Photo" class="viewer-main-img">
-      </div>
-
-      <button type="button" class="viewer-side-arrow viewer-next-arrow" onclick="navPhotoViewer(1)" aria-label="Next photo" title="Next photo (→)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
-          <polyline points="9 18 15 12 9 6"></polyline>
-        </svg>
+      <div class="viewer-img-container"><img id="photoViewerImg" src="" alt="Photo" class="viewer-main-img"></div>
+      <button type="button" class="viewer-side-arrow viewer-next-arrow" onclick="navPhotoViewer(1)" aria-label="Next photo" title="Next photo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><polyline points="9 18 15 12 9 6"></polyline></svg>
       </button>
     </div>
-
-    <div class="viewer-filmstrip-bar">
-      <div class="filmstrip-track" id="photoFilmstripTrack"></div>
-    </div>
+    <div class="viewer-filmstrip-bar"><div class="filmstrip-track" id="photoFilmstripTrack"></div></div>
   </div>
 
   <!-- Fullscreen 360 Panorama Viewer Modal with Bottom Filmstrip -->
@@ -370,46 +320,30 @@
       <div class="viewer-top-actions">
         <button type="button" class="viewer-close-btn" id="panoViewerCloseBtn" onclick="closePanoViewer()" aria-label="Close viewer" title="Close (Esc)">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
+            <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
         </button>
       </div>
     </div>
-
     <div class="pano-stage">
       <div id="fullscreenPanoContainer" class="pano-webgl-viewport"></div>
-
-      <button type="button" class="viewer-side-arrow viewer-prev-arrow" onclick="navPanoViewer(-1)" aria-label="Previous panorama" title="Previous panorama (←)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
-          <polyline points="15 18 9 12 15 6"></polyline>
-        </svg>
+      <button type="button" class="viewer-side-arrow viewer-prev-arrow" onclick="navPanoViewer(-1)" aria-label="Previous panorama" title="Previous panorama">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><polyline points="15 18 9 12 15 6"></polyline></svg>
       </button>
-
-      <button type="button" class="viewer-side-arrow viewer-next-arrow" onclick="navPanoViewer(1)" aria-label="Next panorama" title="Next panorama (→)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
-          <polyline points="9 18 15 12 9 6"></polyline>
-        </svg>
+      <button type="button" class="viewer-side-arrow viewer-next-arrow" onclick="navPanoViewer(1)" aria-label="Next panorama" title="Next panorama">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><polyline points="9 18 15 12 9 6"></polyline></svg>
       </button>
     </div>
-
-    <div class="viewer-filmstrip-bar">
-      <div class="filmstrip-track" id="panoFilmstripTrack"></div>
-    </div>
+    <div class="viewer-filmstrip-bar"><div class="filmstrip-track" id="panoFilmstripTrack"></div></div>
   </div>
 
-  <script id="photosData" type="application/json">
-[{"id": "001-anjaniputra-release-poster", "filename": "001_Anjaniputra Release Poster.webp", "title": "Anjaniputra Release Poster", "webp": "pages/04_photography/photos/001_Anjaniputra Release Poster.webp", "width": 1024, "height": 768, "aspect": 1.333}, {"id": "002-adidas-create-the-answer", "filename": "002_Adidas Create The Answer.webp", "title": "Adidas Create The Answer", "webp": "pages/04_photography/photos/002_Adidas Create The Answer.webp", "width": 1100, "height": 619, "aspect": 1.777}, {"id": "003-adidas-football-still", "filename": "003_Adidas Football Still.webp", "title": "Adidas Football Still", "webp": "pages/04_photography/photos/003_Adidas Football Still.webp", "width": 1100, "height": 619, "aspect": 1.777}, {"id": "004-busch-light-mountain-expedition", "filename": "004_Busch Light Mountain Expedition.webp", "title": "Busch Light Mountain Expedition", "webp": "pages/04_photography/photos/004_Busch Light Mountain Expedition.webp", "width": 1100, "height": 619, "aspect": 1.777}, {"id": "005-busch-light-forest-camp", "filename": "005_Busch Light Forest Camp.webp", "title": "Busch Light Forest Camp", "webp": "pages/04_photography/photos/005_Busch Light Forest Camp.webp", "width": 1100, "height": 619, "aspect": 1.777}, {"id": "006-pepsi-super-bowl-commercial", "filename": "006_Pepsi Super Bowl Commercial.webp", "title": "Pepsi Super Bowl Commercial", "webp": "pages/04_photography/photos/006_Pepsi Super Bowl Commercial.webp", "width": 545, "height": 800, "aspect": 0.681}, {"id": "007-pepsi-the-call-cinematic-still", "filename": "007_Pepsi The Call Cinematic Still.webp", "title": "Pepsi The Call Cinematic Still", "webp": "pages/04_photography/photos/007_Pepsi The Call Cinematic Still.webp", "width": 1100, "height": 619, "aspect": 1.777}, {"id": "008-xbox-forza-horizon-getaway", "filename": "008_Xbox Forza Horizon Getaway.webp", "title": "Xbox Forza Horizon Getaway", "webp": "pages/04_photography/photos/008_Xbox Forza Horizon Getaway.webp", "width": 1100, "height": 619, "aspect": 1.777}]
-  </script>
-  <script id="panosData" type="application/json">
-[{"id": "001-atacama-large-millimeter-array", "filename": "001_Atacama Large Millimeter Array.webp", "title": "Atacama Large Millimeter Array", "webp": "pages/04_photography/panos/001_Atacama Large Millimeter Array.webp", "width": 4096, "height": 2048, "aspect": 2.0}, {"id": "002-cerro-toco-high-altitude-observatory", "filename": "002_Cerro Toco High Altitude Observatory.webp", "title": "Cerro Toco High Altitude Observatory", "webp": "pages/04_photography/panos/002_Cerro Toco High Altitude Observatory.webp", "width": 4096, "height": 2048, "aspect": 2.0}, {"id": "003-baltimore-museum-of-art-sculpture-garden", "filename": "003_Baltimore Museum of Art Sculpture Garden.webp", "title": "Baltimore Museum of Art Sculpture Garden", "webp": "pages/04_photography/panos/003_Baltimore Museum of Art Sculpture Garden.webp", "width": 4096, "height": 2048, "aspect": 2.0}, {"id": "004-charles-street-historic-center", "filename": "004_Charles Street Historic Center.webp", "title": "Charles Street Historic Center", "webp": "pages/04_photography/panos/004_Charles Street Historic Center.webp", "width": 4096, "height": 1480, "aspect": 2.768}]
-  </script>
+  <script id="photosData" type="application/json">[{"id": "001-anjaniputra-release-poster", "filename": "001_Anjaniputra Release Poster.webp", "title": "Anjaniputra Release Poster", "webp": "pages/04_photography/photos/001_Anjaniputra Release Poster.webp", "thumb": "_engine/thumbs/photography/photos/001_Anjaniputra Release Poster.webp", "width": 1024, "height": 768, "aspect": 1.333}, {"id": "002-adidas-create-the-answer", "filename": "002_Adidas Create The Answer.webp", "title": "Adidas Create The Answer", "webp": "pages/04_photography/photos/002_Adidas Create The Answer.webp", "thumb": "_engine/thumbs/photography/photos/002_Adidas Create The Answer.webp", "width": 1100, "height": 619, "aspect": 1.777}, {"id": "003-adidas-football-still", "filename": "003_Adidas Football Still.webp", "title": "Adidas Football Still", "webp": "pages/04_photography/photos/003_Adidas Football Still.webp", "thumb": "_engine/thumbs/photography/photos/003_Adidas Football Still.webp", "width": 1100, "height": 619, "aspect": 1.777}, {"id": "004-busch-light-mountain-expedition", "filename": "004_Busch Light Mountain Expedition.webp", "title": "Busch Light Mountain Expedition", "webp": "pages/04_photography/photos/004_Busch Light Mountain Expedition.webp", "thumb": "_engine/thumbs/photography/photos/004_Busch Light Mountain Expedition.webp", "width": 1100, "height": 619, "aspect": 1.777}, {"id": "005-busch-light-forest-camp", "filename": "005_Busch Light Forest Camp.webp", "title": "Busch Light Forest Camp", "webp": "pages/04_photography/photos/005_Busch Light Forest Camp.webp", "thumb": "_engine/thumbs/photography/photos/005_Busch Light Forest Camp.webp", "width": 1100, "height": 619, "aspect": 1.777}, {"id": "006-pepsi-super-bowl-commercial", "filename": "006_Pepsi Super Bowl Commercial.webp", "title": "Pepsi Super Bowl Commercial", "webp": "pages/04_photography/photos/006_Pepsi Super Bowl Commercial.webp", "thumb": "_engine/thumbs/photography/photos/006_Pepsi Super Bowl Commercial.webp", "width": 545, "height": 800, "aspect": 0.681}, {"id": "007-pepsi-the-call-cinematic-still", "filename": "007_Pepsi The Call Cinematic Still.webp", "title": "Pepsi The Call Cinematic Still", "webp": "pages/04_photography/photos/007_Pepsi The Call Cinematic Still.webp", "thumb": "_engine/thumbs/photography/photos/007_Pepsi The Call Cinematic Still.webp", "width": 1100, "height": 619, "aspect": 1.777}, {"id": "008-xbox-forza-horizon-getaway", "filename": "008_Xbox Forza Horizon Getaway.webp", "title": "Xbox Forza Horizon Getaway", "webp": "pages/04_photography/photos/008_Xbox Forza Horizon Getaway.webp", "thumb": "_engine/thumbs/photography/photos/008_Xbox Forza Horizon Getaway.webp", "width": 1100, "height": 619, "aspect": 1.777}]</script>
+  <script id="panosData" type="application/json">[{"id": "001-atacama-large-millimeter-array", "filename": "001_Atacama Large Millimeter Array.webp", "title": "Atacama Large Millimeter Array", "webp": "pages/04_photography/panos/001_Atacama Large Millimeter Array.webp", "thumb": "_engine/thumbs/photography/panos/001_Atacama Large Millimeter Array.webp", "width": 4096, "height": 2048, "aspect": 2.0}, {"id": "002-cerro-toco-high-altitude-observatory", "filename": "002_Cerro Toco High Altitude Observatory.webp", "title": "Cerro Toco High Altitude Observatory", "webp": "pages/04_photography/panos/002_Cerro Toco High Altitude Observatory.webp", "thumb": "_engine/thumbs/photography/panos/002_Cerro Toco High Altitude Observatory.webp", "width": 4096, "height": 2048, "aspect": 2.0}, {"id": "003-baltimore-museum-of-art-sculpture-garden", "filename": "003_Baltimore Museum of Art Sculpture Garden.webp", "title": "Baltimore Museum of Art Sculpture Garden", "webp": "pages/04_photography/panos/003_Baltimore Museum of Art Sculpture Garden.webp", "thumb": "_engine/thumbs/photography/panos/003_Baltimore Museum of Art Sculpture Garden.webp", "width": 4096, "height": 2048, "aspect": 2.0}, {"id": "004-charles-street-historic-center", "filename": "004_Charles Street Historic Center.webp", "title": "Charles Street Historic Center", "webp": "pages/04_photography/panos/004_Charles Street Historic Center.webp", "thumb": "_engine/thumbs/photography/panos/004_Charles Street Historic Center.webp", "width": 4096, "height": 1480, "aspect": 2.768}]</script>
   <script src="_engine/js/pannellum.js"></script>
   <script src="_engine/js/photography.js"></script>
   <script type="module" src="_engine/js/main.js"></script>
 
-  <!-- Jump to Top Floating Button (Visible past 1 screen height) -->
-  <button id="back-to-top" class="back-to-top" aria-label="Jump to top" title="Jump to top">
+  <button type="button" id="back-to-top" class="back-to-top" aria-label="Jump to top" title="Jump to top">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
       <polyline points="18 15 12 9 6 15"></polyline>
     </svg>

@@ -1,4 +1,65 @@
 /* ==========================================================================
+   SHARED FLOATING ICON CONTROLS & OVERLAYS (Back-to-Top, Viewers, GLightbox)
+   ========================================================================== */
+.back-to-top,
+.reader-floating-close,
+.reader-side-nav,
+.reader-back-to-top,
+.viewer-close-btn,
+.viewer-side-arrow,
+.glightbox-clean .gclose,
+.glightbox-clean .gprev,
+.glightbox-clean .gnext {
+  width: 46px;
+  height: 46px;
+  border-radius: var(--radius-full);
+  background-color: rgba(14, 23, 51, 0.94);
+  border: 1px solid var(--accent-primary);
+  color: var(--accent-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.55), 0 0 12px rgba(249, 134, 3, 0.2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: opacity 0.25s ease,
+              transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.2s ease,
+              border-color 0.2s ease,
+              color 0.2s ease,
+              box-shadow 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .back-to-top:hover,
+  .reader-floating-close:hover,
+  .reader-side-nav:hover,
+  .reader-back-to-top:hover,
+  .viewer-close-btn:hover,
+  .viewer-side-arrow:hover,
+  .glightbox-clean .gclose:hover,
+  .glightbox-clean .gprev:hover,
+  .glightbox-clean .gnext:hover {
+    background-color: var(--accent-primary);
+    border-color: var(--accent-hover);
+    color: #ffffff;
+    box-shadow: 0 8px 28px rgba(249, 134, 3, 0.55);
+  }
+}
+
+.back-to-top:active,
+.reader-floating-close:active,
+.reader-side-nav:active,
+.reader-back-to-top:active,
+.viewer-close-btn:active,
+.viewer-side-arrow:active {
+  transform: scale(0.94);
+}
+
+/* ==========================================================================
    GLIGHTBOX THEME OVERRIDES
    ========================================================================== */
 .goverlay {
@@ -7,7 +68,7 @@
   -webkit-backdrop-filter: blur(14px) !important;
 }
 
-/* Eliminate GLightbox white bar completely */
+/* Eliminate GLightbox default white caption bar */
 .gslide-description,
 .gdesc-inner,
 .gslide-inline,
@@ -24,14 +85,14 @@
 
 .gslide-title {
   color: #ffffff !important;
-  font-family: 'Ubuntu', sans-serif !important;
+  font-family: var(--font-sans) !important;
   font-size: 1rem !important;
   font-weight: 600 !important;
   text-align: center !important;
   margin: 0 !important;
   background: rgba(14, 23, 51, 0.85) !important;
   border: 1px solid rgba(249, 134, 3, 0.3) !important;
-  border-radius: 6px !important;
+  border-radius: var(--radius-sm) !important;
   padding: 6px 14px !important;
   display: inline-block !important;
 }
@@ -53,10 +114,6 @@
   width: 46px !important;
   height: 46px !important;
   display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  transition: all 0.2s ease !important;
-  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.55), 0 0 12px rgba(249, 134, 3, 0.2) !important;
 }
 
 .glightbox-clean .gclose:hover,
@@ -66,7 +123,6 @@
   border-color: var(--accent-hover) !important;
   color: #ffffff !important;
   transform: scale(1.08) !important;
-  box-shadow: 0 8px 28px rgba(249, 134, 3, 0.55) !important;
 }
 
 .glightbox-clean .gprev {
@@ -82,7 +138,7 @@
   right: 24px !important;
 }
 
-/* Prevent close button and reader control overlap when lightbox is active */
+/* Hide blog reader controls while GLightbox is active */
 body.lightbox-active .reader-floating-close,
 body.lightbox-active .reader-back-to-top,
 body.lightbox-active .reader-side-nav {
@@ -91,84 +147,148 @@ body.lightbox-active .reader-side-nav {
   visibility: hidden !important;
 }
 
-
-
 /* ==========================================================================
-   360° PHOTOSPHERE PANORAMA VIEWER
+   AI / COMFYUI PIPELINE CARDS
    ========================================================================== */
-.panorama-card {
-  background: var(--bg-card);
-  border: none !important;
+.ai-graph-card {
+  background: var(--bg-surface);
   border-radius: var(--radius-lg);
-  overflow: hidden;
-  margin-bottom: 32px;
+  padding: clamp(20px, 4vw, 36px);
+  margin-bottom: var(--section-gap);
+  box-shadow: var(--shadow-subtle);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
-.panorama-viewport {
-  width: 100%;
-  height: 480px;
-  position: relative;
-  background: #000;
-  cursor: grab;
+.ai-graph-header {
+  margin-bottom: 20px;
 }
 
-.panorama-viewport:active {
-  cursor: grabbing;
-}
-
-.panorama-overlay-hint {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  z-index: 5;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(6px);
-  padding: 6px 14px;
-  border-radius: var(--radius-full);
+.ai-graph-eyebrow {
+  font-family: var(--font-mono);
   font-size: 0.78rem;
-  font-family: var(--font-mono);
-  color: var(--accent-cyan);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  pointer-events: none;
+  color: var(--accent-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
-/* ==========================================================================
-   SHOWREEL TIME JUMP NAVIGATOR
-   ========================================================================== */
-.reel-nav-bar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 14px;
-  padding: 12px;
-  background: var(--bg-card);
-  border: none !important;
-  border-radius: var(--radius-md);
+.ai-graph-title {
+  font-size: clamp(1.2rem, 1.8vw, 1.45rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-block: 4px;
 }
 
-.reel-time-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.04);
-  font-size: 0.8rem;
+.ai-graph-subtitle {
+  font-size: 0.9rem;
   color: var(--text-muted);
-  cursor: pointer;
-  transition: all var(--transition-fast);
 }
 
-.reel-time-badge:hover {
-  background: rgba(56, 189, 248, 0.15);
-  color: var(--accent-cyan);
+.ai-graph-media {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
 }
 
-.time-stamp {
+.ai-graph-img {
+  width: 100%;
+  object-fit: contain;
+  cursor: zoom-in;
+}
+
+.ai-section-heading {
+  font-size: clamp(1.3rem, 2vw, 1.55rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  margin-bottom: 24px;
+}
+
+.ai-workflows-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr));
+  gap: 28px;
+}
+
+.ai-workflow-card {
+  background: var(--bg-surface);
+  border: 1px solid transparent;
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-subtle);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.25s ease,
+              box-shadow 0.25s ease,
+              background 0.25s ease;
+}
+
+.ai-workflow-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent-primary);
+  background: var(--bg-card-hover);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45), 0 0 15px rgba(249, 134, 3, 0.15);
+}
+
+.ai-workflow-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+
+.ai-workflow-badge {
   font-family: var(--font-mono);
-  color: var(--accent-cyan);
+  font-size: 0.72rem;
   font-weight: 600;
+  color: var(--accent-primary);
+  background: rgba(249, 134, 3, 0.12);
+  border: 1px solid rgba(249, 134, 3, 0.3);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
 }
 
+.ai-workflow-badge.badge-alt {
+  color: var(--accent-hover);
+  background: rgba(255, 155, 38, 0.12);
+  border-color: rgba(255, 155, 38, 0.35);
+}
+
+.ai-workflow-stack {
+  font-size: 0.78rem;
+  color: var(--text-subtle);
+}
+
+.ai-workflow-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.ai-workflow-desc {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  flex-grow: 1;
+}
+
+.ai-workflow-io {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  margin-bottom: 16px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.ai-workflow-btn {
+  font-size: 0.82rem;
+  padding: 8px 16px;
+  align-self: flex-start;
+}
